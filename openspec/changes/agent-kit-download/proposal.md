@@ -43,6 +43,9 @@ subscription" — is moot now that Pro is shelved.
 
 ## Impact
 
+- **Depends on the `publish-cli` change.** The kit's launcher target `npx savedyouatoken@latest` is
+  not yet published to npm (E404) and there is no release workflow. Launcher-not-snapshot is hollow
+  until the CLI is published and kept current, so the kit must not launch before `publish-cli` lands.
 - **Code/content:** a static `/kit` page + CTAs in `apps/web`; the kit source authored in-repo (e.g.
   `kit/`) and packaged into a downloadable archive.
 - **External:** a Gumroad product (created in Gumroad's dashboard, outside the codebase) that the

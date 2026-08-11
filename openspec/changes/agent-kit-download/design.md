@@ -2,9 +2,14 @@
 
 See `proposal.md — Why` (including why this reverses the prior "don't sell the skill" exclusion).
 Requirements are in `specs/kit-distribution/spec.md`. The relevant constraints from the project: the
-site is fully static with no third-party scripts, the pricing catalogue lives only in
-`packages/core` and goes stale if copied, and the CLI (`npx savedyouatoken`) already exists and is
-always current.
+site is fully static with no third-party scripts, and the pricing catalogue lives only in
+`packages/core` and goes stale if copied.
+
+**Dependency:** the launcher target `npx savedyouatoken@latest` is **not yet published to npm**
+(`npm view savedyouatoken` returns E404, and there is no release workflow). The launcher-not-snapshot
+design is hollow until it resolves and is kept current, so this change **depends on the `publish-cli`
+change** (publish the CLI + a release process that republishes when `packages/core` prices change).
+The kit must not be launched before that lands.
 
 ## Goals / Non-Goals
 
@@ -14,9 +19,12 @@ always current.
 - A kit that cannot go stale.
 
 **Non-Goals:**
-- In-house checkout, accounts, or any server on the free path.
-- The Gumroad product setup itself (file upload, PWYW price config) — done in Gumroad's dashboard.
+- In-house checkout *code*, accounts, or any server on the free path.
 - The on-site overlay enhancement, and any first-party click counter (both deferred).
+
+(Note: creating/configuring the Gumroad product is a *manual dashboard* step, not code — but it is a
+**launch-blocking task**, not out of scope. The capability is not done until it exists and checkout
+is verified.)
 
 ## Decisions
 
@@ -37,17 +45,24 @@ v1. The overlay is a documented, opt-in enhancement scoped to `/kit` only, if we
 guide instruct the agent/developer to run `npx savedyouatoken@latest` against their prompt files
 (including the agent's own `CLAUDE.md`, MCP tool definitions, and skill descriptions) — so every
 figure is produced live. The cheat-sheet covers *patterns*, which are evergreen, and quotes no
-prices. A **guard test** scans the kit source and fails if it contains any catalogue model id or a
-price-shaped token, mechanically enforcing the requirement.
+prices. A **guard test** fails if any catalogue model id or price-shaped token appears in the kit —
+run over **both the source and the unpacked distributable archive in CI** (packaging can add
+generated files or ship a stale archive a source-only scan would miss), with the archive's file
+manifest verified against `kit/`.
 
 **Kit authored in-repo, packaged into an archive.** The kit lives under `kit/` (version-controlled,
 reviewable), and a small script produces the archive uploaded to Gumroad. This keeps the product
 reproducible and lets the guard test run in CI. The upload itself is a manual dashboard step.
 
-**Static `/kit` page + config-gated CTA.** `/kit` is a normal prerendered page (also an SEO surface).
-The Gumroad product URL is a public value in site config; when it is unset the page still renders but
-the CTA shows a "coming soon" state — the same graceful pattern as the billing boundary — so the page
-can ship before the Gumroad product exists. CTAs also appear on `/cli` and in the footer.
+**Static `/kit` page + config-gated CTA — but coming-soon is a prelaunch fallback, not the finish
+line.** `/kit` is a normal prerendered page (also an SEO surface). The Gumroad product URL is a
+public value in site config; when it is unset the CTA shows a "coming soon" state so the page can
+ship before the Gumroad product exists. CTAs also appear on `/cli` and in the footer. Crucially, the
+capability is **not complete in the unset state**: the spec requires the entry points to lead to a
+working purchase flow, so the definition of done includes launch-blocking steps — create/configure
+the Gumroad product (PWYW, $0 floor + tip), upload the archive, set the URL, and verify both a $0 and
+a paid **guest** checkout — even though the product creation itself happens in Gumroad's dashboard.
+Product creation being external is not a licence to leave the capability at coming-soon.
 
 **Measurement without tracking, for v1.** Rely on Gumroad's dashboard (views, % who pay, average
 voluntary price = the WTP signal) plus the referrer Gumroad already records for site-originated
