@@ -1,0 +1,36 @@
+{
+  "name": "savedyouatoken",
+  "version": "0.1.0",
+  "description": "Audit LLM prompt files for token waste and enforce a token budget in CI.",
+  "type": "module",
+  "bin": {
+    "savedyouatoken": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "cli": "node --experimental-strip-types src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "llm",
+    "tokens",
+    "prompt",
+    "cost",
+    "openai",
+    "anthropic",
+    "ci"
+  ],
+  "dependencies": {
+    "gpt-tokenizer": "^2.9.0"
+  },
+  "devDependencies": {
+    "@savedyouatoken/core": "*",
+    "@types/node": "^22.10.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3"
+  },
+  "license": "MIT"
+}

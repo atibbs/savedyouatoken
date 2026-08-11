@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run build:cli
+
+      # The tool auditing itself: the bundled examples must stay analysable and the
+      # budget gate must still fail when it should.
+      - name: Analyse the example prompts
+        run: node packages/cli/dist/index.js examples/*.txt --model claude-sonnet-5 --requests 4000
+      - name: Budget gate must fail when breached
+        run: |
+          if node packages/cli/dist/index.js examples/support-triage.txt --max-tokens 100 --quiet; then
+            echo "Expected a non-zero exit for a breached budget"
+            exit 1
+          fi

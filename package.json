@@ -1,0 +1,23 @@
+{
+  "name": "savedyouatoken",
+  "version": "0.1.0",
+  "private": true,
+  "description": "savedyouatoken.com — find the waste in your LLM prompts before your invoice does.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @savedyouatoken/web",
+    "build": "npm run build --workspace @savedyouatoken/web",
+    "build:cli": "npm run build --workspace savedyouatoken",
+    "start": "npm run start --workspace @savedyouatoken/web",
+    "test": "npm run test --workspace @savedyouatoken/core",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "cli": "npm run cli --workspace savedyouatoken --"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "license": "MIT"
+}
