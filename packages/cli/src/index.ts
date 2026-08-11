@@ -23,7 +23,10 @@ import {
   type AnalysisResult,
 } from '@savedyouatoken/core';
 
-const VERSION = '0.1.0';
+// Replaced at build time by tsup `define` with the package.json version. The fallback covers
+// running the TypeScript source directly (npm run cli), where the define is not applied.
+declare const __CLI_VERSION__: string;
+const VERSION = typeof __CLI_VERSION__ !== 'undefined' ? __CLI_VERSION__ : '0.0.0-dev';
 
 interface Options {
   model: string;
