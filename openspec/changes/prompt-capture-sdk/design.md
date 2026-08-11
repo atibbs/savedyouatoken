@@ -31,30 +31,60 @@ is a pure function reading the request/response shape structurally. This keeps t
 surface to one injected tokenizer and makes the package immune to provider-SDK version bumps.
 Alternative — importing provider types — couples us to their release cadence and bloats deps.
 
-**Passthrough wrapper that observes *after* the response returns, off the hot path.**
+**Passthrough wrapper that observes *after* the response returns, on a deferred macrotask.**
 `wrapAnthropic`/`wrapOpenAI` return the client with its create method proxied: it awaits the
-real call, returns the result to the caller, and schedules `observe()` on a microtask
-(fire-and-forget, wrapped so any throw is swallowed). This satisfies "non-intrusive capture"
-and "analysis failure never reaches the application". Alternatives considered: SDK middleware
-hooks (not uniformly available), and analysing before returning (adds latency — rejected).
+real call, returns the result to the caller, and schedules `observe()` as a **deferred
+macrotask** (`setImmediate`, falling back to `setTimeout(0)`), fire-and-forget and wrapped so
+any throw is swallowed. A microtask is **not** sufficient: a microtask queued before the
+wrapper's promise resolves drains *before* the caller's awaiting continuation, so synchronous
+hashing/tokenization/analysis would still delay the caller. A macrotask lets the caller's
+continuation resume first. This satisfies "non-intrusive capture" and "analysis failure never
+reaches the application". Alternatives: SDK middleware hooks (not uniformly available), a
+worker thread (heavier; reserved for very hot paths), and analysing before returning
+(rejected — adds latency).
 
-**Shape-keyed dedupe + sampling.** A shape key is a hash of `model + system + tools`. Steady
-state with a stable prompt costs ~one analysis; a changed shape re-triggers immediately —
-which is exactly the regression signal Pro is meant to sell. Alternatives: analyse every call
-(wasteful, and hashes the same content repeatedly), or purely time-based sampling (misses the
-change that matters). A bounded LRU caps memory.
+**Shape-keyed dedupe + sampling over the *stable* portion.** A shape key is a hash of
+`model + stable(system) + tools`. Steady state with a stable prompt costs ~one structural
+analysis; a genuinely changed shape re-triggers immediately — the regression signal Pro is
+meant to sell. The subtlety: extracting the assembled system content does not make it static —
+an interpolated timestamp, tenant id, or retrieved context would mint a new shape every call
+and flood analysis. So `stable(system)` is derived by **multi-request stability inference**
+(learn which segments recur across repeated requests and key only on those), with an optional
+**caller-provided mask** for known-variable regions. Alternatives: key on the raw system
+(defeated by any interpolation), analyse every call (wasteful), or time-based sampling only
+(misses the change that matters). A bounded LRU caps memory.
 
-**A traffic model measures the workload.** Requests/day from observed volume, average output
-tokens from responses, cache-hit rate from reported cached-input usage — over a rolling
-window, with explicit overrides. This is the SDK's decisive advantage over the paste box:
-the dollar figures stop being guesses. It reuses `core`'s existing `Workload` shape.
+**A traffic model measures the workload, decoupled from analysis emission.** Requests/day from
+observed volume, average output tokens from responses, cache-hit rate from reported
+cached-input usage — over a rolling window, with explicit overrides. This is the SDK's decisive
+advantage over the paste box: the dollar figures stop being guesses. Crucially, traffic
+collection is **separate from shape analysis**: analysing a shape once on first sight would
+freeze the projection at ~one request. So collection runs continuously, and a shape's report
+is (re-)emitted once its estimate has matured or changed materially — not only at first sight.
+It reuses `core`'s existing `Workload` shape.
 
-**Sink abstraction with privacy-preserving defaults, reusing the prompt-free codec.**
+**Model-identifier normalisation with an explicit unknown policy.** Live requests carry
+whatever model string the caller used — frequently a dated snapshot (`gpt-4o-2024-08-06`,
+`claude-3-5-sonnet-20241022`) that is not a catalogue id. `core.analyze()` calls
+`requireModel()`, which **throws** on an unknown id; combined with the wrapper swallowing
+errors, that would make the SDK silently produce nothing for common real-world inputs. A small
+alias/normalisation layer maps snapshot and version identifiers to their catalogue model
+before analysis; an unmapped id is surfaced through the destination (a clear "unknown model"
+signal) rather than dropped. Alternative — passing the raw id straight through — was the
+default and is exactly the silent-failure this fixes.
+
+**Sink abstraction with privacy-preserving defaults, behind a redaction codec.**
 Results go to a pluggable sink: console (dev default), file, callback, or an opt-in network
-sink. The only network-capable sink serialises `toSharedReport(result)` — the identical
-prompt-free payload the web share links use — so the privacy guarantee is the same whether a
-user pastes, shares, or streams. Default is console in dev, no-op in prod. Sending anything
-containing prompt text is out of the question by construction.
+sink. The network sink does **not** transmit `toSharedReport(result)` directly: that report
+copies each finding's human-readable `detail`, and rules interpolate captured content into it
+(e.g. `packages/core/src/rules/schema.ts` embeds the offending tool's name — "worst:
+`search_knowledge_base`"). A dedicated **redaction codec** therefore sits in front of any
+off-process transmission: it keeps counts, dollar figures, and rule identifiers, and replaces
+finding `detail` with either a rule-templated, content-free summary or a redacted form with
+all input-derived substrings stripped. A canary test (unique strings planted in prompt, tool
+name, description, and schema) asserts none survive into the payload. Default is console in
+dev, no-op in prod. **Note (out of scope here):** the existing web share-link feature shares
+the same latent exposure via `toSharedReport.detail`; flagged for a separate change.
 
 **Inject `gpt-tokenizer` as the counter (as the CLI does).** Keeps `core` dependency-free;
 the SDK owns the one runtime dependency. Bundled with `tsup` (dev-only), Node 20+.

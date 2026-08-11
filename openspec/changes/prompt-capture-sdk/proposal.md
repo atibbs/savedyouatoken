@@ -22,7 +22,11 @@ that gap. "Wrap your client, get an audit" replaces "go find and paste your opaq
   instead of asked for — so the dollar figures are measured, not guessed.
 - **Pluggable sinks** (console, file, callback, and an opt-in Pro dashboard sink) with a
   privacy-preserving default: nothing leaves the process unless explicitly configured, and
-  even the Pro sink transmits only the existing prompt-free report.
+  any off-process payload passes a **redaction codec** first.
+- **A redaction codec** for anything transmitted off-process — raw finding detail is not sent,
+  because findings can embed captured tool names and other input-derived content.
+- **Model-identifier normalisation** (dated/snapshot IDs → catalogue model) with an explicit
+  unknown-model policy, so real traffic is not silently dropped.
 
 ## Capabilities
 
@@ -52,5 +56,7 @@ that gap. "Wrap your client, get an audit" replaces "go find and paste your opaq
 - **No paid service or always-on infra.** The Pro dashboard *sink interface* and its
   prompt-free POST are included, but the hosted receiving backend is a non-goal of this
   change.
-- **Privacy:** prompt text never leaves the process by default; the only network-capable
-  sink sends the same prompt-free payload as share links.
+- **Privacy:** prompt and tool text never leave the process by default; any off-process
+  payload passes a redaction codec (raw finding detail is not transmitted, since findings can
+  embed captured tool names). A separate latent exposure of the same kind in the existing web
+  share-link feature is flagged for a follow-up change.
