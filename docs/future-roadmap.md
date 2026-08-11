@@ -4,6 +4,12 @@
 
 Work that should follow the MVP directly, ordered by value.
 
+> **Status — Pro is shelved pending validation (see `docs/decisions.md`).** The stateful boundary
+> for Pro (Auth.js, Postgres/Drizzle schema, Stripe checkout/webhook/portal) is already built and
+> merged, but inert and env-gated. The paid features below are specced and deferred: item 1 is the
+> gate, and nothing past it is built or billed until a recurring hook is shown to be adopted and
+> retained. Items already partly built are marked **[boundary built]**.
+
 **1. Validate the CI thesis with real teams.**
 Get three or four teams running `savedyouatoken` in CI and watch where it fails or annoys them. The
 entire Pro pricing model rests on the assumption that budget enforcement is worth paying for. This
@@ -28,14 +34,22 @@ fixes the CLI only advises on, and re-measure to prove the saving. Roughly a day
 engine already exists. Free, as distribution — see the decision log for why it is not sold as a
 downloadable asset. Requires publishing the CLI to npm first.
 
-**5. Prompt history and regression alerts.**
+**5. Prompt history and regression alerts. [boundary built]**
 The first genuinely paid feature and the first that needs a server. Store prompt versions, diff any
-two, price the delta, and alert when a prompt crosses its budget. Requires a database and auth — the
-point at which infrastructure cost begins.
+two, price the delta, and alert when a prompt crosses its budget. The database and auth this needs
+already exist (`saved_prompts` / `entitlements` tables, Auth.js). The *features* — history UI,
+diffing, alerting — are deferred behind item 1.
 
-**6. Payment integration.**
-Stripe checkout plus a webhook that flips an entitlement. Deliberately after (5), because there
-must be something to sell.
+**6. Payment integration. [boundary built]**
+Stripe checkout, webhook and customer portal are wired and inactive; activating them needs only the
+Stripe keys. Deliberately gated behind item 1 and (5): there must be a validated something to sell
+before the switch is flipped.
+
+**6a. The prompt-capture SDK.**
+A drop-in wrapper (`packages/sdk`) that captures the real, assembled outbound request and audits it
+with the core engine — closing the copy-paste gap. Fully specced as the OpenSpec change
+`prompt-capture-sdk` (proposal/spec/design/tasks merged, unimplemented). Its capture value is
+free-tier adoption; its dashboard sink is Pro, and therefore deferred with the rest of Pro.
 
 **7. A pricing-data API.**
 The catalogue is already the most tedious thing here to maintain and other tools need it. A JSON

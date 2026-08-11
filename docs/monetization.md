@@ -1,5 +1,9 @@
 # Monetization
 
+> **Status: specced but deferred.** This document is the full monetization spec and is kept current
+> as the intended design. The Pro tier is **not being built** — see `docs/decisions.md` ("Defer the
+> Pro tier"). The stateful boundary exists and is inert; the paid product waits on demand validation.
+
 ## Thesis
 
 The product denominates itself in the customer's own dollars. It ends an interaction by saying "this

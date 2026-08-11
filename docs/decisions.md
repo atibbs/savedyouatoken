@@ -248,3 +248,39 @@ impossible, and it means adding a rule automatically adds an indexable page and 
 
 **Tradeoff:**
 Prose lives in the core package, which slightly muddies its purity as a logic library. Worth it.
+
+---
+
+## Decision: Defer the Pro tier — keep it specced, do not build the paid product yet
+
+**Context:**
+The stateful boundary for Pro was built and merged — Auth.js sessions, a Postgres/Drizzle schema
+for saved prompts and entitlements, and the Stripe checkout/webhook/portal wiring — all env-gated
+and inactive. The pricing page exists with an inactive checkout. The paid *features* themselves
+(server-synced history, version diffing, regression alerts, the pull-request bot, a hosted
+dashboard, the SDK's paid sink) are not built. The strongest case for the tier and the strongest
+case against it were both worked through in full before this decision.
+
+**Decision:**
+Stop before building the paid product. Keep Pro fully specced (`docs/monetization.md`), documented
+(this entry) and roadmapped (`docs/future-roadmap.md`), and leave the boundary in place, inert.
+Build no Pro features, connect no billing, and invest no further in the paid tier until demand for
+the recurring hook is validated with real teams.
+
+**Reason:**
+The case for Pro and the case against it converge on one crux: whether teams adopt *and retain* a
+recurring cost-governance hook — the CI budget check or the capture SDK. That is unproven, and it
+is structurally uncertain: cost-in-CI may lack the organisational teeth that security and
+performance gates have, and the "we see real traffic" advantage the SDK leans on is exactly where an
+already-installed gateway or observability incumbent is strongest. The decisive argument is
+sequencing — building the paid platform spends effort on the cheap, known parts (auth, billing,
+dashboard) while leaving the one expensive unknown untested. This reverses the ordering the roadmap
+itself always advised (validate the CI thesis *before* billing work); the boundary was built ahead
+of that evidence, and the correct response is to stop there rather than compound it.
+
+**Tradeoff:**
+The auth/DB/Stripe scaffolding sits unused — harmless because it is inert without env vars, but real
+weight to keep building and reasoning around. Revenue is deferred indefinitely, and if the free tool
+never converts, that scaffolding was wasted. Accepted: the boundary is left in place rather than
+reverted, because activation later is a small contained step, whereas finishing Pro on faith now
+risks far more than a few unused tables.
