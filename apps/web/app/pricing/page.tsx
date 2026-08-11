@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ALL_RULES } from '@savedyouatoken/core';
 import { Panel } from '@/components/ui';
 import { FREE_SAVED_LIMIT } from '@/lib/limits';
+import { UpgradeButton } from '@/components/UpgradeButton';
 
 export const metadata: Metadata = {
   title: 'Pricing',
@@ -88,19 +89,7 @@ export default function PricingPage() {
               </li>
             ))}
           </ul>
-          <button
-            type="button"
-            disabled
-            className="mt-6 w-full cursor-not-allowed rounded border border-line bg-raised px-3 py-2 text-[13px] text-faint"
-          >
-            Checkout not connected
-          </button>
-          <p className="mt-2 text-[12px] leading-relaxed text-faint">
-            Billing is not wired up. The integration boundary exists in the codebase and needs a
-            payment provider key to activate — see{' '}
-            <code className="font-mono">docs/monetization.md</code>. Nothing here charges anyone,
-            and there is no waitlist collecting your address.
-          </p>
+          <UpgradeButton />
         </Panel>
       </div>
 
