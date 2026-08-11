@@ -21,8 +21,8 @@
 ## 4. Result delivery (sinks)
 
 - [ ] 4.1 Define the `AuditSink` interface and implement `consoleSink`, `fileSink`, and a `callback` sink
-- [ ] 4.2 Implement a redaction codec for any off-process payload — keep counts, figures, and rule ids; strip or replace content-derived finding detail (tool names, descriptions, prompt fragments)
-- [ ] 4.3 Implement the opt-in network `dashboardSink` that transmits only the redacted payload; wire the default (console in dev, no-op in prod)
+- [ ] 4.2 Use core's prompt-free `toSharedReport` for any off-process payload (already hardened to carry static rule summaries, not content-derived detail); assert the SDK's transmitted payload is canary-free
+- [ ] 4.3 Implement the opt-in network `dashboardSink` that transmits only that payload; wire the default (console in dev, no-op in prod)
 
 ## 5. Ergonomic wrappers
 

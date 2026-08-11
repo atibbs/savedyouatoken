@@ -73,18 +73,18 @@ before analysis; an unmapped id is surfaced through the destination (a clear "un
 signal) rather than dropped. Alternative — passing the raw id straight through — was the
 default and is exactly the silent-failure this fixes.
 
-**Sink abstraction with privacy-preserving defaults, behind a redaction codec.**
+**Sink abstraction with privacy-preserving defaults, over a now-safe report.**
 Results go to a pluggable sink: console (dev default), file, callback, or an opt-in network
-sink. The network sink does **not** transmit `toSharedReport(result)` directly: that report
-copies each finding's human-readable `detail`, and rules interpolate captured content into it
-(e.g. `packages/core/src/rules/schema.ts` embeds the offending tool's name — "worst:
-`search_knowledge_base`"). A dedicated **redaction codec** therefore sits in front of any
-off-process transmission: it keeps counts, dollar figures, and rule identifiers, and replaces
-finding `detail` with either a rule-templated, content-free summary or a redacted form with
-all input-derived substrings stripped. A canary test (unique strings planted in prompt, tool
-name, description, and schema) asserts none survive into the payload. Default is console in
-dev, no-op in prod. **Note (out of scope here):** the existing web share-link feature shares
-the same latent exposure via `toSharedReport.detail`; flagged for a separate change.
+sink. The off-process payload is core's `toSharedReport(result)`, which **this PR hardens at
+the source**: it previously copied each finding's human-readable `detail`, and rules
+interpolate captured content into it (e.g. `packages/core/src/rules/schema.ts` embedded the
+offending tool's name — "worst: `search_knowledge_base`"). It now carries the finding's static
+rule `summary` instead, so the report is prompt- and tool-text-free **by construction** —
+`title` and `summary` are fixed rule text, everything else is counts and figures. A canary
+test (unique strings planted in prompt, tool name, description, and schema) guards it against
+regression, in `packages/core` and again at the SDK boundary. Default is console in dev, no-op
+in prod. Fixing the leak in core rather than in an SDK-only codec also closes the identical
+latent exposure in the existing web share-link feature.
 
 **Inject `gpt-tokenizer` as the counter (as the CLI does).** Keeps `core` dependency-free;
 the SDK owns the one runtime dependency. Bundled with `tsup` (dev-only), Node 20+.

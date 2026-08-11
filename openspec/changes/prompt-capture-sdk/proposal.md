@@ -56,7 +56,8 @@ that gap. "Wrap your client, get an audit" replaces "go find and paste your opaq
 - **No paid service or always-on infra.** The Pro dashboard *sink interface* and its
   prompt-free POST are included, but the hosted receiving backend is a non-goal of this
   change.
-- **Privacy:** prompt and tool text never leave the process by default; any off-process
-  payload passes a redaction codec (raw finding detail is not transmitted, since findings can
-  embed captured tool names). A separate latent exposure of the same kind in the existing web
-  share-link feature is flagged for a follow-up change.
+- **Privacy:** prompt and tool text never leave the process by default. The underlying leak —
+  `toSharedReport` copying content-derived finding `detail` — is fixed in `packages/core` as
+  part of this PR: the shared report now carries only the static rule `summary`, so it is
+  prompt- and tool-text-free by construction (guarded by a canary test). The SDK reuses that
+  now-safe report for any off-process transmission.
