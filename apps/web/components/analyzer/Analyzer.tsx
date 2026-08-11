@@ -19,6 +19,7 @@ import {
 } from '@savedyouatoken/core';
 import { currentCounter, loadExactCounter } from '@/lib/tokenizer';
 import { Field, Panel, Stat, Tag, buttonClass, inputClass, primaryButtonClass } from '@/components/ui';
+import { Receipt } from '@/components/Receipt';
 import { Findings } from './Findings';
 import { RewriteView } from './RewriteView';
 import { CachePanel } from './CachePanel';
@@ -505,25 +506,13 @@ export function Analyzer() {
                 ))}
               </div>
 
-              <button type="button" onClick={share} className={`ml-auto mr-1 ${primaryButtonClass}`}>
-                {shareState === 'copied' ? 'Link copied' : 'Share report'}
-              </button>
+              <a
+                href="#share"
+                className="ml-auto mr-1 font-mono text-[11px] text-muted underline underline-offset-2 hover:text-ink"
+              >
+                Share ↓
+              </a>
             </div>
-
-            {shareState === 'manual' ? (
-              <div className="border-b border-line bg-raised px-4 py-2.5">
-                <label htmlFor="share-url" className="text-[12px] text-muted">
-                  Your browser blocked the clipboard. Copy the link manually:
-                </label>
-                <input
-                  id="share-url"
-                  readOnly
-                  value={shareUrl}
-                  onFocus={(e) => e.currentTarget.select()}
-                  className={`mt-1.5 ${inputClass} text-[11px]`}
-                />
-              </div>
-            ) : null}
 
             <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
               {tab === 'findings' ? <Findings result={result} /> : null}
@@ -540,10 +529,54 @@ export function Analyzer() {
             </div>
           </Panel>
 
-          <p className="px-1 text-[12px] text-faint">
-            Share links carry the report only — the token counts, findings and dollar figures — and
-            never your prompt text.
-          </p>
+          <section id="share" className="mt-6 scroll-mt-24 border-t-[1.5px] border-line-strong pt-10">
+            <div className="grid items-center gap-10 md:grid-cols-2">
+              <div>
+                <span className="eyebrow text-orange">The flex</span>
+                <h2 className="display mt-2 text-[clamp(28px,4.5vw,44px)] text-ink">
+                  Send the receipt, not the prompt.
+                </h2>
+                <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-muted">
+                  Share the finding without showing anyone what you were working on. The link carries
+                  the counts, findings and dollar figures only — your prompt never leaves this
+                  browser, and there is a test that proves the payload contains no prompt text.
+                </p>
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <button type="button" onClick={share} className={primaryButtonClass}>
+                    {shareState === 'copied' ? 'Link copied ✓' : 'Copy share link'}
+                  </button>
+                  <span className="font-mono text-[11px] text-faint">no account · no upload</span>
+                </div>
+                {shareState === 'manual' ? (
+                  <div className="mt-3">
+                    <label htmlFor="receipt-share-url" className="text-[12px] text-muted">
+                      Your browser blocked the clipboard. Copy the link manually:
+                    </label>
+                    <input
+                      id="receipt-share-url"
+                      readOnly
+                      value={shareUrl}
+                      onFocus={(e) => e.currentTarget.select()}
+                      className={`mt-1.5 ${inputClass} text-[11px]`}
+                    />
+                  </div>
+                ) : null}
+              </div>
+
+              <Receipt
+                modelName={result.model.name}
+                inputTokens={result.inputTokens}
+                monthlyNow={result.costNow.perMonth}
+                recoverable={
+                  result.topOpportunity
+                    ? result.topOpportunity.monthlySaving
+                    : result.monthlyRewriteSaving
+                }
+                recoverableTitle={result.topOpportunity?.title}
+                createdAt={new Date().toISOString().slice(0, 10)}
+              />
+            </div>
+          </section>
         </>
       ) : null}
     </div>

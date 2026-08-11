@@ -10,6 +10,7 @@ import {
   type SharedReport as Report,
 } from '@savedyouatoken/core';
 import { Panel, Stat } from '@/components/ui';
+import { Receipt } from '@/components/Receipt';
 
 type State = { status: 'loading' } | { status: 'empty' } | { status: 'bad' } | { status: 'ok'; report: Report };
 
@@ -60,8 +61,31 @@ export function SharedReport() {
   const model = getModel(report.modelId);
   const rewriteSaving = report.monthlyNow - report.monthlyAfterRewrite;
 
+  // The receipt headlines the single largest honest number — the biggest priced finding,
+  // or the mechanical rewrite saving if that is larger — never a sum of overlapping ones.
+  const topFinding = report.findings.reduce<(typeof report.findings)[number] | null>(
+    (best, f) => (f.monthlySaving > (best?.monthlySaving ?? 0) ? f : best),
+    null,
+  );
+  const recoverable = Math.max(topFinding?.monthlySaving ?? 0, rewriteSaving);
+  const recoverableTitle =
+    rewriteSaving >= (topFinding?.monthlySaving ?? 0) && rewriteSaving > 0
+      ? 'Safe automatic rewrite'
+      : topFinding?.title;
+
   return (
     <>
+      <div className="mb-8">
+        <Receipt
+          modelName={model?.name ?? report.modelId}
+          inputTokens={report.inputTokens}
+          monthlyNow={report.monthlyNow}
+          recoverable={recoverable}
+          recoverableTitle={recoverableTitle}
+          createdAt={report.createdAt}
+        />
+      </div>
+
       <Panel>
         <div className="grid divide-y divide-line sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
           <Stat label="Input tokens" value={formatTokens(report.inputTokens)} sub={model?.name ?? report.modelId} />
