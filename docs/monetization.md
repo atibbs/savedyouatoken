@@ -45,14 +45,21 @@ stateless/stateful line, which is the honest place for it.
 
 ### Current state
 
-Billing is **not connected**. The `/pricing` page says so plainly, the checkout button is disabled,
-and there is no waitlist collecting addresses. The integration boundary exists; activating it needs
-a payment provider account, which this build has no credentials for.
+Billing is **wired but inactive**. The checkout, webhook, and customer-portal route handlers all
+exist and entitlement persistence is implemented; the `/pricing` page shows a "checkout not
+connected" state until it is switched on, and no waitlist collects addresses.
 
-To activate: add a Stripe (or Lemon Squeezy) product, set `STRIPE_SECRET_KEY` and
-`STRIPE_WEBHOOK_SECRET`, and implement the two route handlers the boundary expects — checkout
-session creation and a webhook that flips an entitlement. That is the first work item that requires
-infrastructure at all, and it is also the point at which a database becomes necessary.
+Activation is now *configuration, not code*:
+
+- **Stripe** — create a product and monthly price, and set `STRIPE_SECRET_KEY`,
+  `STRIPE_WEBHOOK_SECRET`, and `STRIPE_PRICE_PRO_MONTHLY`.
+- **Auth** — set `AUTH_SECRET` and a GitHub OAuth app (`AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET`);
+  without sign-in there is no user to attach an entitlement to, and checkout requires a session.
+- **Database** — set `DATABASE_URL` and apply the schema (`db:push`); the webhook persists
+  entitlement there, and without it everyone reads as free.
+
+See `.env.example` for the full set. None of this is built further while the tier is deferred (see
+`docs/decisions.md`).
 
 ## Secondary opportunities
 

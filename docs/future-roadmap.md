@@ -41,9 +41,12 @@ already exist (`saved_prompts` / `entitlements` tables, Auth.js). The *features*
 diffing, alerting — are deferred behind item 1.
 
 **6. Payment integration. [boundary built]**
-Stripe checkout, webhook and customer portal are wired and inactive; activating them needs only the
-Stripe keys. Deliberately gated behind item 1 and (5): there must be a validated something to sell
-before the switch is flipped.
+Stripe checkout, webhook and customer portal are wired and inactive. Activation is *configuration,
+not code*, but it is more than the Stripe keys: create a Stripe product and monthly price
+(`STRIPE_PRICE_PRO_MONTHLY`), set the Stripe, Auth, and Database env groups from `.env.example` —
+sign-in (Auth) and entitlement persistence (a `DATABASE_URL` with the schema applied via `db:push`)
+are both required for a working purchase flow. Deliberately gated behind item 1 and (5): there must
+be a validated something to sell before the switch is flipped.
 
 **6a. The prompt-capture SDK.**
 A drop-in wrapper (`packages/sdk`) that captures the real, assembled outbound request and audits it
