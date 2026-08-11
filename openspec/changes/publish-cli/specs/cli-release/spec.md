@@ -36,12 +36,17 @@ edit cannot reach `latest`-eligible state without triggering a publish.
 - **WHEN** a change modifies the pricing catalogue but does not bump the CLI's published version
 - **THEN** CI fails and reports the missing version bump
 
-### Requirement: Releases are verified before they are trusted
-Each release SHALL be verified by running the just-published package from a clean environment before
-the release is considered complete.
+### Requirement: Releases are verified before they become `latest`
+A newly built version SHALL be verified by installing and running it from the registry in a clean
+environment **before** it is promoted to the `latest` tag, so that a broken build never becomes the
+default install. The version a user installs SHALL report the version it was published as.
 
-#### Scenario: Post-publish smoke test
-- **WHEN** a version has been published
-- **THEN** running `npx savedyouatoken@<published-version>` in a clean environment executes and
-  reports that version
-- **AND** a failed smoke test marks the release as failed
+#### Scenario: A candidate is verified before promotion
+- **WHEN** a new version is published to a candidate tag rather than directly to `latest`
+- **THEN** it is installed from the registry in a clean environment and asserted to run and report its
+  published version
+- **AND** it is promoted to `latest` only if that check passes
+
+#### Scenario: A broken build never becomes `latest`
+- **WHEN** the candidate fails its verification
+- **THEN** the release fails and `latest` continues to point at the previous good version
