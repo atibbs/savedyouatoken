@@ -130,7 +130,7 @@ export function SharedReport() {
                   ) : null}
                 </div>
               </div>
-              <p className="mt-1 text-[13px] leading-relaxed text-muted">{f.detail}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-muted">{f.summary}</p>
               <Link
                 href={`/waste/${f.id}`}
                 className="mt-1.5 inline-block text-[12px] text-info underline underline-offset-2"
