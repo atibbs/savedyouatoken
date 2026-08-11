@@ -36,6 +36,58 @@ describe('share report', () => {
     expect(serialised).not.toContain('help centre');
   });
 
+  it('carries no prompt- or tool-derived text, even when findings mention them (canary)', async () => {
+    // Unique strings planted in every input surface a finding's `detail` could echo.
+    const CANARY = {
+      prompt: 'CANARY_PROMPT_Z9',
+      toolName: 'canary_tool_z9',
+      toolDescription: 'CANARY_DESC_Z9',
+      enumValue: 'CANARY_ENUM_Z9',
+    };
+    // A long description forces the schema rule to name the worst tool in its detail; a big
+    // enum forces the oversized-enum branch — both historically leaked into the shared report.
+    const tools = JSON.stringify([
+      {
+        type: 'function',
+        function: {
+          name: CANARY.toolName,
+          description: `${CANARY.toolDescription} ${'a very long tool description '.repeat(12)}`,
+          parameters: {
+            $schema: 'http://json-schema.org/draft-07/schema#',
+            title: 'CanaryParams',
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              mode: {
+                type: 'string',
+                enum: [CANARY.enumValue, ...Array.from({ length: 120 }, (_, i) => `option_${i}`)],
+              },
+            },
+          },
+        },
+      },
+    ]);
+
+    const canaryResult = analyze({
+      prompt: `You are a helpful assistant. ${CANARY.prompt}`,
+      toolsSource: tools,
+      modelId: 'claude-opus-5',
+      workload: { ...DEFAULT_WORKLOAD, requestsPerDay: 2000 },
+      counter: heuristicCounter,
+    });
+
+    // Guard the test itself: confirm a finding's live `detail` really does echo the tool name,
+    // so this test would fail if the report ever transmitted `detail` again.
+    expect(canaryResult.findings.some((f) => f.detail.includes(CANARY.toolName))).toBe(true);
+
+    const serialised = JSON.stringify(
+      await decodeReport(await encodeReport(toSharedReport(canaryResult))),
+    );
+    for (const canary of Object.values(CANARY)) {
+      expect(serialised).not.toContain(canary);
+    }
+  });
+
   it('returns null for corrupt input rather than throwing', async () => {
     expect(await decodeReport('zzzzznot-real')).toBeNull();
     expect(await decodeReport('')).toBeNull();

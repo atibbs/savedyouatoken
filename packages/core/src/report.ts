@@ -10,7 +10,7 @@
 import type { AnalysisResult } from './analyze';
 import type { Workload } from './cost';
 
-export const REPORT_VERSION = 1;
+export const REPORT_VERSION = 2;
 
 export interface SharedFinding {
   id: string;
@@ -18,7 +18,13 @@ export interface SharedFinding {
   occurrences: number;
   tokensSaved: number;
   monthlySaving: number;
-  detail: string;
+  /**
+   * The rule's generic, static one-liner — NOT the per-prompt `detail`. `detail` is written
+   * for the specific prompt and can embed captured content (e.g. a tool's name), so it must
+   * never be transmitted. `title` and `summary` are fixed rule text, so a shared report
+   * carries no prompt- or tool-derived strings by construction.
+   */
+  summary: string;
 }
 
 export interface SharedReport {
@@ -54,7 +60,8 @@ export function toSharedReport(result: AnalysisResult): SharedReport {
       occurrences: f.occurrences,
       tokensSaved: Math.round(f.tokensSaved),
       monthlySaving: round2(f.monthlySaving),
-      detail: f.detail,
+      // Static rule text only — never f.detail, which can embed captured tool names.
+      summary: f.summary,
     })),
     createdAt: new Date().toISOString().slice(0, 10),
   };
