@@ -4,6 +4,7 @@ import localFont from 'next/font/local';
 import { PRICES_VERIFIED_ON } from '@savedyouatoken/core';
 import { NAV, SITE_NAME, SITE_URL, TAGLINE } from '@/lib/site';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { AccountMenu } from '@/components/AccountMenu';
 import './globals.css';
 
 /* Fonts are vendored into app/fonts (latin subset) and self-hosted, so the build is
@@ -90,7 +91,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <span className="hidden sm:inline">{item.label}</span>
                 </Link>
               ))}
-              <div className="ml-1 shrink-0">
+              <div className="ml-1 flex shrink-0 items-center gap-2">
+                <AccountMenu />
                 <ThemeToggle />
               </div>
             </nav>

@@ -1,0 +1,20 @@
+import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { getEntitlement } from '@/lib/entitlements';
+
+// Lets the client learn who it is and which plan it has, so the UI can lift the free
+// saved-prompt limit and show account state. Entitlement is still enforced server-side on
+// every write; this endpoint is only for presentation.
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ authenticated: false, plan: 'free' as const });
+  }
+  const entitlement = await getEntitlement(session.user.id);
+  return NextResponse.json({
+    authenticated: true,
+    user: { name: session.user.name ?? null, email: session.user.email ?? null },
+    plan: entitlement.plan,
+    currentPeriodEnd: entitlement.currentPeriodEnd,
+  });
+}

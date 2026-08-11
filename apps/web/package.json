@@ -6,12 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@savedyouatoken/core": "*",
+    "drizzle-orm": "^0.45.2",
     "gpt-tokenizer": "^2.9.0",
     "next": "^16.3.0",
+    "next-auth": "^5.0.0-beta.32",
+    "postgres": "^3.4.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -20,6 +25,7 @@
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
+    "drizzle-kit": "^0.31.10",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.6.3"
   }
