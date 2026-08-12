@@ -1,0 +1,58 @@
+{
+  "name": "@savedyouatoken/sdk",
+  "version": "0.1.0",
+  "description": "Wrap your Anthropic/OpenAI client and get a token-waste audit of the real request — no prompt leaves your process.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "llm",
+    "tokens",
+    "prompt",
+    "cost",
+    "openai",
+    "anthropic",
+    "observability"
+  ],
+  "dependencies": {
+    "gpt-tokenizer": "^2.9.0"
+  },
+  "devDependencies": {
+    "@savedyouatoken/core": "*",
+    "@types/node": "^22.10.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vitest": "^3.2.7"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atibbs/savedyouatoken.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://savedyouatoken.com",
+  "bugs": "https://github.com/atibbs/savedyouatoken/issues"
+}
