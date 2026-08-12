@@ -67,7 +67,19 @@ export function createAuditor(adapter: RequestAdapter, options: AuditorOptions =
     }
   }
 
+  // The whole capture path — `adapter.extract`, a caller-provided `mask`, and
+  // `JSON.stringify(tools)` (which throws on a circular tool object) — runs inside this guard,
+  // so the documented manual `auditor.observe(...)` upholds its never-throws contract even for a
+  // custom adapter/mask that misbehaves, not only when called through the wrappers.
   function observe(params: unknown, response?: unknown): void {
+    try {
+      runObserve(params, response);
+    } catch {
+      // Capture or analysis failure must never reach the caller.
+    }
+  }
+
+  function runObserve(params: unknown, response?: unknown): void {
     const captured = adapter.extract(params, response);
     if (!captured) return;
 
@@ -78,7 +90,12 @@ export function createAuditor(adapter: RequestAdapter, options: AuditorOptions =
     const maskedSystem = mask ? mask(captured.system) : captured.system;
     const toolsSource = captured.tools && captured.tools.length ? JSON.stringify(captured.tools) : '';
 
-    // Shape identity is over the *stable* portion: model + skeletonised system + tools.
+    // Shape identity is over the *stable* portion: model + skeletonised system + tools. The
+    // skeleton neutralises structurally-variable tokens (timestamps, UUIDs, ids), and the
+    // caller mask handles domain-specific variables — these are deliberately *deterministic*:
+    // the identity never fuzzily merges two dissimilar prompts, which for an audit tool would
+    // silently blend two services' costs. Within a shape, line-level stability inference
+    // (ShapeState) then drops any residual per-request line from the analysed text.
     const shapeKey = hashString(
       `${resolution.modelId ?? resolution.raw}\n${skeleton(maskedSystem)}\n${toolsSource}`,
     );

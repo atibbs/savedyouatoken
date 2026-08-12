@@ -30,21 +30,32 @@ function stripSnapshot(id: string): string {
 }
 
 /**
- * Map a provider's model identifier — including dated/snapshot identifiers — to a
- * pricing-catalogue model id. Returns `{ modelId: null }` for anything unmappable so the
+ * Provider identifiers spell versions with dots (`gpt-5.5`, `gpt-4.1`, `gemini-2.5-pro`) while
+ * this repo's catalogue uses dashes (`gpt-5-5`, `gpt-4-1`, `gemini-2-5-pro`). Dashes are
+ * unaffected, so this is safe to apply unconditionally as a lookup candidate.
+ */
+function dedot(id: string): string {
+  return id.replace(/\./g, '-');
+}
+
+/** Resolve a single candidate string against the catalogue and the alias table. */
+function lookup(id: string): string | null {
+  if (getModel(id)) return id;
+  return ALIASES[id] ?? null;
+}
+
+/**
+ * Map a provider's model identifier — including dated/snapshot and dotted-version identifiers —
+ * to a pricing-catalogue model id. Returns `{ modelId: null }` for anything unmappable so the
  * caller can surface the condition rather than silently dropping the audit.
  */
 export function normaliseModelId(raw: string): ModelResolution {
-  if (getModel(raw)) return { raw, modelId: raw };
-
-  const alias = ALIASES[raw];
-  if (alias) return { raw, modelId: alias };
-
   const stripped = stripSnapshot(raw);
-  if (stripped !== raw) {
-    if (getModel(stripped)) return { raw, modelId: stripped };
-    if (ALIASES[stripped]) return { raw, modelId: ALIASES[stripped]! };
+  // Try, in order: verbatim, dot-normalised, snapshot-stripped, and both together.
+  const candidates = [raw, dedot(raw), stripped, dedot(stripped)];
+  for (const candidate of candidates) {
+    const hit = lookup(candidate);
+    if (hit) return { raw, modelId: hit };
   }
-
   return { raw, modelId: null };
 }

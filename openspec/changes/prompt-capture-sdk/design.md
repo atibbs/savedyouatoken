@@ -47,12 +47,21 @@ worker thread (heavier; reserved for very hot paths), and analysing before retur
 `model + stable(system) + tools`. Steady state with a stable prompt costs ~one structural
 analysis; a genuinely changed shape re-triggers immediately — the regression signal Pro is
 meant to sell. The subtlety: extracting the assembled system content does not make it static —
-an interpolated timestamp, tenant id, or retrieved context would mint a new shape every call
-and flood analysis. So `stable(system)` is derived by **multi-request stability inference**
-(learn which segments recur across repeated requests and key only on those), with an optional
-**caller-provided mask** for known-variable regions. Alternatives: key on the raw system
-(defeated by any interpolation), analyse every call (wasteful), or time-based sampling only
-(misses the change that matters). A bounded LRU caps memory.
+an interpolated timestamp, id, or retrieved context would otherwise mint a new shape every call
+and flood analysis. `stable(system)` is derived by two **deterministic** mechanisms: a built-in
+**skeleton** that neutralises structurally-variable tokens (ISO timestamps, dates, UUIDs, long
+hex/numeric ids, bearer tokens, emails), and an optional **caller-provided mask** for
+domain-specific variable regions (tenant id, retrieved context). Both are deterministic *on
+purpose*: a fuzzy/similarity-based grouping that collapsed "close enough" prompts would risk
+silently merging two genuinely different services' prompts into one blended, wrong audit — an
+unacceptable failure for a cost-attribution tool. So arbitrary unmasked variation that the
+skeleton cannot recognise is left as a distinct shape rather than guessed at; the caller mask is
+the escape hatch for it. Separately, **within** an already-grouped shape, line-level stability
+inference (across the repeated requests that share the key) drops any residual per-request line
+from the *analysed text* — e.g. removing the raw timestamp line from a shape the skeleton
+collapsed. Alternatives considered: key on the raw system (defeated by any interpolation);
+analyse every call (wasteful); fuzzy near-duplicate grouping (rejected — false-merge risk above).
+A bounded LRU caps memory.
 
 **A traffic model measures the workload, decoupled from analysis emission.** Requests/day from
 observed volume, average output tokens from responses, cache-hit rate from reported

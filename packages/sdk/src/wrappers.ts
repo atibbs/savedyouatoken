@@ -24,6 +24,39 @@ function scheduleObserve(auditor: Auditor, params: unknown, response: unknown): 
 }
 
 /**
+ * Return a Proxy over a thenable that behaves identically — every property, including provider
+ * helpers such as `.asResponse()` / `.withResponse()`, passes straight through — except that
+ * `then` is wrapped to invoke `onResolved(value)` exactly once when the caller resolves it. It
+ * never resolves the thenable itself, so the response body is not consumed until the caller
+ * consumes it, and the caller keeps the original enhanced object's full surface.
+ */
+function tapThenable<T extends PromiseLike<unknown>>(thenable: T, onResolved: (value: unknown) => void): T {
+  let tapped = false;
+  const tapOnce = (value: unknown): void => {
+    if (tapped) return;
+    tapped = true;
+    onResolved(value);
+  };
+  return new Proxy(thenable, {
+    get(obj, prop, receiver) {
+      if (prop === 'then') {
+        return function then(
+          onFulfilled?: ((v: unknown) => unknown) | null,
+          onRejected?: ((r: unknown) => unknown) | null,
+        ) {
+          return (obj as PromiseLike<unknown>).then((value) => {
+            tapOnce(value);
+            return onFulfilled ? onFulfilled(value) : value;
+          }, onRejected);
+        };
+      }
+      const value = Reflect.get(obj, prop, receiver);
+      return typeof value === 'function' ? value.bind(obj) : value;
+    },
+  });
+}
+
+/**
  * Return a Proxy over `target` that behaves identically, except the method at `path` (e.g.
  * `['messages', 'create']`) is wrapped: it awaits the real call, returns the result to the
  * caller unchanged, then schedules an observation. Intermediate objects are proxied lazily;
@@ -49,15 +82,19 @@ function instrument<T extends object>(target: T, path: string[], auditor: Audito
       return function instrumentedCreate(...args: unknown[]) {
         const params = args[0];
         const ret = fn.apply(obj, args);
-        if (ret && typeof (ret as { then?: unknown }).then === 'function') {
-          return (ret as Promise<unknown>).then((response) => {
-            scheduleObserve(auditor, params, response);
-            return response;
-          });
+        if (!ret || typeof (ret as { then?: unknown }).then !== 'function') {
+          // Non-promise return (e.g. a stream object): observe the request alone.
+          scheduleObserve(auditor, params, undefined);
+          return ret;
         }
-        // Non-promise return (e.g. a stream object): observe the request alone.
-        scheduleObserve(auditor, params, undefined);
-        return ret;
+        // The provider SDKs return an enhanced `APIPromise` with public helpers like
+        // `.asResponse()` / `.withResponse()`. Replacing it with `ret.then(...)` would strip
+        // those and eagerly parse the body. Instead, return a Proxy over the original object:
+        // every helper passes through untouched, and observation piggybacks on the caller's own
+        // `.then`/`await` — so nothing is consumed until the caller consumes it, exactly once.
+        return tapThenable(ret as PromiseLike<unknown>, (response) =>
+          scheduleObserve(auditor, params, response),
+        );
       };
     },
   });
@@ -109,28 +146,40 @@ export function installFetchInterceptor(options?: AuditorOptions): () => void {
   };
 
   const patched: typeof fetch = async (input, init) => {
-    const response = await original(input, init);
+    // Capture the request body BEFORE the real fetch runs — for the `fetch(new Request(...))`
+    // overload the body lives on the Request, and the real call consumes it, so we must read a
+    // clone first. `init.body` covers the `fetch(url, { body })` overload. Both are exactly the
+    // framework-style calls this interceptor exists to cover.
+    let capture: { provider: (typeof PROVIDER_HOSTS)[number]; bodyText: string } | undefined;
     try {
       const url =
-        typeof input === 'string'
-          ? input
-          : input instanceof URL
-            ? input.href
-            : (input as Request).url;
+        typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
       const provider = PROVIDER_HOSTS.find((h) => h.match.test(url));
-      const body = init?.body;
-      if (provider && typeof body === 'string') {
-        const params = JSON.parse(body);
-        const auditor = auditorFor(provider.adapter.provider, provider.adapter);
+      if (provider) {
+        let bodyText: string | undefined;
+        if (typeof init?.body === 'string') bodyText = init.body;
+        else if (typeof Request !== 'undefined' && input instanceof Request) bodyText = await input.clone().text();
+        if (bodyText) capture = { provider, bodyText };
+      }
+    } catch {
+      // Reading the body must never disturb the real request.
+    }
+
+    const response = await original(input, init);
+
+    if (capture) {
+      try {
+        const params = JSON.parse(capture.bodyText);
+        const auditor = auditorFor(capture.provider.adapter.provider, capture.provider.adapter);
         // Read usage from a clone so the caller's response body stays untouched.
         response
           .clone()
           .json()
           .then((parsed) => scheduleObserve(auditor, params, parsed))
           .catch(() => scheduleObserve(auditor, params, undefined));
+      } catch {
+        // Interception must never disturb the real request.
       }
-    } catch {
-      // Interception must never disturb the real request.
     }
     return response;
   };

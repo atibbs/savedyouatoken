@@ -21,6 +21,16 @@ describe('normaliseModelId', () => {
     expect(normaliseModelId('gpt-4o-2024-08-06').modelId).toBe('gpt-4o');
   });
 
+  it('maps a dotted provider version to the dashed catalogue id', () => {
+    expect(normaliseModelId('gpt-5.5').modelId).toBe('gpt-5-5');
+    expect(normaliseModelId('gpt-4.1').modelId).toBe('gpt-4-1');
+    expect(normaliseModelId('gemini-2.5-pro').modelId).toBe('gemini-2-5-pro');
+  });
+
+  it('maps a dotted version carrying a dated snapshot suffix', () => {
+    expect(normaliseModelId('gpt-5.5-2026-01-15').modelId).toBe('gpt-5-5');
+  });
+
   it('returns null for an unmappable identifier', () => {
     expect(normaliseModelId('totally-made-up-model').modelId).toBeNull();
   });

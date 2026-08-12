@@ -67,4 +67,27 @@ describe('openai adapter', () => {
     expect(captured!.observedOutputTokens).toBe(25);
     expect(captured!.observedCacheReadTokens).toBe(10);
   });
+
+  it('extracts instructions given as an input-item array', () => {
+    const captured = openaiAdapter.extract({
+      model: 'gpt-5',
+      instructions: [
+        { type: 'input_text', text: 'Rule one.' },
+        { type: 'input_text', text: 'Rule two.' },
+      ],
+    });
+    expect(captured!.system).toBe('Rule one.\nRule two.');
+  });
+
+  it('extracts system/developer items carried inside the Responses `input` array', () => {
+    const captured = openaiAdapter.extract({
+      model: 'gpt-5',
+      input: [
+        { role: 'system', content: [{ type: 'input_text', text: 'System rules.' }] },
+        { role: 'developer', content: 'Be terse.' },
+        { role: 'user', content: [{ type: 'input_text', text: 'ignore me' }] },
+      ],
+    });
+    expect(captured!.system).toBe('System rules.\nBe terse.');
+  });
 });
