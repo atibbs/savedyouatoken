@@ -27,6 +27,10 @@ jobs:
       - run: npm run build
       - run: npm run build:cli
       - run: npm run verify:cli
+      # Build the kit archive and verify its contents match kit/ exactly (the source is
+      # scanned for prices/model ids by the guard test above, so a match means the shipped
+      # archive is guard-clean too).
+      - run: npm run build:kit
 
       # The tool auditing itself: the bundled examples must stay analysable and the
       # budget gate must still fail when it should.

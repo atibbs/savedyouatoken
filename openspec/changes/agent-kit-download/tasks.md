@@ -13,13 +13,13 @@
 ## 2. Package + guard
 
 - [x] 2.1 Add a script that packages `kit/` into a distributable archive for upload to Gumroad (`scripts/build-kit.mjs` → `npm run build:kit`)
-- [x] 2.2 Add a guard test that fails if any catalogue model id or price-shaped token appears in the kit — scans the kit **source** (`packages/core/test/kit-guard.test.ts`, runs in `npm test`); the packaging script verifies the archive manifest matches `kit/` exactly, so the archive contains only guard-clean files
+- [x] 2.2 Add a guard test that fails if any catalogue model id or price-shaped token appears in the kit — scans the kit **source** (`packages/core/test/kit-guard.test.ts`, in `npm test`); `npm run build:kit` builds the archive and verifies its **contents byte-for-byte against `kit/`**, and it runs in CI, so the shipped archive is proven guard-clean
 
 ## 3. Site integration
 
 - [x] 3.1 Add the Gumroad product URL to site config as a public value (`KIT_URL`), with an unset → "coming soon" state
-- [x] 3.2 Build a static `/kit` page (what the kit is, what's inside, "name your price", a plain outbound "Get the kit" link, no third-party script) with metadata + canonical for SEO
-- [x] 3.3 Add "Get the kit" CTAs on `/cli` and in the footer (via the `Kit` nav entry), matching the editorial identity
+- [x] 3.2 Build a static `/kit` page (what the kit is, what's inside, "name your price", a plain outbound "Get the kit" link, no third-party script) with metadata + canonical for SEO, and add it to `sitemap.ts`
+- [x] 3.3 Add the `GetTheKit` action on `/cli` and **in the footer** (plus a `Kit` nav entry for discovery), matching the editorial identity
 - [x] 3.4 Ensure the CTA is a plain link (no overlay JS); when the URL is unset it renders the coming-soon state
 
 ## 4. Docs

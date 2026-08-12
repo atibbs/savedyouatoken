@@ -45,10 +45,10 @@ v1. The overlay is a documented, opt-in enhancement scoped to `/kit` only, if we
 guide instruct the agent/developer to run `npx savedyouatoken@latest` against their prompt files
 (including the agent's own `CLAUDE.md`, MCP tool definitions, and skill descriptions) — so every
 figure is produced live. The cheat-sheet covers *patterns*, which are evergreen, and quotes no
-prices. A **guard test** fails if any catalogue model id or price-shaped token appears in the kit —
-run over **both the source and the unpacked distributable archive in CI** (packaging can add
-generated files or ship a stale archive a source-only scan would miss), with the archive's file
-manifest verified against `kit/`.
+prices. A **guard test** (`npm test`) fails if any catalogue model id or price-shaped token appears
+in the kit source. The archive is then built in CI (`npm run build:kit`) and its **contents verified
+byte-for-byte against `kit/`** — so packaging can neither add a file nor alter one without failing,
+and a content match means the shipped archive is as guard-clean as the scanned source.
 
 **Kit authored in-repo, packaged into an archive.** The kit lives under `kit/` (version-controlled,
 reviewable), and a small script produces the archive uploaded to Gumroad. This keeps the product
