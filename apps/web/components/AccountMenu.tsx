@@ -12,6 +12,7 @@ interface Me {
   authenticated: boolean;
   user?: { name: string | null; email: string | null };
   plan: 'free' | 'pro';
+  authConfigured?: boolean;
 }
 
 export function AccountMenu() {
@@ -22,7 +23,7 @@ export function AccountMenu() {
     fetch('/api/me')
       .then((r) => r.json() as Promise<Me>)
       .then((d) => active && setMe(d))
-      .catch(() => active && setMe({ authenticated: false, plan: 'free' }));
+      .catch(() => active && setMe({ authenticated: false, plan: 'free', authConfigured: false }));
     return () => {
       active = false;
     };
@@ -30,6 +31,9 @@ export function AccountMenu() {
 
   // Reserve nothing until we know — avoids a sign-in/name flash on load.
   if (!me) return null;
+
+  // On the free, static deployment there is no sign-in — show no account control at all.
+  if (!me.authenticated && me.authConfigured === false) return null;
 
   if (!me.authenticated) {
     return (

@@ -36,6 +36,13 @@ if (allowDevLogin) {
   );
 }
 
+/**
+ * Whether any sign-in method is configured. When false, the app runs purely as the free,
+ * static tool and must not invoke the auth machinery — Auth.js requires AUTH_SECRET in
+ * production and would otherwise throw on every request that reads the session.
+ */
+export const authConfigured = providers.length > 0;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
   session: { strategy: 'jwt' },
