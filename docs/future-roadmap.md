@@ -116,11 +116,12 @@ it. Pro history is a deliberate, explicit, paid exception a customer chooses.
 near-duplicates. It would inflate the indexable page count and poison the domain's quality signal.
 The comparison table on the analyser does the job better because it uses the reader's own prompt.
 
-**Selling the agent skill as a paid downloadable asset.** Considered at the owner's suggestion and
-rejected on three grounds: a skill is a folder of text and scripts with no enforceable licence, paid
-skill distribution is an unproven channel, and — decisively — a frozen download would quote a stale
-price table with confidence, which is worse than shipping no tool. The skill is built and given away
-instead. Full reasoning in `docs/decisions.md`.
+**Selling the agent skill as a paid downloadable asset — reversed.** Originally excluded on three
+grounds: an unenforceable licence, an unproven channel, and — decisively — a frozen download quoting
+a stale price table with confidence. Now shipped as the **cost-aware agent kit**, sold
+pay-what-you-want via Gumroad: the launcher-not-snapshot design (it runs the live CLI, embeds no
+prices, enforced by a guard test) dissolves the stale-price objection, and pay-what-you-want makes
+enforceability moot. See `docs/decisions.md` ("Sell a pay-what-you-want agent kit") and `/kit`.
 
 **Display advertising.** Ad-network revenue on a developer tool is pennies per thousand views and
 costs the trust the product runs on. A single disclosed sponsor is acceptable; an ad network is not.

@@ -5,6 +5,7 @@ import { PRICES_VERIFIED_ON } from '@savedyouatoken/core';
 import { NAV, SITE_NAME, SITE_URL, TAGLINE } from '@/lib/site';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AccountMenu } from '@/components/AccountMenu';
+import { GetTheKit } from '@/components/GetTheKit';
 import './globals.css';
 
 /* Fonts are vendored into app/fonts (latin subset) and self-hosted, so the build is
@@ -117,9 +118,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   ))}
                 </nav>
               </div>
-              <p className="max-w-xs text-right font-serif text-[22px] italic leading-snug sm:text-[24px]">
-                Every word should earn its place.
-              </p>
+              <div className="flex flex-col items-start gap-4 sm:items-end">
+                <p className="max-w-xs font-serif text-[22px] italic leading-snug sm:text-right sm:text-[24px]">
+                  Every word should earn its place.
+                </p>
+                <GetTheKit tone="onOrange" />
+              </div>
             </div>
             <p className="mt-12 border-t-[1.5px] border-[#171713] pt-6 font-mono text-[11px] leading-relaxed text-[#171713]/80">
               Prices maintained by hand and last verified {PRICES_VERIFIED_ON}. Token counts for
