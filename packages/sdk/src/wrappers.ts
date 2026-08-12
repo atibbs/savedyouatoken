@@ -23,12 +23,20 @@ function scheduleObserve(auditor: Auditor, params: unknown, response: unknown): 
   });
 }
 
+type Fn = (...args: unknown[]) => unknown;
+
 /**
- * Return a Proxy over a thenable that behaves identically — every property, including provider
- * helpers such as `.asResponse()` / `.withResponse()`, passes straight through — except that
- * `then` is wrapped to invoke `onResolved(value)` exactly once when the caller resolves it. It
- * never resolves the thenable itself, so the response body is not consumed until the caller
- * consumes it, and the caller keeps the original enhanced object's full surface.
+ * Return a Proxy over a thenable that behaves identically — every property passes straight
+ * through, and the caller keeps the original enhanced object's full surface — while invoking
+ * `onResolved(value)` exactly once, whichever way the caller consumes it. It never resolves the
+ * thenable itself, so nothing is consumed until the caller consumes it.
+ *
+ * The provider SDKs consume through private internals (`parse()` / `responsePromise`), not their
+ * public `then`, so every consumption path has to be tapped, not just `then`:
+ *  - `then` / `catch` / `finally` route through a wrapped `then` that taps the resolved value;
+ *  - `withResponse()` taps the parsed `.data` (which carries usage);
+ *  - `asResponse()` returns the raw, unparsed response — so it taps the *request alone* and
+ *    never touches the body.
  */
 function tapThenable<T extends PromiseLike<unknown>>(thenable: T, onResolved: (value: unknown) => void): T {
   let tapped = false;
@@ -37,21 +45,58 @@ function tapThenable<T extends PromiseLike<unknown>>(thenable: T, onResolved: (v
     tapped = true;
     onResolved(value);
   };
+
+  const wrappedThen = (
+    onFulfilled?: ((v: unknown) => unknown) | null,
+    onRejected?: ((r: unknown) => unknown) | null,
+  ) =>
+    (thenable as PromiseLike<unknown>).then((value) => {
+      tapOnce(value);
+      return onFulfilled ? onFulfilled(value) : value;
+    }, onRejected ?? undefined);
+
   return new Proxy(thenable, {
     get(obj, prop, receiver) {
-      if (prop === 'then') {
-        return function then(
-          onFulfilled?: ((v: unknown) => unknown) | null,
-          onRejected?: ((r: unknown) => unknown) | null,
-        ) {
-          return (obj as PromiseLike<unknown>).then((value) => {
-            tapOnce(value);
-            return onFulfilled ? onFulfilled(value) : value;
-          }, onRejected);
-        };
+      switch (prop) {
+        case 'then':
+          return wrappedThen;
+        case 'catch':
+          return (onRejected?: ((r: unknown) => unknown) | null) => wrappedThen(undefined, onRejected);
+        case 'finally':
+          return (onFinally?: (() => void) | null) =>
+            wrappedThen(
+              (v) => {
+                if (onFinally) onFinally();
+                return v;
+              },
+              (r) => {
+                if (onFinally) onFinally();
+                throw r;
+              },
+            );
+        case 'withResponse': {
+          const fn = Reflect.get(obj, prop, receiver);
+          if (typeof fn !== 'function') return fn;
+          return (...args: unknown[]) =>
+            Promise.resolve((fn as Fn).apply(obj, args)).then((result) => {
+              tapOnce((result as { data?: unknown } | undefined)?.data);
+              return result;
+            });
+        }
+        case 'asResponse': {
+          const fn = Reflect.get(obj, prop, receiver);
+          if (typeof fn !== 'function') return fn;
+          return (...args: unknown[]) =>
+            Promise.resolve((fn as Fn).apply(obj, args)).then((rawResponse) => {
+              tapOnce(undefined); // raw response: observe the request alone, never read the body
+              return rawResponse;
+            });
+        }
+        default: {
+          const value = Reflect.get(obj, prop, receiver);
+          return typeof value === 'function' ? value.bind(obj) : value;
+        }
       }
-      const value = Reflect.get(obj, prop, receiver);
-      return typeof value === 'function' ? value.bind(obj) : value;
     },
   });
 }
@@ -146,19 +191,20 @@ export function installFetchInterceptor(options?: AuditorOptions): () => void {
   };
 
   const patched: typeof fetch = async (input, init) => {
-    // Capture the request body BEFORE the real fetch runs — for the `fetch(new Request(...))`
-    // overload the body lives on the Request, and the real call consumes it, so we must read a
-    // clone first. `init.body` covers the `fetch(url, { body })` overload. Both are exactly the
-    // framework-style calls this interceptor exists to cover.
-    let capture: { provider: (typeof PROVIDER_HOSTS)[number]; bodyText: string } | undefined;
+    // Kick off body capture WITHOUT awaiting it, then dispatch the real request immediately —
+    // adding latency to the real call would break the zero-added-latency contract, and matters
+    // most for a large or streamed body. For the `fetch(new Request(...))` overload the body
+    // lives on the Request and the real call consumes it, so we clone *now* (synchronous) and
+    // read the clone concurrently; the read is awaited only after the response returns.
+    let capture: { provider: (typeof PROVIDER_HOSTS)[number]; bodyText: Promise<string> } | undefined;
     try {
       const url =
         typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
       const provider = PROVIDER_HOSTS.find((h) => h.match.test(url));
       if (provider) {
-        let bodyText: string | undefined;
-        if (typeof init?.body === 'string') bodyText = init.body;
-        else if (typeof Request !== 'undefined' && input instanceof Request) bodyText = await input.clone().text();
+        let bodyText: Promise<string> | undefined;
+        if (typeof init?.body === 'string') bodyText = Promise.resolve(init.body);
+        else if (typeof Request !== 'undefined' && input instanceof Request) bodyText = input.clone().text();
         if (bodyText) capture = { provider, bodyText };
       }
     } catch {
@@ -168,18 +214,15 @@ export function installFetchInterceptor(options?: AuditorOptions): () => void {
     const response = await original(input, init);
 
     if (capture) {
-      try {
-        const params = JSON.parse(capture.bodyText);
-        const auditor = auditorFor(capture.provider.adapter.provider, capture.provider.adapter);
-        // Read usage from a clone so the caller's response body stays untouched.
-        response
-          .clone()
-          .json()
-          .then((parsed) => scheduleObserve(auditor, params, parsed))
-          .catch(() => scheduleObserve(auditor, params, undefined));
-      } catch {
-        // Interception must never disturb the real request.
-      }
+      const { provider, bodyText } = capture;
+      const auditor = auditorFor(provider.adapter.provider, provider.adapter);
+      // Combine the (already in-flight) body read with a clone of the response, off the hot
+      // path. The caller's response is returned below untouched, before any of this resolves.
+      Promise.all([bodyText, response.clone().json().catch(() => undefined)])
+        .then(([body, parsed]) => scheduleObserve(auditor, JSON.parse(body), parsed))
+        .catch(() => {
+          // A malformed body or a failed read must never surface to the caller.
+        });
     }
     return response;
   };

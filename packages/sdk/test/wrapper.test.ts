@@ -61,43 +61,70 @@ describe('non-intrusive capture', () => {
 });
 
 describe('preserves the provider APIPromise', () => {
-  it('keeps .asResponse()/.withResponse() and does not consume the body until the caller does', async () => {
-    const realResponse = { id: 'resp_1', usage: { output_tokens: 12 } };
-    let bodyParsed = false;
+  const realResponse = { id: 'resp_1', usage: { output_tokens: 12 } };
 
-    // An APIPromise-like thenable: `then` is what triggers body parsing; the helpers do not.
-    function makeApiPromise() {
-      return {
-        then(onFulfilled?: ((v: unknown) => unknown) | null, onRejected?: ((r: unknown) => unknown) | null) {
-          bodyParsed = true;
-          return Promise.resolve(realResponse).then(onFulfilled ?? undefined, onRejected ?? undefined);
-        },
-        asResponse: () => 'RAW_RESPONSE',
-        withResponse: async () => ({ data: realResponse, response: 'RAW_RESPONSE' }),
-      };
-    }
+  // An APIPromise-like thenable. `then` and `withResponse` trigger a "parse"; `asResponse`
+  // returns the raw response and parses nothing — mirroring the real OpenAI/Anthropic clients,
+  // which consume through private internals, not the public `then`.
+  function makeApiPromise(state: { parsed: boolean }) {
+    return {
+      then(onFulfilled?: ((v: unknown) => unknown) | null, onRejected?: ((r: unknown) => unknown) | null) {
+        state.parsed = true;
+        return Promise.resolve(realResponse).then(onFulfilled ?? undefined, onRejected ?? undefined);
+      },
+      asResponse() {
+        return Promise.resolve('RAW_RESPONSE');
+      },
+      withResponse() {
+        state.parsed = true;
+        return Promise.resolve({ data: realResponse, response: 'RAW_RESPONSE' });
+      },
+    };
+  }
 
-    const client = { responses: { create: (_params: unknown) => makeApiPromise() } };
+  function wrappedClient() {
+    const state = { parsed: false };
+    const client = { responses: { create: (_params: unknown) => makeApiPromise(state) } };
     const { events, sink } = collectingSink();
-    const wrapped = wrapOpenAI(client, { ...base, sink });
+    // No workload override here, so measured output length flows through from the response usage.
+    const wrapped = wrapOpenAI(client, { counter: testCounter(), sink });
+    return { wrapped, events, state };
+  }
 
+  it('keeps the enhanced surface and consumes nothing until the caller does', async () => {
+    const { wrapped, state } = wrappedClient();
     const ret = wrapped.responses.create({ model: 'gpt-5', instructions: 'be terse' }) as ReturnType<
       typeof makeApiPromise
     >;
-
-    // The enhanced surface survives instrumentation…
     expect(typeof ret.asResponse).toBe('function');
     expect(typeof ret.withResponse).toBe('function');
-    expect(ret.asResponse()).toBe('RAW_RESPONSE');
-    // …and nothing was consumed just by creating or calling a raw helper.
-    expect(bodyParsed).toBe(false);
+    expect(state.parsed).toBe(false); // creating the call parses nothing
+    expect(await ret).toBe(realResponse);
+    expect(state.parsed).toBe(true);
+  });
 
-    const data = await ret;
-    expect(data).toBe(realResponse);
-    expect(bodyParsed).toBe(true);
-
+  it('observes via .withResponse() even when ret is never awaited', async () => {
+    const { wrapped, events } = wrappedClient();
+    // Consume ONLY through the helper — never `await ret`.
+    const wr = await wrapped.responses
+      .create({ model: 'gpt-5', instructions: 'be terse' })
+      .withResponse();
+    expect(wr.data).toBe(realResponse);
     await flushMacrotasks();
-    expect(events.some((e: AuditEvent) => e.kind === 'analysis')).toBe(true);
+    const analyses = events.filter((e: AuditEvent) => e.kind === 'analysis');
+    expect(analyses).toHaveLength(1);
+    // Usage from the parsed `.data` flows through (measured output length, not a default).
+    if (analyses[0]!.kind === 'analysis') {
+      expect(analyses[0]!.report.workload.outputTokens).toBe(12);
+    }
+  });
+
+  it('observes the request alone via .asResponse(), without reading the raw body', async () => {
+    const { wrapped, events } = wrappedClient();
+    const raw = await wrapped.responses.create({ model: 'gpt-5', instructions: 'be terse' }).asResponse();
+    expect(raw).toBe('RAW_RESPONSE');
+    await flushMacrotasks();
+    expect(events.filter((e: AuditEvent) => e.kind === 'analysis')).toHaveLength(1);
   });
 });
 

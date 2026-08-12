@@ -12,6 +12,7 @@
     "build": "npm run build --workspace @savedyouatoken/web",
     "build:cli": "npm run build --workspace savedyouatoken",
     "build:sdk": "npm run build --workspace @savedyouatoken/sdk",
+    "verify:sdk-types": "node packages/sdk/scripts/verify-packed-types.mjs",
     "start": "npm run start --workspace @savedyouatoken/web",
     "test": "npm run test --workspace @savedyouatoken/core && npm run test --workspace @savedyouatoken/sdk",
     "typecheck": "npm run typecheck --workspaces --if-present",

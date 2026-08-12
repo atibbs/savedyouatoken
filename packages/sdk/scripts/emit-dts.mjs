@@ -54,30 +54,48 @@ run([
   coreOut,
 ]);
 
-// 3. Rewrite the core specifier in every SDK .d.ts (outside dist/_core) to the local copy.
+// 3. Rewrite every SDK/core .d.ts so the published declarations are self-contained AND resolve
+//    under `moduleResolution: NodeNext`. Two rewrites per file:
+//    (a) the bare '@savedyouatoken/core' specifier → a relative path into the inlined dist/_core;
+//    (b) extensionless relative specifiers (`./x`, `../x/y`) → `.js`, which NodeNext requires in
+//        an ESM package (tsc emits them extensionless from our extensionless source).
 const coreIndex = join(coreOut, 'index');
 let rewritten = 0;
+
+/** Append `.js` to relative import/export specifiers that lack an extension. */
+function withJsExtensions(content) {
+  const addJs = (spec) => (/\.(js|json|d\.ts)$/.test(spec) ? spec : `${spec}.js`);
+  return content
+    // `import ... from './x'`, `export ... from './x'`, `export * from './x'`
+    .replaceAll(/(\bfrom\s*)(['"])(\.\.?\/[^'"]*)\2/g, (_m, from, q, spec) => `${from}${q}${addJs(spec)}${q}`)
+    // dynamic `import('./x')`
+    .replaceAll(/(\bimport\s*\(\s*)(['"])(\.\.?\/[^'"]*)\2/g, (_m, imp, q, spec) => `${imp}${q}${addJs(spec)}${q}`);
+}
 
 function walk(dir) {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
-      if (full === coreOut) continue; // Leave the bundled core copy untouched.
       walk(full);
       continue;
     }
     if (!full.endsWith('.d.ts')) continue;
     const before = readFileSync(full, 'utf8');
-    if (!before.includes('@savedyouatoken/core')) continue;
-    let rel = relative(dirname(full), coreIndex).split(sep).join('/');
-    if (!rel.startsWith('.')) rel = './' + rel;
-    const after = before.replaceAll(/(['"])@savedyouatoken\/core\1/g, `'${rel}'`);
-    if (after !== before) {
-      writeFileSync(full, after, 'utf8');
+
+    let content = before;
+    if (content.includes('@savedyouatoken/core')) {
+      let rel = relative(dirname(full), coreIndex).split(sep).join('/');
+      if (!rel.startsWith('.')) rel = './' + rel;
+      content = content.replaceAll(/(['"])@savedyouatoken\/core\1/g, `'${rel}'`);
+    }
+    content = withJsExtensions(content);
+
+    if (content !== before) {
+      writeFileSync(full, content, 'utf8');
       rewritten++;
     }
   }
 }
 
 walk(dist);
-console.log(`emit-dts: rewrote core import in ${rewritten} declaration file(s) → dist/_core`);
+console.log(`emit-dts: rewrote ${rewritten} declaration file(s) (core inline + NodeNext .js specifiers)`);
