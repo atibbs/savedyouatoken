@@ -8,18 +8,18 @@
 ## 2. Release automation (coupled to the merge, verified, single OIDC publish)
 
 - [x] 2.1 Add `.github/workflows/release.yml` on **push to `main`**, gated by `scripts/release-gate.mjs` — release only when the CLI version is absent from npm and semver-greater than `latest` (idempotent + monotonic)
-- [x] 2.2 On release: build, verify (group 4), then **publish once directly to `latest`** via **OIDC trusted publishing** + provenance — no candidate dist-tag, no stored `NPM_TOKEN`
+- [x] 2.2 On release: build, **pack once**, verify that tarball (group 4), then **publish that same tarball once directly to `latest`** via **OIDC trusted publishing** + provenance — verified == published, no candidate dist-tag, no stored `NPM_TOKEN`
 - [x] 2.3 Document the one-time bootstrap: the first publish uses a short-lived token but follows the same verify-first flow; then configure the repo/workflow as a trusted publisher and revoke the token
 
 ## 3. Staleness guard
 
-- [x] 3.1 Add a CI check that fails a change which modifies the pricing catalogue (keyed on `PRICES_VERIFIED_ON` or a hash of the price data) without a corresponding CLI version bump
+- [x] 3.1 Add a CI check that fails a change which modifies the pricing catalogue without a **semver increase** of the CLI version over the base branch (a downgrade or reused version also fails); share the `gt()` ordering with the release gate (`scripts/semver.mjs`)
 - [x] 3.2 Wire the guard into the existing `ci.yml` so it runs on every pull request
 
 ## 4. Verify before publishing (through the installed command)
 
-- [x] 4.1 Verify the packaged CLI through npm's installed `savedyouatoken` **shim** — assert the reported version and run **one real audit** — not by invoking `dist/index.js` directly (`scripts/verify-packed-cli.mjs`, also run in PR CI)
-- [x] 4.2 Publish only if verification passes; on failure nothing is published and `latest` is unchanged
+- [x] 4.1 Verify the **packed tarball** (the exact one that will be published) through npm's installed `savedyouatoken` **shim** — assert the reported version and run **one real audit** — not by invoking `dist/index.js` directly (`scripts/verify-packed-cli.mjs`, which accepts a tarball path; also run in PR CI on a freshly packed tarball)
+- [x] 4.2 Publish that same tarball only if verification passes; on failure nothing is published and `latest` is unchanged
 
 ## 5. First release + verify (operator — needs an npm account; see `packages/cli/RELEASING.md`)
 

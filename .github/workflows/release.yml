@@ -47,14 +47,20 @@ jobs:
         if: steps.gate.outputs.release == 'true'
         run: npm run build:cli
 
-      # Verify the exact built artifact through the installed shim (version + a real audit)
-      # before it is ever published.
-      - name: Verify the packaged CLI
+      # Pack once. Verification and publish then use the SAME tarball, so the bytes published
+      # are exactly the bytes verified — not a second rebuild.
+      - name: Pack
+        id: pack
         if: steps.gate.outputs.release == 'true'
-        run: npm run verify:cli
+        run: |
+          TARBALL=$(npm pack --workspace savedyouatoken --pack-destination "$RUNNER_TEMP" --silent | tail -1)
+          echo "tarball=$RUNNER_TEMP/$TARBALL" >> "$GITHUB_OUTPUT"
 
-      # Single publish, straight to `latest`, authenticated via OIDC. The bytes published are
-      # the same deterministic build that was just verified.
-      - name: Publish
+      - name: Verify the packed tarball (installed shim + real audit)
         if: steps.gate.outputs.release == 'true'
-        run: npm publish --workspace savedyouatoken --provenance --access public
+        run: node scripts/verify-packed-cli.mjs "${{ steps.pack.outputs.tarball }}"
+
+      # Publish that exact tarball, straight to `latest`, authenticated via OIDC.
+      - name: Publish the verified tarball
+        if: steps.gate.outputs.release == 'true'
+        run: npm publish "${{ steps.pack.outputs.tarball }}" --provenance --access public

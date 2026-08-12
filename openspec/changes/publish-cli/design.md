@@ -26,10 +26,13 @@ build. Alternative (publishing hand-built artifacts) risks shipping a stale `dis
 
 **Tie the version to the catalogue via a CI guard.** The staleness risk is structural: the CLI embeds
 prices, so `@latest` is only current if republished on price changes. A CI check compares the pricing
-catalogue (or its `PRICES_VERIFIED_ON` marker) against the CLI's version and **fails a PR that changes
-the catalogue without bumping the version**. The guard is *necessary but not sufficient* — it only
-guarantees a merged price change carries a bump; the push-triggered publish below is what turns that
-bump into a shipped release. Alternatives: auto-bumping on any core change (bumps on non-price edits),
+catalogue against the CLI's version and **fails a PR that changes the catalogue without a semver
+increase of the version over the base branch** — an unchanged, lowered, or reused version all fail,
+because any of them would merge to main with new prices while npm `latest` stays stale. The guard
+shares the same `gt()` ordering as the release gate (`scripts/semver.mjs`), and is *necessary but not
+sufficient* — it guarantees a merged price change carries an increase; the push-triggered publish
+below turns that into a shipped release. The gate re-checks monotonicity post-merge as defence in
+depth. Alternatives: auto-bumping on any core change (bumps on non-price edits),
 or trusting discipline (the failure mode the review caught).
 
 **Publish is coupled to the merge, verified up front, and published once to `latest` via OIDC.** The
@@ -40,8 +43,9 @@ rerun after a partial failure is a no-op rather than a failed republish of an im
 downgrade is rejected. It then builds, **verifies the packaged artifact through the installed
 `savedyouatoken` shim** (see the next decision), and **publishes once, directly to `latest`, via
 GitHub Actions trusted publishing (OIDC)** with automatic provenance — no stored token, and no
-dist-tag promotion. Because `npm pack` is deterministic, the bytes published are the same build that
-was just verified.
+dist-tag promotion. It **packs the tarball once**, then verifies and publishes that *same* tarball
+(`npm publish <tarball>`), so "verified == published" is mechanical rather than a bet on build
+determinism.
 
 Rejected: a candidate dist-tag + `npm dist-tag add` promotion — dist-tag writes are **not** covered by
 OIDC trusted publishing, so it would reintroduce a stored token; publishing to `latest` *without* the

@@ -28,13 +28,15 @@ repository's current catalogue.
 - **WHEN** the published `latest` version and the repository's current catalogue are compared
 - **THEN** the published catalogue is not older than the repository's
 
-### Requirement: A price change cannot merge without a release
-CI SHALL fail when the pricing catalogue changes without a corresponding version bump, so a catalogue
-edit cannot reach `latest`-eligible state without triggering a publish.
+### Requirement: A price change cannot merge without a version increase
+CI SHALL fail when the pricing catalogue changes without a **semver increase** of the CLI version over
+the base branch, so a catalogue edit cannot merge with an unchanged, reused, or lowered version — any
+of which would leave npm `latest` stale after merge.
 
-#### Scenario: Catalogue changed but version not bumped
-- **WHEN** a change modifies the pricing catalogue but does not bump the CLI's published version
-- **THEN** CI fails and reports the missing version bump
+#### Scenario: Catalogue changed without a version increase
+- **WHEN** a change modifies the pricing catalogue but does not raise the CLI version above the base
+  branch's version (unchanged, lowered, or set to an already-published version)
+- **THEN** CI fails and reports that a version increase is required
 
 ### Requirement: Releases are verified before they become `latest`
 A build SHALL be verified **through its installed command** — the `savedyouatoken` executable, not a
@@ -51,6 +53,11 @@ the version it reports and one real audit.
 #### Scenario: A broken build is never published
 - **WHEN** verification fails
 - **THEN** nothing is published and `latest` continues to point at the previous good version
+
+#### Scenario: The published artifact is the one that was verified
+- **WHEN** a release publishes
+- **THEN** the exact packaged artifact that was verified is the one published, not a separately
+  rebuilt or re-packaged one
 
 ### Requirement: Releases are idempotent and monotonic
 A release SHALL be skipped when its version is already published, so that rerunning after a partial

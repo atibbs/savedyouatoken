@@ -12,6 +12,7 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { gt } from './semver.mjs';
 
 const PKG = 'savedyouatoken';
 const cliDir = fileURLToPath(new URL('../packages/cli/', import.meta.url));
@@ -28,16 +29,6 @@ function npmView(args) {
 const versionsRaw = npmView(['versions', '--json']);
 const published = versionsRaw ? [].concat(JSON.parse(versionsRaw)) : [];
 const latest = npmView(['version']); // the current `latest` dist-tag, or null
-
-// Simple numeric semver compare (releases use plain x.y.z, no prerelease tags).
-function gt(a, b) {
-  const pa = a.split('.').map(Number);
-  const pb = b.split('.').map(Number);
-  for (let i = 0; i < 3; i++) {
-    if ((pa[i] ?? 0) !== (pb[i] ?? 0)) return (pa[i] ?? 0) > (pb[i] ?? 0);
-  }
-  return false;
-}
 
 function emit(release) {
   const out = `release=${release}\nversion=${local}\n`;

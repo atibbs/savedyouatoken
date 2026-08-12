@@ -28,15 +28,17 @@ tarball and asserts it through the shim, running one real audit as well.
 Trusted publishing cannot be configured until the package exists, so the **first** publish uses a
 short-lived token — but it follows the same verify-first flow, never a plain publish.
 
-1. **Verify, then first-publish.** From a clean checkout, with a short-lived npm **automation
-   token** (or `npm login`):
+1. **Pack once, verify, then publish that tarball.** From a clean checkout, with a short-lived
+   npm **automation token** (or `npm login`):
    ```bash
    npm ci
    npm run build:cli
-   npm run verify:cli            # installs the packed tarball, runs the shim + a real audit
-   npm publish --workspace savedyouatoken --provenance --access public
+   TARBALL=$(npm pack --workspace savedyouatoken --silent | tail -1)
+   node scripts/verify-packed-cli.mjs "$TARBALL"   # installs & runs the shim + a real audit
+   npm publish "$TARBALL" --provenance --access public
    ```
-   This claims the `savedyouatoken` name and publishes the verified `0.x` directly to `latest`.
+   Verifying and publishing the same tarball guarantees the published bytes are exactly the ones
+   verified. This claims the `savedyouatoken` name and publishes the verified `0.x` to `latest`.
 2. **Configure trusted publishing.** On npmjs.com → the package → *Settings → Trusted Publisher*,
    add this GitHub repository and the `Release CLI` workflow (`.github/workflows/release.yml`).
 3. **Revoke the bootstrap token.** From then on the workflow publishes via OIDC with no stored

@@ -9,6 +9,7 @@
 //
 // Usage (CI, on pull_request):  BASE_REF=origin/main node scripts/guard-cli-release.mjs
 import { execFileSync } from 'node:child_process';
+import { gt } from './semver.mjs';
 
 const CATALOGUE = 'packages/core/src/models.ts';
 const CLI_PKG = 'packages/cli/package.json';
@@ -32,12 +33,13 @@ if (!changed.includes(CATALOGUE)) {
 const headVersion = JSON.parse(git(['show', `HEAD:${CLI_PKG}`])).version;
 const baseVersion = JSON.parse(git(['show', `${base}:${CLI_PKG}`])).version;
 
-if (headVersion === baseVersion) {
+if (!gt(headVersion, baseVersion)) {
   console.error(
-    `✗ ${CATALOGUE} changed but ${CLI_PKG} version is still ${headVersion}.\n` +
-      `  Bump the CLI version so the catalogue change ships to npm as a new "latest".`,
+    `✗ ${CATALOGUE} changed but ${CLI_PKG} version did not increase (base ${baseVersion} → ${headVersion}).\n` +
+      `  Raise the CLI version above ${baseVersion} so the catalogue change ships to npm as a new "latest".\n` +
+      `  (A downgrade or a reused version would pass to main and leave npm "latest" stale.)`,
   );
   process.exit(1);
 }
 
-console.log(`✓ catalogue changed and CLI version bumped ${baseVersion} → ${headVersion}.`);
+console.log(`✓ catalogue changed and CLI version increased ${baseVersion} → ${headVersion}.`);
