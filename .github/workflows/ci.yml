@@ -10,15 +10,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the release guard diffs the PR against its base
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
       - run: npm ci
+      - name: CLI release staleness guard
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags origin "${{ github.event.pull_request.base.ref }}"
+          BASE_REF="origin/${{ github.event.pull_request.base.ref }}" npm run guard:cli-release
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
       - run: npm run build:cli
+      - run: npm run verify:cli
 
       # The tool auditing itself: the bundled examples must stay analysable and the
       # budget gate must still fail when it should.

@@ -1,0 +1,66 @@
+name: Release CLI
+
+# Publication is coupled to the merge: on every push to main, if the CLI's version is a new,
+# higher version than what is on npm, it is verified and published. A merged version bump
+# (which the CI staleness guard forces whenever the pricing catalogue changes) therefore
+# ships automatically — no manual tag.
+#
+# The exact built artifact is verified through npm's installed `savedyouatoken` shim (version
+# + a real audit) BEFORE it is published, and it is published in a single step directly to
+# `latest` via OIDC trusted publishing (no stored token, no dist-tag promotion). A build that
+# fails verification is never published, so `latest` is never broken.
+#
+# The gate is idempotent (an already-published version is skipped, so a rerun after a partial
+# failure does not try to republish an immutable version) and monotonic (the version must be
+# semver-greater than the current `latest`).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/cli/**'
+      - 'packages/core/**'
+
+concurrency: release-cli
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # OIDC — npm trusted publishing + automatic provenance, no stored token
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+      # Trusted publishing (OIDC) needs a recent npm.
+      - run: npm install -g npm@latest
+      - run: npm ci
+
+      - name: Release gate (idempotent + monotonic)
+        id: gate
+        run: node scripts/release-gate.mjs
+
+      - name: Build
+        if: steps.gate.outputs.release == 'true'
+        run: npm run build:cli
+
+      # Pack once. Verification and publish then use the SAME tarball, so the bytes published
+      # are exactly the bytes verified — not a second rebuild.
+      - name: Pack
+        id: pack
+        if: steps.gate.outputs.release == 'true'
+        run: |
+          TARBALL=$(npm pack --workspace savedyouatoken --pack-destination "$RUNNER_TEMP" --silent | tail -1)
+          echo "tarball=$RUNNER_TEMP/$TARBALL" >> "$GITHUB_OUTPUT"
+
+      - name: Verify the packed tarball (installed shim + real audit)
+        if: steps.gate.outputs.release == 'true'
+        run: node scripts/verify-packed-cli.mjs "${{ steps.pack.outputs.tarball }}"
+
+      # Publish that exact tarball, straight to `latest`, authenticated via OIDC.
+      - name: Publish the verified tarball
+        if: steps.gate.outputs.release == 'true'
+        run: npm publish "${{ steps.pack.outputs.tarball }}" --provenance --access public

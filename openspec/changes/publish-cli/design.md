@@ -10,7 +10,7 @@ has only `ci.yml` (typecheck/test/build); there is no release path or `NPM_TOKEN
 **Goals:**
 - `npx savedyouatoken@latest` resolves, runs, and never quotes prices older than the repo catalogue.
 - A price edit cannot merge without triggering a release (no silent staleness).
-- Releases are proven by running the actual published artifact.
+- Releases are proven by running the installed command on the exact build before it becomes `latest`.
 
 **Non-Goals:**
 - Publishing `packages/core` as its own npm package (it ships as source, bundled into the CLI).
@@ -26,29 +26,39 @@ build. Alternative (publishing hand-built artifacts) risks shipping a stale `dis
 
 **Tie the version to the catalogue via a CI guard.** The staleness risk is structural: the CLI embeds
 prices, so `@latest` is only current if republished on price changes. A CI check compares the pricing
-catalogue (or its `PRICES_VERIFIED_ON` marker) against the CLI's version and **fails a PR that changes
-the catalogue without bumping the version**. The guard is *necessary but not sufficient* — it only
-guarantees a merged price change carries a bump; the push-triggered publish below is what turns that
-bump into a shipped release. Alternatives: auto-bumping on any core change (bumps on non-price edits),
+catalogue against the CLI's version and **fails a PR that changes the catalogue without a semver
+increase of the version over the base branch** — an unchanged, lowered, or reused version all fail,
+because any of them would merge to main with new prices while npm `latest` stays stale. The guard
+shares the same `gt()` ordering as the release gate (`scripts/semver.mjs`), and is *necessary but not
+sufficient* — it guarantees a merged price change carries an increase; the push-triggered publish
+below turns that into a shipped release. The gate re-checks monotonicity post-merge as defence in
+depth. Alternatives: auto-bumping on any core change (bumps on non-price edits),
 or trusting discipline (the failure mode the review caught).
 
-**Publish is coupled to the merge, staged behind verification, and uses OIDC — not a manual tag or a
-stored token.** The release runs on **push to `main`**: when `packages/cli`'s version is ahead of the
-version currently on npm, the workflow publishes. A merged price bump therefore *mechanically*
-produces a release, rather than waiting for someone to cut a tag — a bumped `package.json` that never
-ships would otherwise leave `latest` stale (the finding). It publishes to a **candidate dist-tag**
-(e.g. `rc`) first, never straight to `latest`. Authentication is **GitHub Actions trusted publishing
-(OIDC, `id-token: write`)**, which needs no long-lived `NPM_TOKEN` and emits provenance automatically;
-a one-time bootstrap token claims the name and configures the trusted publisher, then is revoked.
-Rejected: publish-on-tag (decouples merge from release), publish-straight-to-`latest` (exposes a
-broken build before verification), and a stored write token (an avoidable long-lived credential).
+**Publish is coupled to the merge, verified up front, and published once to `latest` via OIDC.** The
+release runs on **push to `main`**, gated by an idempotent, monotonic check
+(`scripts/release-gate.mjs`): it releases only when the CLI version is absent from npm *and*
+semver-greater than the current `latest`. So a merged price bump mechanically produces a release; a
+rerun after a partial failure is a no-op rather than a failed republish of an immutable version; and a
+downgrade is rejected. It then builds, **verifies the packaged artifact through the installed
+`savedyouatoken` shim** (see the next decision), and **publishes once, directly to `latest`, via
+GitHub Actions trusted publishing (OIDC)** with automatic provenance — no stored token, and no
+dist-tag promotion. It **packs the tarball once**, then verifies and publishes that *same* tarball
+(`npm publish <tarball>`), so "verified == published" is mechanical rather than a bet on build
+determinism.
 
-**Verify the registry candidate, then promote to `latest`.** After the candidate is published, a
-clean job (no repo on PATH) installs `savedyouatoken@<candidate>` from npm and asserts it runs and
-reports the published version. Only on success does the workflow promote that version to `latest`
-(`npm dist-tag add`). A packaging bug — missing `bin`/`files`, a broken bundle, or a mismatched
-version — thus fails the release **without ever exposing a broken `latest`**, which is what "verified
-before trusted" actually requires. A local `npm test` never catches this class of bug.
+Rejected: a candidate dist-tag + `npm dist-tag add` promotion — dist-tag writes are **not** covered by
+OIDC trusted publishing, so it would reintroduce a stored token; publishing to `latest` *without* the
+up-front verification (the earlier failure mode); and gating only on `latest` (non-idempotent — a
+rerun would retry an immutable version). The one residual concession vs. verifying the registry copy:
+we verify the identical local build, which `npm publish` then uploads.
+
+**Verify through the installed command, not a raw file.** Verification installs the packed tarball
+into a clean project and runs npm's generated `savedyouatoken` **shim** — `--version` (asserting the
+injected version) *and one real audit* — rather than invoking `dist/index.js` directly. Invoking the
+file would pass even with a missing or wrong `bin` entry while the documented `npx savedyouatoken`
+path fails; only exercising the shim catches that. This is the same `scripts/verify-packed-cli.mjs`
+run in CI on every PR and in the release before publishing.
 
 **The CLI's reported version is single-sourced from `package.json`.** Today `src/index.ts` hard-codes
 `const VERSION = '0.1.0'` independently of the package version, so a bump would publish while
