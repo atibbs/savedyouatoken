@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CodeBlock } from '@/components/Code';
 import { Panel } from '@/components/ui';
+import { GetTheKit } from '@/components/GetTheKit';
 
 export const metadata: Metadata = {
   title: 'CLI — audit prompts locally and enforce a token budget in CI',
@@ -117,6 +118,19 @@ jobs:
           as any other change to it.
         </p>
       </Panel>
+
+      <section className="mt-12 border-[1.5px] border-line-strong bg-panel p-5 shadow-hard sm:p-6">
+        <h2 className="text-[15px] font-bold text-ink">Run this from inside your agent</h2>
+        <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-muted">
+          The <Link href="/kit" className="text-info underline underline-offset-2">cost-aware agent kit</Link>{' '}
+          is a small, pay-what-you-want download that wires this CLI into Claude Code, Cursor, or any
+          assistant — so your agent audits its own prompts and configuration and cuts the waste. It
+          runs the live tool, so it never goes stale.
+        </p>
+        <div className="mt-4">
+          <GetTheKit />
+        </div>
+      </section>
 
       <p className="mt-8 text-[13px] text-muted">
         Prefer a browser?{' '}

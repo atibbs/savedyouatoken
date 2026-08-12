@@ -16,7 +16,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "cli": "npm run cli --workspace savedyouatoken --",
     "verify:cli": "node scripts/verify-packed-cli.mjs",
-    "guard:cli-release": "node scripts/guard-cli-release.mjs"
+    "guard:cli-release": "node scripts/guard-cli-release.mjs",
+    "build:kit": "node scripts/build-kit.mjs"
   },
   "engines": {
     "node": ">=20.9.0"

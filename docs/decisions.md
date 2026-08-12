@@ -284,3 +284,32 @@ weight to keep building and reasoning around. Revenue is deferred indefinitely, 
 never converts, that scaffolding was wasted. Accepted: the boundary is left in place rather than
 reverted, because activation later is a small contained step, whereas finishing Pro on faith now
 risks far more than a few unused tables.
+
+---
+
+## Decision: Sell a pay-what-you-want agent kit (reversing the "don't sell the skill" call)
+
+**Context:**
+An earlier decision (still recorded under *Intentionally excluded* in `docs/future-roadmap.md`)
+rejected selling the agent skill as a paid download on three grounds: an unenforceable licence,
+paid-skill distribution being an unproven channel, and — decisively — a frozen download quoting a
+stale price table with confidence.
+
+**Decision:**
+Ship a downloadable **cost-aware agent kit** (a Claude Code skill, a Cursor/`CLAUDE.md` rule, a usage
+guide and a cheat-sheet), sold **pay-what-you-want** ($0 floor + tip) via Gumroad as merchant of
+record. It is offered from a static `/kit` page and CTAs; the site loads no third-party script.
+
+**Reason:**
+Two of the three original objections no longer bind. The decisive one — stale prices — is dissolved
+by a **launcher-not-snapshot** design: the kit embeds no prices and runs `npx savedyouatoken@latest`,
+so every number is current, and a guard test fails the build if any catalogue id or price token
+appears in it. Enforceability stops mattering under pay-what-you-want, which monetises goodwill and
+convenience, not defensible IP. It also doubles as the cheapest willingness-to-pay signal now that
+the Pro subscription is shelved, and it plants the tool inside the agents where machine-written
+prompts bloat.
+
+**Tradeoff:**
+Small, uncertain revenue, and a kit whose value depends on the CLI being published and kept current
+(handled by the `publish-cli` release process). Launch is gated on that publish and on creating the
+Gumroad product.
