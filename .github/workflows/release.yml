@@ -1,10 +1,18 @@
 name: Release CLI
 
-# Publication is coupled to the merge: on every push to main, if the CLI's version is ahead
-# of what is on npm, it is published. A merged version bump (which the CI staleness guard
-# forces whenever the pricing catalogue changes) therefore ships automatically — no manual
-# tag. The build is published to a candidate dist-tag first, verified from the registry, and
-# only then promoted to `latest`, so a broken build never becomes the default install.
+# Publication is coupled to the merge: on every push to main, if the CLI's version is a new,
+# higher version than what is on npm, it is verified and published. A merged version bump
+# (which the CI staleness guard forces whenever the pricing catalogue changes) therefore
+# ships automatically — no manual tag.
+#
+# The exact built artifact is verified through npm's installed `savedyouatoken` shim (version
+# + a real audit) BEFORE it is published, and it is published in a single step directly to
+# `latest` via OIDC trusted publishing (no stored token, no dist-tag promotion). A build that
+# fails verification is never published, so `latest` is never broken.
+#
+# The gate is idempotent (an already-published version is skipped, so a rerun after a partial
+# failure does not try to republish an immutable version) and monotonic (the version must be
+# semver-greater than the current `latest`).
 
 on:
   push:
@@ -31,42 +39,22 @@ jobs:
       - run: npm install -g npm@latest
       - run: npm ci
 
-      - name: Decide whether to release
+      - name: Release gate (idempotent + monotonic)
         id: gate
-        run: |
-          LOCAL=$(node -p "require('./packages/cli/package.json').version")
-          REMOTE=$(npm view savedyouatoken version 2>/dev/null || echo none)
-          echo "version=$LOCAL" >> "$GITHUB_OUTPUT"
-          if [ "$LOCAL" = "$REMOTE" ]; then
-            echo "release=false" >> "$GITHUB_OUTPUT"
-            echo "CLI $LOCAL already on npm — nothing to release."
-          else
-            echo "release=true" >> "$GITHUB_OUTPUT"
-            echo "Releasing CLI $LOCAL (npm has: $REMOTE)."
-          fi
+        run: node scripts/release-gate.mjs
 
       - name: Build
         if: steps.gate.outputs.release == 'true'
         run: npm run build:cli
 
-      # Publish to a candidate tag, never straight to latest. Auth is via OIDC trusted
-      # publishing (configured for this repo on npmjs.com); no NODE_AUTH_TOKEN is set.
-      - name: Publish candidate
+      # Verify the exact built artifact through the installed shim (version + a real audit)
+      # before it is ever published.
+      - name: Verify the packaged CLI
         if: steps.gate.outputs.release == 'true'
-        run: npm publish --workspace savedyouatoken --tag rc --provenance --access public
+        run: npm run verify:cli
 
-      - name: Verify the published candidate from the registry
+      # Single publish, straight to `latest`, authenticated via OIDC. The bytes published are
+      # the same deterministic build that was just verified.
+      - name: Publish
         if: steps.gate.outputs.release == 'true'
-        run: |
-          V="${{ steps.gate.outputs.version }}"
-          DIR=$(mktemp -d); cd "$DIR"
-          npm init -y >/dev/null
-          npm install "savedyouatoken@$V" --no-audit --no-fund
-          REPORTED=$(node node_modules/savedyouatoken/dist/index.js --version)
-          echo "reported=$REPORTED expected=$V"
-          test "$REPORTED" = "$V"
-
-      # Only a verified candidate becomes the default install.
-      - name: Promote candidate to latest
-        if: steps.gate.outputs.release == 'true'
-        run: npm dist-tag add "savedyouatoken@${{ steps.gate.outputs.version }}" latest
+        run: npm publish --workspace savedyouatoken --provenance --access public

@@ -6,34 +6,38 @@ new version ships whenever the catalogue changes. Two mechanisms keep that true:
 
 - **Staleness guard** (`scripts/guard-cli-release.mjs`, wired into CI on pull requests): a PR that
   edits `packages/core/src/models.ts` fails unless it also bumps `packages/cli` `version`.
-- **Release on merge** (`.github/workflows/release.yml`): on push to `main`, if the CLI version is
-  ahead of npm, it is published to a candidate tag, verified from the registry, and only then
-  promoted to `latest`.
+- **Release on merge** (`.github/workflows/release.yml`): on push to `main`, a gate decides whether
+  to release; if so, the exact built artifact is verified through the installed `savedyouatoken`
+  shim and then **published in one step to `latest` via OIDC** (no stored token, no dist-tag
+  promotion). A build that fails verification is never published, so `latest` is never broken.
 
 ## Steady state (every release)
 
 1. Change prices in `packages/core/src/models.ts` (and bump `PRICES_VERIFIED_ON`).
 2. Bump `packages/cli/package.json` `version` in the same PR (the guard enforces this).
-3. Merge. The release workflow publishes the new version and promotes it to `latest` automatically.
+3. Merge. The workflow verifies and publishes automatically. The gate is **idempotent** (an
+   already-published version is skipped) and **monotonic** (the version must be greater than the
+   current `latest`), so a rerun after a partial failure is safe.
 
 The CLI's reported `--version` is injected from `package.json` at build time (tsup `define`), so it
-can never disagree with the published version. `scripts/verify-packed-cli.mjs` asserts this.
+can never disagree with the published version; `scripts/verify-packed-cli.mjs` installs the packed
+tarball and asserts it through the shim, running one real audit as well.
 
 ## One-time bootstrap (operator action — needs an npm account)
 
-This cannot be done from CI alone; it requires an npm account and repo admin.
+Trusted publishing cannot be configured until the package exists, so the **first** publish uses a
+short-lived token — but it follows the same verify-first flow, never a plain publish.
 
-1. **Claim the name.** From a clean checkout, `cd packages/cli && npm publish --access public` once,
-   authenticated with a short-lived npm **automation token** (or `npm login`). This reserves
-   `savedyouatoken` and creates the first version.
-2. **Configure trusted publishing.** On npmjs.com → the package → *Settings → Trusted Publisher*, add
-   this GitHub repository and the `Release CLI` workflow (`.github/workflows/release.yml`). This lets
-   the workflow publish via **OIDC** with no stored token, and emits provenance automatically.
-3. **Revoke the bootstrap token.** Once trusted publishing works, delete the automation token used in
-   step 1 — steady state stores no long-lived write credential.
-
-### Note on the promote step
-
-`npm publish` under trusted publishing is covered by OIDC. If `npm dist-tag add` (the promote step)
-is not covered in your npm version, scope a **granular automation token limited to this one package**
-for that step only — never a broad write token. Prefer the OIDC path once supported end-to-end.
+1. **Verify, then first-publish.** From a clean checkout, with a short-lived npm **automation
+   token** (or `npm login`):
+   ```bash
+   npm ci
+   npm run build:cli
+   npm run verify:cli            # installs the packed tarball, runs the shim + a real audit
+   npm publish --workspace savedyouatoken --provenance --access public
+   ```
+   This claims the `savedyouatoken` name and publishes the verified `0.x` directly to `latest`.
+2. **Configure trusted publishing.** On npmjs.com → the package → *Settings → Trusted Publisher*,
+   add this GitHub repository and the `Release CLI` workflow (`.github/workflows/release.yml`).
+3. **Revoke the bootstrap token.** From then on the workflow publishes via OIDC with no stored
+   credential; every subsequent release is fully tokenless.

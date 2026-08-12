@@ -37,16 +37,30 @@ edit cannot reach `latest`-eligible state without triggering a publish.
 - **THEN** CI fails and reports the missing version bump
 
 ### Requirement: Releases are verified before they become `latest`
-A newly built version SHALL be verified by installing and running it from the registry in a clean
-environment **before** it is promoted to the `latest` tag, so that a broken build never becomes the
-default install. The version a user installs SHALL report the version it was published as.
+A build SHALL be verified **through its installed command** — the `savedyouatoken` executable, not a
+file invoked directly — before it is published to `latest`, so that a broken build or a broken entry
+point never becomes the default install. Verification SHALL exercise the installed command for both
+the version it reports and one real audit.
 
-#### Scenario: A candidate is verified before promotion
-- **WHEN** a new version is published to a candidate tag rather than directly to `latest`
-- **THEN** it is installed from the registry in a clean environment and asserted to run and report its
-  published version
-- **AND** it is promoted to `latest` only if that check passes
+#### Scenario: The built artifact is verified before it is published
+- **WHEN** a release is triggered
+- **THEN** the packaged CLI is installed into a clean environment and run through its installed
+  `savedyouatoken` command, asserting it reports the version being released and completes a real audit
+- **AND** it is published to `latest` only if that verification passes
 
-#### Scenario: A broken build never becomes `latest`
-- **WHEN** the candidate fails its verification
-- **THEN** the release fails and `latest` continues to point at the previous good version
+#### Scenario: A broken build is never published
+- **WHEN** verification fails
+- **THEN** nothing is published and `latest` continues to point at the previous good version
+
+### Requirement: Releases are idempotent and monotonic
+A release SHALL be skipped when its version is already published, so that rerunning after a partial
+failure does not attempt to republish an immutable version. A release SHALL be rejected when its
+version is not greater than the current `latest`.
+
+#### Scenario: An already-published version is not re-released
+- **WHEN** a release runs for a version that already exists on npm
+- **THEN** no publish is attempted and the run succeeds
+
+#### Scenario: A non-increasing version is rejected
+- **WHEN** a release runs for a version that is not greater than the current `latest`
+- **THEN** the release fails
