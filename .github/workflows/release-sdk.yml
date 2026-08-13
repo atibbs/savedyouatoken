@@ -1,0 +1,66 @@
+name: Release SDK
+
+# Publication is coupled to the merge: on every push to main that touches the SDK, if its
+# version is new and higher than what is on npm, the exact built artifact is verified and
+# published. A merged version bump therefore ships automatically — no manual tag.
+#
+# Unlike the CLI (invoked live via `npx ...@latest`, so it must never be stale), the SDK is a
+# pinned dependency, so releases are driven only by a deliberate `packages/sdk` version bump —
+# there is no staleness guard forcing a bump when the bundled pricing catalogue changes. See
+# packages/sdk/RELEASING.md.
+#
+# The exact tarball is type-checked from a clean NodeNext consumer (skipLibCheck off) BEFORE it
+# is published, and published in a single step directly to `latest` via OIDC trusted publishing
+# (no stored token). A build that fails verification is never published, so `latest` is never
+# broken. The gate is idempotent (an already-published version is skipped) and monotonic (the
+# version must be semver-greater than the current `latest`).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/sdk/**'
+
+concurrency: release-sdk
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # OIDC — npm trusted publishing + automatic provenance, no stored token
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+      # Trusted publishing (OIDC) needs a recent npm.
+      - run: npm install -g npm@latest
+      - run: npm ci
+
+      - name: Release gate (idempotent + monotonic)
+        id: gate
+        run: node scripts/release-gate.mjs @savedyouatoken/sdk packages/sdk
+
+      - name: Build
+        if: steps.gate.outputs.release == 'true'
+        run: npm run build:sdk
+
+      # Pack once. Verification and publish then use the SAME tarball, so the bytes published
+      # are exactly the bytes verified — not a second rebuild.
+      - name: Pack
+        id: pack
+        if: steps.gate.outputs.release == 'true'
+        run: |
+          TARBALL=$(npm pack --workspace @savedyouatoken/sdk --pack-destination "$RUNNER_TEMP" --silent | tail -1)
+          echo "tarball=$RUNNER_TEMP/$TARBALL" >> "$GITHUB_OUTPUT"
+
+      - name: Verify the packed tarball (clean NodeNext consumer, skipLibCheck off)
+        if: steps.gate.outputs.release == 'true'
+        run: node packages/sdk/scripts/verify-packed-types.mjs "${{ steps.pack.outputs.tarball }}"
+
+      # Publish that exact tarball, straight to `latest`, authenticated via OIDC.
+      - name: Publish the verified tarball
+        if: steps.gate.outputs.release == 'true'
+        run: npm publish "${{ steps.pack.outputs.tarball }}" --provenance --access public

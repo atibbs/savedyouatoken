@@ -3,36 +3,47 @@
  * `moduleResolution: NodeNext` — the setting that exposes both failure modes this package has hit:
  * a bare `@savedyouatoken/core` import (TS2307) and extensionless relative ESM specifiers (TS2834).
  *
- * It runs `npm pack`, extracts the tarball into a throwaway consumer project that has ONLY the
- * SDK (no core, no workspace resolution), and type-checks a small program that touches the public
- * API — with `skipLibCheck: false`, so every shipped `.d.ts` is checked. Exits non-zero on any
- * type error. Run in CI so a packaging regression fails the build.
+ *   node verify-packed-types.mjs [tarball]
+ *
+ * With no argument it runs `npm pack` (→ prepublishOnly build) and verifies that fresh tarball —
+ * the mode CI-on-PR and `npm run verify:sdk-types` use. Given a tarball path it verifies THOSE
+ * exact bytes, so the release workflow can verify the very artifact it is about to publish.
+ *
+ * Either way it extracts into a throwaway consumer project that has ONLY the SDK (no core, no
+ * workspace resolution) and type-checks a small program touching the public API — with
+ * `skipLibCheck: false`, so every shipped `.d.ts` is checked. Exits non-zero on any type error.
  */
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { mkdtempSync, mkdirSync, writeFileSync, readdirSync, rmSync, cpSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const sdkRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 const tsc = require.resolve('typescript/bin/tsc');
+const providedTarball = process.argv[2] ? resolve(process.argv[2]) : undefined;
 
 const work = mkdtempSync(join(tmpdir(), 'syat-sdk-consumer-'));
 try {
-  // 1. Pack the SDK (runs prepublishOnly → build) and extract into the consumer's node_modules.
-  const tarball = execFileSync('npm', ['pack', '--pack-destination', work, '--silent'], {
-    cwd: sdkRoot,
-    encoding: 'utf8',
-  })
-    .trim()
-    .split('\n')
-    .pop();
+  // 1. Obtain the tarball to verify — either the exact one passed in, or a fresh `npm pack`
+  //    (which runs prepublishOnly → build). Then extract into the consumer's node_modules.
+  let tarballPath = providedTarball;
+  if (!tarballPath) {
+    const name = execFileSync('npm', ['pack', '--pack-destination', work, '--silent'], {
+      cwd: sdkRoot,
+      encoding: 'utf8',
+    })
+      .trim()
+      .split('\n')
+      .pop();
+    tarballPath = join(work, name);
+  }
   const consumer = join(work, 'consumer');
   const pkgDir = join(consumer, 'node_modules', '@savedyouatoken', 'sdk');
   mkdirSync(pkgDir, { recursive: true });
-  execFileSync('tar', ['xzf', join(work, tarball), '-C', work], { stdio: 'inherit' });
+  execFileSync('tar', ['xzf', tarballPath, '-C', work], { stdio: 'inherit' });
   cpSync(join(work, 'package'), pkgDir, { recursive: true });
 
   // 2. A clean consumer: NodeNext resolution, strict, skipLibCheck OFF.

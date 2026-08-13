@@ -1,5 +1,10 @@
 #!/usr/bin/env node
-// Decides whether the CLI should be released, idempotently and monotonically.
+// Decides whether a workspace package should be released, idempotently and monotonically.
+//
+//   node scripts/release-gate.mjs [npmName] [packageDir]
+//
+// Defaults to the CLI (`savedyouatoken`, `packages/cli`) so its workflow's no-arg call is
+// unchanged; the SDK workflow passes `@savedyouatoken/sdk packages/sdk`.
 //
 // - If the local version is ALREADY published, there is nothing to do (a rerun after a
 //   partial failure must not try to republish an immutable version) → release=false.
@@ -14,9 +19,10 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { gt } from './semver.mjs';
 
-const PKG = 'savedyouatoken';
-const cliDir = fileURLToPath(new URL('../packages/cli/', import.meta.url));
-const local = JSON.parse(readFileSync(join(cliDir, 'package.json'), 'utf8')).version;
+const PKG = process.argv[2] ?? 'savedyouatoken';
+const relDir = process.argv[3] ?? 'packages/cli';
+const pkgDir = fileURLToPath(new URL(`../${relDir}/`, import.meta.url));
+const local = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8')).version;
 
 function npmView(args) {
   try {
