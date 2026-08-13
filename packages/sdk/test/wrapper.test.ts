@@ -66,11 +66,19 @@ describe('preserves the provider APIPromise', () => {
   // An APIPromise-like thenable. `then` and `withResponse` trigger a "parse"; `asResponse`
   // returns the raw response and parses nothing — mirroring the real OpenAI/Anthropic clients,
   // which consume through private internals, not the public `then`.
+  // `catch`/`finally` are declared so the fake types like a real APIPromise; at runtime the
+  // wrapper's Proxy intercepts them, so these bodies are never actually reached.
   function makeApiPromise(state: { parsed: boolean }) {
     return {
       then(onFulfilled?: ((v: unknown) => unknown) | null, onRejected?: ((r: unknown) => unknown) | null) {
         state.parsed = true;
         return Promise.resolve(realResponse).then(onFulfilled ?? undefined, onRejected ?? undefined);
+      },
+      catch(onRejected?: ((r: unknown) => unknown) | null) {
+        return Promise.resolve(realResponse).catch(onRejected ?? undefined);
+      },
+      finally(onFinally?: (() => void) | null) {
+        return Promise.resolve(realResponse).finally(onFinally ?? undefined);
       },
       asResponse() {
         return Promise.resolve('RAW_RESPONSE');
@@ -125,6 +133,27 @@ describe('preserves the provider APIPromise', () => {
     expect(raw).toBe('RAW_RESPONSE');
     await flushMacrotasks();
     expect(events.filter((e: AuditEvent) => e.kind === 'analysis')).toHaveLength(1);
+  });
+
+  it('preserves native finally: rejects when the callback rejects', async () => {
+    const { wrapped } = wrappedClient();
+    const ret = wrapped.responses.create({ model: 'gpt-5', instructions: 'hi' });
+    // Native Promise.finally waits for a returned thenable and rejects with its error, rather
+    // than resolving with the model response and leaking an unhandled rejection.
+    await expect(ret.finally(() => Promise.reject(new Error('cleanup failed')))).rejects.toThrow(
+      'cleanup failed',
+    );
+  });
+
+  it('preserves native finally: awaits an async callback, then passes the value through', async () => {
+    const { wrapped } = wrappedClient();
+    let ran = false;
+    const value = await wrapped.responses.create({ model: 'gpt-5', instructions: 'hi' }).finally(async () => {
+      await new Promise((r) => setTimeout(r, 5));
+      ran = true;
+    });
+    expect(ran).toBe(true);
+    expect(value).toBe(realResponse);
   });
 });
 
@@ -195,5 +224,42 @@ describe('fetch interceptor', () => {
         expect(events).toHaveLength(0);
       },
     );
+  });
+
+  it('a rejecting body read never produces an unhandled rejection', async () => {
+    const rejections: unknown[] = [];
+    const onUnhandled = (reason: unknown) => rejections.push(reason);
+    process.on('unhandledRejection', onUnhandled);
+    try {
+      await withStubbedFetch(
+        // Delay the real request so a naive interceptor would leave the body-read rejection
+        // unhandled during the in-flight window.
+        async () => {
+          await new Promise((r) => setTimeout(r, 40));
+          return okResponse();
+        },
+        async (events) => {
+          const stream = new ReadableStream({
+            pull(controller) {
+              controller.error(new Error('stream boom'));
+            },
+          });
+          const req = new Request('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            body: stream,
+            duplex: 'half',
+          } as unknown as RequestInit);
+          const res = await fetch(req);
+          expect(res.status).toBe(200); // the real call is unaffected
+          await flushMacrotasks();
+          await flushMacrotasks();
+          // The failed read is swallowed: no observation, and crucially no unhandled rejection.
+          expect(events).toHaveLength(0);
+        },
+      );
+    } finally {
+      process.off('unhandledRejection', onUnhandled);
+    }
+    expect(rejections).toEqual([]);
   });
 });

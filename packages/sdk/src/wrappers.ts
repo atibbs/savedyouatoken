@@ -63,14 +63,18 @@ function tapThenable<T extends PromiseLike<unknown>>(thenable: T, onResolved: (v
         case 'catch':
           return (onRejected?: ((r: unknown) => unknown) | null) => wrappedThen(undefined, onRejected);
         case 'finally':
-          return (onFinally?: (() => void) | null) =>
+          // Native `finally` awaits a thenable returned by the callback and rejects with its
+          // error; discarding the return value (and swallowing an async rejection) would change
+          // application behaviour and can crash Node with an unhandled rejection. `await`
+          // assimilates the callback result so those semantics are preserved.
+          return (onFinally?: (() => unknown) | null) =>
             wrappedThen(
-              (v) => {
-                if (onFinally) onFinally();
+              async (v) => {
+                if (onFinally) await onFinally();
                 return v;
               },
-              (r) => {
-                if (onFinally) onFinally();
+              async (r) => {
+                if (onFinally) await onFinally();
                 throw r;
               },
             );
@@ -196,15 +200,27 @@ export function installFetchInterceptor(options?: AuditorOptions): () => void {
     // most for a large or streamed body. For the `fetch(new Request(...))` overload the body
     // lives on the Request and the real call consumes it, so we clone *now* (synchronous) and
     // read the clone concurrently; the read is awaited only after the response returns.
-    let capture: { provider: (typeof PROVIDER_HOSTS)[number]; bodyText: Promise<string> } | undefined;
+    let capture: { provider: (typeof PROVIDER_HOSTS)[number]; bodyText: Promise<string | undefined> } | undefined;
     try {
       const url =
         typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
       const provider = PROVIDER_HOSTS.find((h) => h.match.test(url));
       if (provider) {
-        let bodyText: Promise<string> | undefined;
+        let bodyText: Promise<string | undefined> | undefined;
         if (typeof init?.body === 'string') bodyText = Promise.resolve(init.body);
-        else if (typeof Request !== 'undefined' && input instanceof Request) bodyText = input.clone().text();
+        else if (typeof Request !== 'undefined' && input instanceof Request) {
+          // Attach the rejection handler *immediately*, not after the response returns: the read
+          // can reject while the real request is still in flight, and an unhandled rejection in
+          // that window would crash the process under Node's default behaviour. The read still
+          // proceeds concurrently; a failure just becomes `undefined` (capture skipped).
+          bodyText = input
+            .clone()
+            .text()
+            .then(
+              (t) => t,
+              () => undefined,
+            );
+        }
         if (bodyText) capture = { provider, bodyText };
       }
     } catch {
@@ -216,12 +232,16 @@ export function installFetchInterceptor(options?: AuditorOptions): () => void {
     if (capture) {
       const { provider, bodyText } = capture;
       const auditor = auditorFor(provider.adapter.provider, provider.adapter);
-      // Combine the (already in-flight) body read with a clone of the response, off the hot
-      // path. The caller's response is returned below untouched, before any of this resolves.
+      // Combine the (already in-flight, already-handled) body read with a clone of the response,
+      // off the hot path. The caller's response is returned below untouched, before any of this
+      // resolves. A missing body or malformed JSON just skips the capture.
       Promise.all([bodyText, response.clone().json().catch(() => undefined)])
-        .then(([body, parsed]) => scheduleObserve(auditor, JSON.parse(body), parsed))
+        .then(([body, parsed]) => {
+          if (body == null) return;
+          scheduleObserve(auditor, JSON.parse(body), parsed);
+        })
         .catch(() => {
-          // A malformed body or a failed read must never surface to the caller.
+          // A malformed body must never surface to the caller.
         });
     }
     return response;
