@@ -21,12 +21,14 @@
 - [x] 4.1 Verify the **packed tarball** (the exact one that will be published) through npm's installed `savedyouatoken` **shim** — assert the reported version and run **one real audit** — not by invoking `dist/index.js` directly (`scripts/verify-packed-cli.mjs`, which accepts a tarball path; also run in PR CI on a freshly packed tarball)
 - [x] 4.2 Publish that same tarball only if verification passes; on failure nothing is published and `latest` is unchanged
 
-## 5. First release + verify (operator — needs an npm account; see `packages/cli/RELEASING.md`)
+## 5. Bootstrap release + steady-state verification (operator; see `packages/cli/RELEASING.md`)
 
-These steps require npm credentials and the one-time trusted-publisher setup on npmjs.com, so they
-are performed by the operator, not in this change. The code, workflow, and guard above are complete
-and inert until then — the same "build the boundary, document activation" pattern as Stripe.
+The bootstrap used a one-time npm credential because trusted publishing cannot be configured before
+the package exists. On 2026-08-13, npm published `savedyouatoken@0.1.0`; its registry SHA-1 matches
+the locally retained verified tarball exactly, and a clean `npx savedyouatoken@latest` audit passed.
+The remaining operator work is to prove the steady-state OIDC path on the next legitimate release.
 
-- [ ] 5.1 Perform the first release through the workflow (bootstrap → merge-triggered publish → candidate → verify → promote) and confirm `npm view savedyouatoken` resolves
-- [ ] 5.2 Confirm `npx savedyouatoken@latest` runs a real audit end to end from a clean environment
-- [ ] 5.3 Simulate a price change: confirm the guard fails without a version bump, then with a bump the merge publishes a candidate, verifies it, and promotes a new `latest`
+- [x] 5.1 Pack and verify once, publish that exact `0.1.0` tarball with the bootstrap credential, and confirm `npm view savedyouatoken` resolves with the matching tarball SHA
+- [x] 5.2 Confirm `npx savedyouatoken@latest` runs a real audit end to end from a clean environment
+- [ ] 5.3 Confirm the npm trusted publisher targets this repository and `release.yml`, and confirm the bootstrap credential has been revoked
+- [ ] 5.4 On the next legitimate version increase, confirm the main-branch workflow verifies and publishes through OIDC with provenance, then reruns idempotently without republishing

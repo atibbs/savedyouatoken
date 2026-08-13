@@ -1,9 +1,10 @@
 ## Context
 
-See `proposal.md — Why`. Requirements are in `specs/cli-release/spec.md`. Today: `packages/cli` is
-the workspace named `savedyouatoken` (v0.1.0, unpublished), bundled with tsup so the published
-artifact **embeds** the pricing catalogue from `packages/core` at build time. `.github/workflows`
-has only `ci.yml` (typecheck/test/build); there is no release path or `NPM_TOKEN`.
+See `proposal.md — Why`. Requirements are in `specs/cli-release/spec.md`. At proposal time,
+`packages/cli` was the unpublished `savedyouatoken` v0.1.0 workspace, bundled with tsup so the
+published artifact **embeds** the pricing catalogue from `packages/core` at build time, and the
+repository had no release path. The implemented steady-state path uses OIDC rather than a stored
+`NPM_TOKEN`.
 
 ## Goals / Non-Goals
 

@@ -1,6 +1,6 @@
 ## 0. Prerequisite
 
-- [ ] 0.1 The `publish-cli` change has landed **and the CLI is actually published** — `npx savedyouatoken@latest` resolves. The release infrastructure is merged, but the first publish is an operator step (npm account); until then the kit MUST NOT be launched (group 5). `npm view savedyouatoken` is currently E404.
+- [x] 0.1 Confirm the `publish-cli` implementation has landed, npm serves `savedyouatoken@latest`, and a clean `npx savedyouatoken@latest` audit completes
 
 ## 1. Author the kit (in-repo, launcher-not-snapshot)
 
@@ -29,12 +29,14 @@
 
 ## 5. Launch (blocking — operator; the capability is not done until these pass)
 
-Requires an npm publish (group 0) and a Gumroad account, so these are operator steps performed at
-launch, not in this change. The code, page, and guard above are complete and inert until then.
+The public Gumroad page now confirms pay-what-you-want, a $0 floor, a $5 suggested price, and active
+inventory. The live site points to that product. Archive attachment and delivery still require
+operator verification inside the purchase flow.
 
-- [ ] 5.1 Create and configure the Gumroad product: pay-what-you-want, $0 floor + suggested tip, and upload the built archive
-- [ ] 5.2 Set the Gumroad product URL in site config (`NEXT_PUBLIC_KIT_URL`) so the CTAs become live outbound links (leaving coming-soon behind)
-- [ ] 5.3 Verify a real **$0** guest checkout and a real **paid** guest checkout both complete and deliver the archive, with no account required on our site
+- [x] 5.1 Create and publicly configure the Gumroad product as pay-what-you-want with a $0 floor and suggested tip
+- [ ] 5.2 Confirm in the Gumroad dashboard that the current guarded archive is attached to the product
+- [x] 5.3 Set `NEXT_PUBLIC_KIT_URL` so the deployed `/kit`, `/cli`, and footer CTAs resolve to the active Gumroad product
+- [ ] 5.4 Verify a real **$0** guest checkout and a real **paid** guest checkout both complete and deliver the current archive, with no account required on our site
 
 ## 6. Verify
 
