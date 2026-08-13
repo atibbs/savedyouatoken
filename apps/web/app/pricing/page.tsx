@@ -15,8 +15,8 @@ export const metadata: Metadata = {
 const FREE = [
   'The full analyser — all ' + ALL_RULES.length + ' waste patterns, no feature gates',
   'Automatic lossless rewrite, with the diff',
-  'Prompt-cache simulation and breakeven maths',
-  'Cost comparison across every model in the catalogue',
+  'Prompt-cache simulation',
+  'Cost comparison across every model',
   'Shareable report links',
   `${FREE_SAVED_LIMIT} saved prompts in your browser`,
   'The CLI, for local and offline analysis',
@@ -36,13 +36,11 @@ export default function PricingPage() {
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <h1 className="text-3xl font-semibold tracking-tight text-ink">Pricing</h1>
       <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">
-        The audit is free because it costs nothing to run — the analysis is deterministic and
-        happens in your browser, so there is no inference bill and no per-user server cost to
-        recover.
+        The audit is free — it runs in your browser, so there&rsquo;s nothing for us to pay for.
       </p>
       <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">
-        What is worth paying for is not the one-off audit. It is stopping the prompt from growing
-        back.
+        What&rsquo;s worth paying for isn&rsquo;t the one-time audit. It&rsquo;s keeping the prompt
+        from growing back.
       </p>
 
       <div className="mt-10 grid gap-4 md:grid-cols-2">
@@ -97,26 +95,13 @@ export default function PricingPage() {
         <h2 className="text-lg font-medium text-ink">Why this split</h2>
         <div className="prose-doc mt-3 max-w-2xl text-[14px]">
           <p>
-            A prompt audit is a one-time event. If the product stopped there it would be a utility
-            people use once and never return to, which is not a business — it is a blog post with
-            JavaScript.
+            A one-time audit is a handy utility, not a product. The recurring problem is that prompts
+            grow back — every fix adds a line, and nobody deletes.
           </p>
           <p>
-            The recurring problem is that prompts grow back. Every incident adds a rule, every new
-            edge case adds an example, and nobody ever deletes anything, because deleting feels
-            riskier than appending. Six months later the prompt is twice the size and the invoice
-            followed it up.
-          </p>
-          <p>
-            That is what Pro sells: a budget the prompt cannot quietly exceed, enforced where the
-            growth actually happens — in the pull request that adds the paragraph. The free tool
-            shows you the problem once; the paid one keeps it from coming back.
-          </p>
-          <p>
-            The free tier is deliberately not crippled. Every waste pattern, the full rewrite, the
-            caching maths and the model comparison stay free forever, because a tool that hides the
-            interesting number behind a paywall does not get recommended, and being recommended is
-            the entire distribution strategy.
+            Pro is the part that keeps that in check: a budget your prompt can&rsquo;t quietly exceed,
+            checked in the pull request where the growth happens. The free tool shows the problem
+            once; Pro stops it coming back. Every insight stays free either way.
           </p>
         </div>
       </section>
@@ -124,8 +109,8 @@ export default function PricingPage() {
       <section className="mt-10">
         <h2 className="text-lg font-medium text-ink">Free today, in the CLI</h2>
         <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted">
-          Budget enforcement is already implemented and free in the command line tool. The paid
-          version is the hosted part: history, alerts and the pull-request comment.
+          Budgets already work for free in the CLI. Pro adds the hosted parts: history, alerts, and a
+          comment on your pull request.
         </p>
         <Link href="/cli" className="mt-3 inline-block text-[13px] text-info underline underline-offset-2">
           Set up a token budget in CI
