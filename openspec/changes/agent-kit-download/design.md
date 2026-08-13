@@ -5,11 +5,11 @@ Requirements are in `specs/kit-distribution/spec.md`. The relevant constraints f
 site is fully static with no third-party scripts, and the pricing catalogue lives only in
 `packages/core` and goes stale if copied.
 
-**Dependency:** the launcher target `npx savedyouatoken@latest` is **not yet published to npm**
-(`npm view savedyouatoken` returns E404, and there is no release workflow). The launcher-not-snapshot
-design is hollow until it resolves and is kept current, so this change **depends on the `publish-cli`
-change** (publish the CLI + a release process that republishes when `packages/core` prices change).
-The kit must not be launched before that lands.
+**Dependency:** the launcher target `npx savedyouatoken@latest` must resolve and stay current. At
+proposal time it returned E404 and no release workflow existed, so this change depended on
+`publish-cli`. The bootstrap dependency was satisfied on 2026-08-13 when `savedyouatoken@0.1.0` was
+published and a clean audit passed; `publish-cli` continues to track proof of the steady-state OIDC
+release path.
 
 ## Goals / Non-Goals
 

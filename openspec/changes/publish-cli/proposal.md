@@ -2,8 +2,8 @@
 
 The whole "launcher, not snapshot" strategy — the basis for the `agent-kit-download` change and the
 free agent-skill on the roadmap — assumes `npx savedyouatoken@latest` resolves and reflects current
-prices. It does neither today: `npm view savedyouatoken` returns E404 (never published) and there is
-no release workflow. And because the CLI **bundles** the pricing catalogue at build time, publishing
+prices. At proposal time it did neither: `npm view savedyouatoken` returned E404 and there was no
+release workflow. And because the CLI **bundles** the pricing catalogue at build time, publishing
 once is not enough — `@latest` is only "always current" if it is **republished when prices change**.
 Without this, anything that tells a user to run the CLI ships broken or stale.
 
@@ -31,8 +31,8 @@ Without this, anything that tells a user to run the CLI ships broken or stale.
 - **Enables** `agent-kit-download` (which depends on this) and the free agent-skill roadmap item.
 - **Code/config:** publish configuration on the CLI workspace (`packages/cli`), a release workflow in
   `.github/workflows`, and a CI guard tying catalogue changes to version bumps.
-- **External:** an npm package (`savedyouatoken`) and an `NPM_TOKEN` CI secret. The token is a secret
-  configured in CI, never committed.
+- **External:** an npm package (`savedyouatoken`) and npm trusted publishing via GitHub Actions OIDC.
+  A short-lived credential is needed only for the one-time bootstrap and is not stored in CI.
 - **Free-tier static/zero-cost invariant:** no impact on the running site — this is build/release
   tooling, not runtime. The CLI stays a client-side/offline tool.
 - **New runtime dependency:** none for the site. **New always-on infrastructure:** none (npm hosts the
