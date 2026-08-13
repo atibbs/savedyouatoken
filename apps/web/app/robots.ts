@@ -6,9 +6,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      // Shared reports are per-user payloads in a URL fragment; there is nothing there to index.
-      disallow: '/r',
     },
+    // Shared reports use a page-level noindex directive. They must remain crawlable so search
+    // engines can see that directive instead of reporting an indexed-but-blocked URL.
     sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }
