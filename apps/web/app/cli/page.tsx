@@ -3,21 +3,34 @@ import Link from 'next/link';
 import { CodeBlock } from '@/components/Code';
 import { Panel } from '@/components/ui';
 import { GetTheKit } from '@/components/GetTheKit';
+import { ProductChooser } from '@/components/ProductChooser';
+import { getProduct } from '@/lib/products';
+
+const product = getProduct('cli');
 
 export const metadata: Metadata = {
-  title: 'CLI — audit prompts locally and enforce a token budget in CI',
+  title: `${product.name} — ${product.job.charAt(0).toLowerCase()}${product.job.slice(1)}`,
   description:
-    'Run the same analysis over prompt files on disk. Nothing leaves your machine, and a breached token budget fails the build.',
-  alternates: { canonical: '/cli' },
+    `Run ${product.packageName} over prompt files on disk. Nothing leaves your machine, and a breached token budget fails the build.`,
+  alternates: { canonical: product.href },
 };
 
 export default function CliPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <h1 className="text-3xl font-semibold tracking-tight text-ink">Command line</h1>
+      <h1 className="text-3xl font-semibold tracking-tight text-ink">Audit prompt files from your terminal or CI</h1>
       <p className="mt-3 text-[15px] leading-relaxed text-muted">
-        The same audit as the website, run over files on your machine. Two reasons to use it: your
-        prompts stay local, and a token budget can fail your build.
+        The <code className="font-mono text-ink">savedyouatoken</code> CLI package runs the same audit as
+        the website over files on your machine. A developer can invoke it locally, or CI can invoke it
+        automatically and fail a build when a token budget is breached.
+      </p>
+
+      <p className="mt-3 text-[13px] leading-relaxed text-muted">
+        Building prompts dynamically inside a live application? Use the separate{' '}
+        <Link href="/sdk" className="text-info underline underline-offset-2">
+          <code className="font-mono">@savedyouatoken/sdk</code> runtime package
+        </Link>{' '}
+        to observe the fully assembled outbound request.
       </p>
 
       <div className="mt-8">
@@ -138,6 +151,8 @@ jobs:
         runs the identical engine and is equally offline — the analysis happens in the page, not on
         a server.
       </p>
+
+      <ProductChooser current="cli" />
     </div>
   );
 }
