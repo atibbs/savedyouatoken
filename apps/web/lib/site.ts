@@ -9,16 +9,9 @@ export const TAGLINE = 'Find the waste in your LLM prompts before your invoice d
  */
 export const KIT_URL = process.env.NEXT_PUBLIC_KIT_URL ?? '';
 
-/**
- * `short` is used below the `sm` breakpoint, where the full labels overflow a 375px
- * viewport. `smallScreen: false` drops an item from the mobile bar entirely — it is still
- * reachable from the footer.
- */
-export const NAV = [
-  { href: '/', label: 'Analyser', short: 'Analyse', smallScreen: true },
+export const RESOURCE_NAV = [
   { href: '/waste', label: 'Waste patterns', short: 'Waste', smallScreen: true },
   { href: '/models', label: 'Model prices', short: 'Prices', smallScreen: true },
-  { href: '/cli', label: 'CLI', short: 'CLI', smallScreen: true },
-  { href: '/kit', label: 'Kit', short: 'Kit', smallScreen: false },
   { href: '/pricing', label: 'Pricing', short: 'Pricing', smallScreen: false },
+  { href: '/methodology', label: 'Methodology', short: 'Method', smallScreen: false },
 ];

@@ -52,7 +52,22 @@ directly.
 
 ## What it does
 
-**Analyser** (`/`) — paste a prompt and optional tool definitions, set your model and request
+### Product family
+
+Choose the surface by where the prompt exists and who should run the audit:
+
+| Need | Surface | Package or action | Availability |
+|---|---|---|---|
+| Audit one prompt in a browser | **Web analyser** | Open `/` | Available |
+| Observe the fully assembled request in a live app | **Runtime SDK** | `npm install @savedyouatoken/sdk` | Available |
+| Audit files locally or enforce a pull request budget | **CLI** | `npx savedyouatoken` | Available |
+| Let a coding agent audit repository prompt files | **Agent kit** | Instructions that invoke `savedyouatoken` | Available |
+| Track costs and regressions over time | **Monitor** | No public action yet | Planned |
+
+The CLI and runtime SDK are separate npm packages. The agent kit is not the runtime SDK: it is a
+set of instructions that makes a coding agent invoke the current CLI package.
+
+**Web analyser** (`/`) — paste a prompt and optional tool definitions, set your model and request
 volume, and get:
 
 - Exact or clearly-estimated token counts, including what your `tools` array costs and the
@@ -71,8 +86,15 @@ objects the analyser executes, so documentation cannot drift from behaviour.
 **Model prices** (`/models`) — 38 models across Anthropic, OpenAI and Google with input, output,
 cache-read, cache-write, batch and long-context-tier pricing, plus worked monthly costs.
 
-**CLI** (`npx savedyouatoken`) — the same engine over files on disk, with token budgets that fail a
-build.
+**Runtime SDK** (`npm install @savedyouatoken/sdk`) — wraps Anthropic or OpenAI clients to audit the
+fully assembled request in-process after the real response returns. Prompt and tool text stay in
+the process by default; development reports to the console and production defaults to silence.
+
+**CLI** (`npx savedyouatoken`) — the same engine over files on disk, operated by a developer or CI,
+with token budgets that fail a build.
+
+**Agent kit** (`/kit`) — instructions for Claude Code, Cursor, and other coding assistants that
+invoke the live `savedyouatoken` CLI over repository files.
 
 ### Findings that are not obvious
 

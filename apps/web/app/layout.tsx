@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import localFont from 'next/font/local';
 import { PRICES_VERIFIED_ON } from '@savedyouatoken/core';
-import { NAV, SITE_NAME, SITE_URL, TAGLINE } from '@/lib/site';
+import { SITE_NAME, SITE_URL, TAGLINE, RESOURCE_NAV } from '@/lib/site';
+import { PRODUCT_NAV } from '@/lib/products';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AccountMenu } from '@/components/AccountMenu';
 import { GetTheKit } from '@/components/GetTheKit';
@@ -75,22 +76,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   S<span className="text-orange">/</span>T
                 </span>
               </span>
-              <span className="text-[16px] font-extrabold tracking-tight text-ink">
+              <span className="hidden text-[16px] font-extrabold tracking-tight text-ink sm:inline">
                 Saved You a Token
               </span>
             </Link>
 
             <nav aria-label="Main" className="ml-auto flex items-center gap-0.5 sm:gap-1">
-              {NAV.slice(1).map((item) => (
+              {PRODUCT_NAV.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
+                  title={item.job}
+                  aria-label={`${item.name}: ${item.job}`}
                   className={`whitespace-nowrap rounded px-1.5 py-1 text-[12px] font-bold text-muted transition-colors hover:text-ink hover:underline hover:underline-offset-4 sm:px-2 sm:text-[13px] ${
-                    item.smallScreen ? '' : 'hidden sm:inline-block'
+                    item.id === 'web' ? 'hidden md:inline-block' : item.id === 'kit' ? 'hidden lg:inline-block' : ''
                   }`}
                 >
-                  <span className="sm:hidden">{item.short}</span>
-                  <span className="hidden sm:inline">{item.label}</span>
+                  <span className="sm:hidden">{item.shortLabel}</span>
+                  <span className="hidden sm:inline">{item.navLabel}</span>
                 </Link>
               ))}
               <div className="ml-1 flex shrink-0 items-center gap-2">
@@ -111,8 +114,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   Saved You <br /> a Token
                   <span className="ml-2 align-top font-mono text-[12px]">.com</span>
                 </div>
-                <nav aria-label="Footer" className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-[13px] font-bold">
-                  {NAV.map((item) => (
+                <nav aria-label="Products" className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-[13px] font-bold">
+                  {PRODUCT_NAV.map((item) => (
+                    <Link key={item.href} href={item.href} className="hover:underline hover:underline-offset-4">
+                      {item.navLabel}
+                    </Link>
+                  ))}
+                </nav>
+                <nav aria-label="Resources" className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-[12px] font-medium">
+                  {RESOURCE_NAV.map((item) => (
                     <Link key={item.href} href={item.href} className="hover:underline hover:underline-offset-4">
                       {item.label}
                     </Link>
