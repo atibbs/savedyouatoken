@@ -105,8 +105,10 @@ the rewritten prompt, cost breakdowns, the cache simulation and the model compar
 | `syat-saved` | Up to 3 saved prompts | The free tier's honest limit |
 | `syat-theme` | `light` \| `dark` | Set before first paint to avoid a flash |
 
-Nothing is transmitted. There is no analytics, no error reporting, no font CDN, no third-party
-script of any kind.
+Your prompt is never transmitted. The only data leaving the browser is Vercel Web Analytics —
+first-party (same-origin `/_vercel/insights`), cookieless, aggregate pageview and event counts
+that never include prompt or tool text. There is no error reporting, no font CDN, and no
+cross-origin third-party tracker.
 
 ## Share links
 

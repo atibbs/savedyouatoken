@@ -105,9 +105,10 @@ Implemented:
 - `robots.txt`; `/r` is `noindex` and disallowed, because shared reports are per-user payloads.
 - Internal linking: findings link to their reference page, reference pages link to related patterns
   and back to the analyser, model pages link to cheaper alternatives.
-- No layout shift and no render-blocking third-party resources — there are no third-party resources.
-  The 2 MB tokenizer is code-split and fetched only after a user enters a prompt, so it never
-  affects a content page's load.
+- No layout shift and no render-blocking third-party resources. The only analytics is Vercel Web
+  Analytics — a small, async, same-origin, cookieless beacon that never blocks rendering. The 2 MB
+  tokenizer is code-split and fetched only after a user enters a prompt, so it never affects a
+  content page's load.
 
 Deliberately not done: comparison-matrix pages for every model pair, "best prompt optimizer 2026"
 listicles, or any page whose reason to exist is a query rather than a reader.

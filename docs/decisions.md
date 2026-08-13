@@ -298,7 +298,8 @@ stale price table with confidence.
 **Decision:**
 Ship a downloadable **cost-aware agent kit** (a Claude Code skill, a Cursor/`CLAUDE.md` rule, a usage
 guide and a cheat-sheet), sold **pay-what-you-want** ($0 floor + tip) via Gumroad as merchant of
-record. It is offered from a static `/kit` page and CTAs; the site loads no third-party script.
+record. It is offered from a static `/kit` page and CTAs that are plain outbound links — no Gumroad
+overlay or other cross-origin third-party script.
 
 **Reason:**
 Two of the three original objections no longer bind. The decisive one — stale prices — is dissolved
@@ -313,3 +314,29 @@ prompts bloat.
 Small, uncertain revenue, and a kit whose value depends on the CLI being published and kept current
 (handled by the `publish-cli` release process). Launch is gated on that publish and on creating the
 Gumroad product.
+
+## Decision: Add first-party, cookieless analytics (Vercel Web Analytics)
+
+**Context:**
+The site launched with a deliberate "no analytics, no third-party script" stance (see
+`docs/architecture.md`). But operating the product needs a rough sense of traffic and whether
+visitors actually use the tool and click through to the kit — signals the earlier stance left
+entirely dark, forcing reliance on Gumroad/npm proxies alone.
+
+**Decision:**
+Enable **Vercel Web Analytics** (already on the hosting platform). It serves same-origin from
+`/_vercel/insights`, sets **no cookies**, collects **no personal data**, and needs **no consent
+banner**. Two custom events are emitted alongside pageviews: `run_audit` (once per session, on the
+first analysis result) and `kit_click` (the Gumroad CTA).
+
+**Reason:**
+Chosen over GA4, which was the original request: GA4 sets cookies (a consent banner for EU/UK
+visitors), ships a cross-origin third-party tracker, and would have reversed the privacy claim the
+product markets. Vercel Web Analytics is first-party and cookieless, so it counts visits without a
+banner and without a cross-origin tracker; crucially, **prompts still never leave the browser** —
+analytics only ever sees pageview paths and two event names, never prompt or tool text.
+
+**Tradeoff:**
+It is still a script and a small telemetry stream, so the absolute "nothing is transmitted" line no
+longer holds; the affected docs were updated to say so truthfully. Custom events depend on the
+Vercel plan's analytics limits (pageviews work on the free tier regardless).

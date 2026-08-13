@@ -6,6 +6,7 @@ import { NAV, SITE_NAME, SITE_URL, TAGLINE } from '@/lib/site';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AccountMenu } from '@/components/AccountMenu';
 import { GetTheKit } from '@/components/GetTheKit';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 /* Fonts are vendored into app/fonts (latin subset) and self-hosted, so the build is
@@ -136,6 +137,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </p>
           </div>
         </footer>
+        {/* First-party, cookieless pageview analytics (Vercel Web Analytics). Loads same-origin
+            from /_vercel/insights, sets no cookies, and never sees prompt or tool text. */}
+        <Analytics />
       </body>
     </html>
   );

@@ -17,6 +17,7 @@ import {
   type AnalysisResult,
   type CacheTtl,
 } from '@savedyouatoken/core';
+import { track } from '@vercel/analytics/react';
 import { currentCounter, loadExactCounter } from '@/lib/tokenizer';
 import { Field, Panel, Stat, Tag, buttonClass, inputClass, primaryButtonClass } from '@/components/ui';
 import { Receipt } from '@/components/Receipt';
@@ -152,6 +153,16 @@ export function Analyzer() {
     draft.batch,
     counterReady,
   ]);
+
+  // Activation signal: fire once per session the first time an analysis produces a result, so
+  // the count reflects visitors who actually used the tool — not every debounced keystroke.
+  const auditTracked = useRef(false);
+  useEffect(() => {
+    if (result && !auditTracked.current) {
+      auditTracked.current = true;
+      track('run_audit');
+    }
+  }, [result]);
 
   const loadExample = (id: string) => {
     const ex = EXAMPLES.find((e) => e.id === id);
