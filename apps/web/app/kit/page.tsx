@@ -10,10 +10,10 @@ export const metadata: Metadata = {
 };
 
 const INSIDE = [
-  ['SKILL.md', 'A Claude Code skill: audit prompt files — including the agent’s own CLAUDE.md, MCP tool definitions and skill descriptions — apply the safe fixes, and re-measure.'],
-  ['cursor-rules.md', 'A paste-in rule for Cursor, or a CLAUDE.md block, that keeps an assistant cost-aware and pointed at the live tool.'],
-  ['USAGE.md', 'How to run it and read the output — models, request volume, tool definitions, CI budgets.'],
-  ['CHEAT-SHEET.md', 'The waste patterns to recognise, one line each, grouped by where the money leaks.'],
+  ['SKILL.md', 'A Claude Code skill that audits your prompt files, applies the safe fixes, and re-checks.'],
+  ['cursor-rules.md', 'A paste-in rule for Cursor, or a CLAUDE.md block, that keeps your assistant cost-aware.'],
+  ['USAGE.md', 'How to run it and read the results.'],
+  ['CHEAT-SHEET.md', 'Every waste pattern, one line each.'],
 ] as const;
 
 export default function KitPage() {
@@ -29,9 +29,8 @@ export default function KitPage() {
             Make your agent audit its own <span className="serif-accent">token bill.</span>
           </h1>
           <p className="mt-7 max-w-2xl text-[17px] leading-relaxed text-muted sm:text-[19px]">
-            A small kit that drops the audit into the tools you already work in — Claude Code, Cursor,
-            or any CLI-driven assistant. It finds what your prompts, tool schemas and agent config
-            actually cost, and cuts the waste.
+            A small kit that adds the audit to the tools you already use — Claude Code, Cursor, or any
+            CLI assistant. It finds what your prompts and tools cost, and cuts the waste.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <GetTheKit />
@@ -55,10 +54,9 @@ export default function KitPage() {
         <div className="mt-10 border-[1.5px] border-line-strong bg-mint p-5 text-[#171713] shadow-hard">
           <h2 className="text-[15px] font-bold">A launcher, not a snapshot</h2>
           <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed">
-            The kit embeds no prices. Everything in it runs the live tool —{' '}
-            <code className="font-mono">npx savedyouatoken@latest</code> — so the token counts, model
-            prices and findings are always current. A downloaded kit can’t go stale, because it holds
-            no numbers to go stale.
+            The kit has no prices baked in. It runs the live tool —{' '}
+            <code className="font-mono">npx savedyouatoken@latest</code> — so the numbers are always
+            current. Nothing to go stale.
           </p>
         </div>
 
@@ -69,7 +67,7 @@ export default function KitPage() {
             <Link href="/" className="text-info underline underline-offset-2">
               free analyser
             </Link>
-            , or run the same audit over files with the{' '}
+            , or run it over files with the{' '}
             <Link href="/cli" className="text-info underline underline-offset-2">
               CLI
             </Link>

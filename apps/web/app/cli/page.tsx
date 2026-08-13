@@ -16,8 +16,8 @@ export default function CliPage() {
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
       <h1 className="text-3xl font-semibold tracking-tight text-ink">Command line</h1>
       <p className="mt-3 text-[15px] leading-relaxed text-muted">
-        The same engine as the website, pointed at files on disk. Useful for two reasons: prompts
-        never leave your machine, and a token budget can fail a build.
+        The same audit as the website, run over files on your machine. Two reasons to use it: your
+        prompts stay local, and a token budget can fail your build.
       </p>
 
       <div className="mt-8">
@@ -50,9 +50,8 @@ export default function CliPage() {
 
       <h2 className="mt-12 text-lg font-medium text-ink">Token budgets in CI</h2>
       <p className="mt-2 text-[14px] leading-relaxed text-muted">
-        Prompts grow in pull requests, one reasonable paragraph at a time. A budget makes that
-        growth visible at the moment it happens rather than on next month&rsquo;s invoice. The
-        command exits non-zero when a budget is breached.
+        Prompts grow in pull requests, one reasonable paragraph at a time. A budget catches that when
+        it happens, not on next month&rsquo;s invoice. The command fails when a budget is breached.
       </p>
 
       <div className="mt-4">
@@ -112,10 +111,9 @@ jobs:
       <Panel className="mt-10 px-4 py-4">
         <h2 className="text-[15px] font-medium text-ink">On --fix</h2>
         <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-          It overwrites the file in place with the rewritten prompt. Only run it on a clean working
-          tree, and read the diff before committing. The edits are mechanical and
-          meaning-preserving by design, but a prompt is production code and deserves the same review
-          as any other change to it.
+          It overwrites the file with the rewritten prompt. Run it on a clean working tree and read
+          the diff before committing. The edits are mechanical and keep the meaning, but a prompt is
+          code — review it like any other change.
         </p>
       </Panel>
 
@@ -124,8 +122,8 @@ jobs:
         <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-muted">
           The <Link href="/kit" className="text-info underline underline-offset-2">cost-aware agent kit</Link>{' '}
           is a small, pay-what-you-want download that wires this CLI into Claude Code, Cursor, or any
-          assistant — so your agent audits its own prompts and configuration and cuts the waste. It
-          runs the live tool, so it never goes stale.
+          assistant — so your agent audits its own prompts and cuts the waste. It runs the live tool,
+          so it never goes stale.
         </p>
         <div className="mt-4">
           <GetTheKit />
