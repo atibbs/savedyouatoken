@@ -45,10 +45,12 @@ short-lived token — but it follows the same verify-first flow, never a plain p
    npm run build:sdk
    TARBALL=$(npm pack --workspace @savedyouatoken/sdk --silent | tail -1)
    node packages/sdk/scripts/verify-packed-types.mjs "$TARBALL"   # clean NodeNext consumer
-   npm publish "$TARBALL" --provenance --access public
+   npm publish "$TARBALL" --access public
    ```
    Verifying and publishing the same tarball guarantees the published bytes are exactly the ones
    verified. This claims the `@savedyouatoken/sdk` name and publishes the verified `0.x` to `latest`.
+   Note: no `--provenance` here — provenance can only be generated from CI (OIDC), so the one-time
+   local bootstrap omits it; every automated release afterwards (the workflow) publishes with it.
 2. **Configure trusted publishing.** On npmjs.com → the package → *Settings → Trusted Publisher*,
    add this GitHub repository and the `Release SDK` workflow (`.github/workflows/release-sdk.yml`).
 3. **Revoke the bootstrap token.** From then on the workflow publishes via OIDC with no stored
