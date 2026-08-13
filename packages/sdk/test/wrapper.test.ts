@@ -226,6 +226,31 @@ describe('fetch interceptor', () => {
     );
   });
 
+  it('a throwing response.clone() never disturbs the real request', async () => {
+    // response.clone() throws synchronously on a locked/disturbed body. Because the interceptor
+    // is async, an unguarded throw would reject the caller's fetch *after* it had a valid
+    // response. The caller must still get the real response.
+    const fakeResponse = {
+      status: 200,
+      clone() {
+        throw new Error('clone boom');
+      },
+    } as unknown as Response;
+    await withStubbedFetch(
+      async () => fakeResponse,
+      async (events) => {
+        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          body: JSON.stringify({ model: 'gpt-5', messages: [{ role: 'system', content: 'hi' }] }),
+        });
+        expect(res).toBe(fakeResponse); // real response returned, not an interceptor error
+        await flushMacrotasks();
+        await flushMacrotasks();
+        expect(events).toHaveLength(0);
+      },
+    );
+  });
+
   it('a rejecting body read never produces an unhandled rejection', async () => {
     const rejections: unknown[] = [];
     const onUnhandled = (reason: unknown) => rejections.push(reason);

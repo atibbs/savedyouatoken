@@ -227,22 +227,29 @@ export function installFetchInterceptor(options?: AuditorOptions): () => void {
       // Reading the body must never disturb the real request.
     }
 
-    const response = await original(input, init);
+    const response = await original.call(globalThis, input, init);
 
     if (capture) {
-      const { provider, bodyText } = capture;
-      const auditor = auditorFor(provider.adapter.provider, provider.adapter);
-      // Combine the (already in-flight, already-handled) body read with a clone of the response,
-      // off the hot path. The caller's response is returned below untouched, before any of this
-      // resolves. A missing body or malformed JSON just skips the capture.
-      Promise.all([bodyText, response.clone().json().catch(() => undefined)])
-        .then(([body, parsed]) => {
-          if (body == null) return;
-          scheduleObserve(auditor, JSON.parse(body), parsed);
-        })
-        .catch(() => {
-          // A malformed body must never surface to the caller.
-        });
+      try {
+        const { provider, bodyText } = capture;
+        const auditor = auditorFor(provider.adapter.provider, provider.adapter);
+        // Combine the (already in-flight, already-handled) body read with a clone of the
+        // response, off the hot path. The caller's response is returned below untouched, before
+        // any of this resolves. The whole block is guarded: `response.clone()` *throws
+        // synchronously* on a locked/disturbed body, and since `patched` is async that throw
+        // would otherwise become a rejection the caller receives instead of their response.
+        const responseJson = Promise.resolve(response.clone().json()).catch(() => undefined);
+        Promise.all([bodyText, responseJson])
+          .then(([body, parsed]) => {
+            if (body == null) return;
+            scheduleObserve(auditor, JSON.parse(body), parsed);
+          })
+          .catch(() => {
+            // A malformed body must never surface to the caller.
+          });
+      } catch {
+        // Interception must never disturb the real request.
+      }
     }
     return response;
   };
