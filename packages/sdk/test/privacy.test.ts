@@ -44,6 +44,31 @@ describe('prompt privacy by default', () => {
 
     const serialised = JSON.stringify(event.report);
     for (const canary of canaryValues) expect(serialised).not.toContain(canary);
+    const portable = JSON.stringify(event.portableReport);
+    for (const canary of canaryValues) expect(portable).not.toContain(canary);
+    expect(event.portableReport.contract).toEqual({ kind: 'report', version: { major: 1, minor: 1 } });
+    expect(event.portableReport.maturity).toMatchObject({ state: 'mature' });
+  });
+
+  it('attaches caller workflow and release identity without changing the legacy report', () => {
+    const { events, sink } = collectingSink();
+    const auditor = createAuditor(anthropicAdapter, {
+      counter: testCounter(),
+      workload: FIXED_WORKLOAD,
+      sink,
+      reportContext: {
+        workflowId: 'support/triage',
+        environment: 'production',
+        releaseId: 'abc123',
+      },
+    });
+    auditor.observe(cannedRequest());
+    const event = events.find((candidate) => candidate.kind === 'analysis');
+    expect(event?.kind).toBe('analysis');
+    if (event?.kind !== 'analysis') return;
+    expect(event.report).toHaveProperty('v', 2);
+    expect(event.portableReport.workflow).toEqual({ id: 'support/triage', environment: 'production' });
+    expect(event.portableReport.release).toEqual({ id: 'abc123' });
   });
 
   it('transmits only a prompt-free payload to a network destination', async () => {

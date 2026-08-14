@@ -1,4 +1,12 @@
-import { analyze, toSharedReport, type TokenCounter, type Workload } from '@savedyouatoken/core';
+import {
+  ANALYSIS_ENGINE_VERSION,
+  RULESET_ID,
+  analyze,
+  toReportEnvelope,
+  toSharedReport,
+  type TokenCounter,
+  type Workload,
+} from '@savedyouatoken/core';
 
 import type { AuditEvent, AuditorOptions, AuditSink, RequestAdapter, WorkloadOverrides } from './types';
 import { createDefaultCounter } from './counter';
@@ -31,6 +39,8 @@ export interface Auditor {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+declare const __SDK_VERSION__: string;
+const SDK_VERSION = typeof __SDK_VERSION__ !== 'undefined' ? __SDK_VERSION__ : '0.0.0-dev';
 
 /**
  * Build an auditor for one provider adapter. `observe()` captures, normalises, deduplicates by
@@ -173,6 +183,29 @@ export function createAuditor(adapter: RequestAdapter, options: AuditorOptions =
       shapeKey,
       result,
       report: toSharedReport(result),
+      portableReport: toReportEnvelope(result, {
+        workflow: {
+          id: options.reportContext?.workflowId ?? shapeKey,
+          ...(options.reportContext?.environment ? { environment: options.reportContext.environment } : {}),
+        },
+        release: {
+          id: options.reportContext?.releaseId ?? 'unversioned',
+          ...(options.reportContext?.deployedAt ? { deployedAt: options.reportContext.deployedAt } : {}),
+        },
+        provenance: {
+          producer: '@savedyouatoken/sdk',
+          producerVersion: SDK_VERSION,
+          generatedAt: new Date(t).toISOString(),
+        },
+        maturity: { state: measured.matured ? 'mature' : 'provisional', observations: measured.observations },
+        window: {
+          startedAt: new Date(measured.startedAt).toISOString(),
+          endedAt: new Date(measured.endedAt).toISOString(),
+          requests: measured.observations,
+        },
+        engineVersion: ANALYSIS_ENGINE_VERSION,
+        rulesetId: RULESET_ID,
+      }),
       matured: measured.matured,
     });
   }

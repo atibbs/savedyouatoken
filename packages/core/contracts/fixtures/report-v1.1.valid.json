@@ -1,0 +1,11 @@
+{
+  "contract": { "kind": "report", "version": { "major": 1, "minor": 1 } },
+  "workflow": { "id": "support/triage", "environment": "production" },
+  "release": { "id": "abc123", "deployedAt": "2026-08-13T12:00:00.000Z" },
+  "provenance": { "producer": "@savedyouatoken/sdk", "producerVersion": "0.1.0", "generatedAt": "2026-08-13T13:00:00.000Z" },
+  "maturity": { "state": "mature", "observations": 42 },
+  "window": { "startedAt": "2026-08-13T12:00:00.000Z", "endedAt": "2026-08-13T13:00:00.000Z", "requests": 42 },
+  "catalogue": { "engineVersion": "0.1.0", "rulesetId": "savedyouatoken-rules-2026-08-13", "modelCatalogueDate": "2026-08-10", "currency": "USD", "tokenizer": { "family": "o200k_base", "accuracy": "exact", "counter": "o200k_base" } },
+  "workload": { "requestsPerDay": 20000, "outputTokens": 350, "cacheHitRate": 0.4, "cacheTtl": "5m", "batch": false },
+  "analysis": { "modelId": "gpt-5", "promptTokens": 1000, "toolTokens": 200, "inputTokens": 1200, "optimizedTokens": 900, "monthlyNow": 420.5, "monthlyAfterRewrite": 390.25, "cacheSaving": 22.1, "findings": [{ "ruleId": "wordy-phrases", "severity": "low", "occurrences": 3, "tokensSaved": 100, "monthlySaving": 30.25 }] }
+}

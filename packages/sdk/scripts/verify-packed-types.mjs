@@ -5,7 +5,7 @@
  *
  *   node verify-packed-types.mjs [tarball]
  *
- * With no argument it runs `npm pack` (→ prepublishOnly build) and verifies that fresh tarball —
+ * With no argument it runs `npm pack` (→ prepack build) and verifies that fresh tarball —
  * the mode CI-on-PR and `npm run verify:sdk-types` use. Given a tarball path it verifies THOSE
  * exact bytes, so the release workflow can verify the very artifact it is about to publish.
  *
@@ -28,7 +28,7 @@ const providedTarball = process.argv[2] ? resolve(process.argv[2]) : undefined;
 const work = mkdtempSync(join(tmpdir(), 'syat-sdk-consumer-'));
 try {
   // 1. Obtain the tarball to verify — either the exact one passed in, or a fresh `npm pack`
-  //    (which runs prepublishOnly → build). Then extract into the consumer's node_modules.
+  //    (which runs prepack → build). Then extract into the consumer's node_modules.
   let tarballPath = providedTarball;
   if (!tarballPath) {
     const name = execFileSync('npm', ['pack', '--pack-destination', work, '--silent'], {
@@ -70,16 +70,20 @@ try {
   wrapOpenAI, wrapAnthropic, createAuditor, anthropicAdapter, openaiAdapter,
   consoleSink, fileSink, callbackSink, dashboardSink, noopSink, normaliseModelId,
   type AuditEvent, type AuditorOptions, type CapturedRequest, type RequestAdapter,
+  type PortableReportContext, type ReportEnvelope,
 } from '@savedyouatoken/sdk';
 
+const reportContext: PortableReportContext = { workflowId: 'support/triage', releaseId: 'abc123' };
 const opts: AuditorOptions = {
+  reportContext,
   mask: (s: string) => s,
   sink: callbackSink((e: AuditEvent) => {
     if (e.kind === 'analysis') {
       const perMonth: number = e.result.costNow.perMonth;
       const model: string = e.result.model.id;
       const summaries: string[] = e.report.findings.map((f) => f.summary);
-      void perMonth; void model; void summaries;
+      const portable: ReportEnvelope = e.portableReport;
+      void perMonth; void model; void summaries; void portable;
     }
   }),
 };

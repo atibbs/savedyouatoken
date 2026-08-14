@@ -1,0 +1,9 @@
+{
+  "contract": { "kind": "policy", "version": { "major": 1, "minor": 1 } },
+  "provenance": { "producer": "savedyouatoken", "producerVersion": "0.1.0", "generatedAt": "2026-08-13T15:00:00.000Z" },
+  "target": { "id": "support/triage", "environment": "production" },
+  "baselineId": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "budgets": { "maxInputTokens": 1500, "maxMonthlyCost": 500, "maxTokenRegressionPercent": 10, "maxCostRegressionPercent": 15 },
+  "pricing": { "currency": "USD", "modelId": "gpt-5", "catalogueDate": "2026-08-10" },
+  "enforcement": "fail"
+}

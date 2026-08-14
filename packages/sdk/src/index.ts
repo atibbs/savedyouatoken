@@ -28,4 +28,6 @@ export type {
   AuditSink,
   AuditorOptions,
   WorkloadOverrides,
+  PortableReportContext,
+  ReportEnvelope,
 } from './types';

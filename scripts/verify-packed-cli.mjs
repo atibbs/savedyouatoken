@@ -51,4 +51,39 @@ if (!/token|\$/.test(audit)) {
   process.exit(1);
 }
 
-console.log(`✓ installed CLI shim reports ${expected} and runs a real audit`);
+const legacyJson = JSON.parse(run(shim, [promptFile, '--model', 'claude-sonnet-5', '--json']));
+if (legacyJson.model !== 'claude-sonnet-5' || !Array.isArray(legacyJson.files) || legacyJson.contract) {
+  console.error('✗ legacy --json automation shape changed unexpectedly');
+  process.exit(1);
+}
+
+// The additive portable output must parse as one prompt-free contract document while the legacy
+// --json mode above remains untouched for existing automation.
+const contractOutput = run(shim, [
+  promptFile,
+  '--model',
+  'claude-sonnet-5',
+  '--requests',
+  '100',
+  '--contract-json',
+  '--workflow',
+  'verify/cli',
+  '--release',
+  'packed-test',
+]).trim();
+const contract = JSON.parse(contractOutput);
+if (
+  contract?.contract?.kind !== 'report' ||
+  contract?.contract?.version?.major !== 1 ||
+  contract?.workflow?.id !== 'verify/cli' ||
+  contract?.release?.id !== 'packed-test'
+) {
+  console.error('✗ --contract-json did not produce the expected report envelope:\n' + contractOutput);
+  process.exit(1);
+}
+if (contractOutput.includes('You are a helpful assistant')) {
+  console.error('✗ --contract-json leaked prompt text');
+  process.exit(1);
+}
+
+console.log(`✓ installed CLI shim reports ${expected}, runs an audit, and emits a portable report`);

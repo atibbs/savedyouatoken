@@ -69,6 +69,11 @@ Pass a sink (or several) via options. Default: console in development, silent in
 import { wrapOpenAI, fileSink, dashboardSink, callbackSink } from '@savedyouatoken/sdk';
 
 wrapOpenAI(new OpenAI(), {
+  reportContext: {
+    workflowId: 'support-agent',
+    environment: 'production',
+    releaseId: process.env.RELEASE_SHA!,
+  },
   sinks: [
     fileSink('./token-audit.jsonl'),               // prompt-free JSON lines
     callbackSink((e) => myLogger.info(e)),          // in-process, full result
@@ -80,6 +85,22 @@ wrapOpenAI(new OpenAI(), {
   mask: (system) => system.replace(/Tenant: \w+/g, 'Tenant: <id>'),
 });
 ```
+
+Every analysis callback event includes both `event.report`, the existing legacy report, and
+`event.portableReport`, the versioned cross-tool contract. Use the portable report for new
+automation, baselines, and policy checks while existing sinks and consumers continue unchanged:
+
+```ts
+callbackSink((event) => {
+  if (event.kind === 'analysis') {
+    storeReport(event.portableReport);
+  }
+});
+```
+
+The JSON Schemas and canonical identity vectors are published with `@savedyouatoken/core` under
+`contracts/`. See the [contract guide](../../docs/contracts.md) for compatibility and migration
+rules.
 
 ## Privacy
 

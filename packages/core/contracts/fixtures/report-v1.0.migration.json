@@ -1,0 +1,11 @@
+{
+  "contract": { "kind": "report", "version": { "major": 1, "minor": 0 } },
+  "workflow": { "id": "support/triage" },
+  "release": { "id": "abc122" },
+  "provenance": { "producer": "@savedyouatoken/sdk", "producerVersion": "0.0.9", "generatedAt": "2026-08-12T13:00:00.000Z" },
+  "maturity": { "state": "provisional", "observations": 4 },
+  "window": { "startedAt": "2026-08-12T12:00:00.000Z", "endedAt": "2026-08-12T13:00:00.000Z", "requests": 4 },
+  "catalogue": { "engineVersion": "0.1.0", "rulesetId": "rules-v1", "modelCatalogueDate": "2026-08-10", "currency": "USD", "tokenizer": { "family": "o200k_base", "accuracy": "exact", "counter": "o200k_base" } },
+  "workload": { "requestsPerDay": 1000, "outputTokens": 500, "cacheHitRate": 0, "cacheTtl": "5m", "batch": false },
+  "analysis": { "modelId": "gpt-5", "promptTokens": 10, "toolTokens": 0, "inputTokens": 10, "optimizedTokens": 9, "monthlyNow": 2, "monthlyAfterRewrite": 1.8, "cacheSaving": 0, "findings": [] }
+}
