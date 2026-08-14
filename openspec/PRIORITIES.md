@@ -36,7 +36,9 @@ the backlog accurate while allowing independent P0 planning work to continue.
 
 ### 1. Clarify product surfaces
 
-**Change:** [`clarify-product-surfaces`](changes/clarify-product-surfaces/)
+**Status:** Completed and archived on 2026-08-13.
+
+**Change:** [`clarify-product-surfaces`](changes/archive/2026-08-13-clarify-product-surfaces/)
 
 **Outcome:** A visitor can distinguish the web analyser, CLI, runtime SDK, agent kit, and planned
 Monitor, and can install the correct package without inference.
@@ -48,7 +50,9 @@ language used by every later launch.
 
 ### 2. Version report and policy contracts
 
-**Change:** [`version-report-policy-contracts`](changes/version-report-policy-contracts/)
+**Status:** Completed and archived on 2026-08-13.
+
+**Change:** [`version-report-policy-contracts`](changes/archive/2026-08-13-version-report-policy-contracts/)
 
 **Outcome:** SDK, CLI, local tools, Monitor, and third parties share prompt-free, versioned reports,
 baselines, policies, validation, canonical identity, compatibility, and migrations.
@@ -59,7 +63,9 @@ baselines, policies, validation, canonical identity, compatibility, and migratio
 
 ### 3. Improve SDK operations
 
-**Change:** [`improve-sdk-operations`](changes/improve-sdk-operations/)
+**Status:** Completed and archived on 2026-08-13.
+
+**Change:** [`improve-sdk-operations`](changes/archive/2026-08-13-improve-sdk-operations/)
 
 **Outcome:** Production teams can name workflows, associate releases, understand measurement
 maturity, detect instrumentation failures, and diagnose masking without exposing prompts.
