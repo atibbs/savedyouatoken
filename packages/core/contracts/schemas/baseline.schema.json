@@ -6,9 +6,12 @@
   "required": ["contract", "provenance", "reportId", "workflow", "release"],
   "properties": {
     "contract": { "type": "object", "required": ["kind", "version"], "properties": { "kind": { "const": "baseline" }, "version": { "type": "object", "required": ["major", "minor"], "properties": { "major": { "const": 1 }, "minor": { "type": "integer", "minimum": 0 } } } } },
-    "provenance": { "type": "object", "required": ["producer", "producerVersion", "generatedAt"], "properties": { "producer": { "type": "string" }, "producerVersion": { "type": "string" }, "generatedAt": { "type": "string", "format": "date-time" }, "sourceContractVersion": { "type": "object" } } },
+    "provenance": { "type": "object", "required": ["producer", "producerVersion", "generatedAt"], "properties": { "producer": { "type": "string" }, "producerVersion": { "type": "string" }, "generatedAt": { "type": "string", "format": "date-time" }, "sourceContractVersion": { "$ref": "#/$defs/sourceVersion" } } },
     "reportId": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
     "workflow": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" }, "environment": { "type": "string" } } },
     "release": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" }, "deployedAt": { "type": "string", "format": "date-time" } } }
+  },
+  "$defs": {
+    "sourceVersion": { "type": "object", "required": ["major", "minor"], "properties": { "major": { "type": "integer", "minimum": 0 }, "minor": { "type": "integer", "minimum": 0 } } }
   }
 }

@@ -86,14 +86,14 @@ wrapOpenAI(new OpenAI(), {
 });
 ```
 
-Every analysis callback includes both `analysis.report`, the existing legacy report, and
-`analysis.portableReport`, the versioned cross-tool contract. Use the portable report for new
+Every analysis callback event includes both `event.report`, the existing legacy report, and
+`event.portableReport`, the versioned cross-tool contract. Use the portable report for new
 automation, baselines, and policy checks while existing sinks and consumers continue unchanged:
 
 ```ts
 callbackSink((event) => {
-  if (event.type === 'analysis') {
-    storeReport(event.analysis.portableReport);
+  if (event.kind === 'analysis') {
+    storeReport(event.portableReport);
   }
 });
 ```

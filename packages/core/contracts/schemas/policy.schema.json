@@ -6,11 +6,14 @@
   "required": ["contract", "provenance", "target", "budgets", "pricing", "enforcement"],
   "properties": {
     "contract": { "type": "object", "required": ["kind", "version"], "properties": { "kind": { "const": "policy" }, "version": { "type": "object", "required": ["major", "minor"], "properties": { "major": { "const": 1 }, "minor": { "type": "integer", "minimum": 0 } } } } },
-    "provenance": { "type": "object", "required": ["producer", "producerVersion", "generatedAt"], "properties": { "producer": { "type": "string" }, "producerVersion": { "type": "string" }, "generatedAt": { "type": "string", "format": "date-time" }, "sourceContractVersion": { "type": "object" } } },
+    "provenance": { "type": "object", "required": ["producer", "producerVersion", "generatedAt"], "properties": { "producer": { "type": "string" }, "producerVersion": { "type": "string" }, "generatedAt": { "type": "string", "format": "date-time" }, "sourceContractVersion": { "$ref": "#/$defs/sourceVersion" } } },
     "target": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" }, "environment": { "type": "string" } } },
     "baselineId": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
     "budgets": { "type": "object", "minProperties": 1, "properties": { "maxInputTokens": { "type": "number", "minimum": 0 }, "maxMonthlyCost": { "type": "number", "minimum": 0 }, "maxTokenRegressionPercent": { "type": "number", "minimum": 0 }, "maxCostRegressionPercent": { "type": "number", "minimum": 0 } } },
     "pricing": { "type": "object", "required": ["currency", "modelId", "catalogueDate"], "properties": { "currency": { "const": "USD" }, "modelId": { "type": "string" }, "catalogueDate": { "type": "string", "format": "date" } } },
     "enforcement": { "enum": ["warn", "fail"] }
+  },
+  "$defs": {
+    "sourceVersion": { "type": "object", "required": ["major", "minor"], "properties": { "major": { "type": "integer", "minimum": 0 }, "minor": { "type": "integer", "minimum": 0 } } }
   }
 }

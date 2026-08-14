@@ -100,6 +100,18 @@ describe('JSON Schema conformance', () => {
     expect(validateReport(value)).toBe(false);
     expect(parseReportEnvelope(value).ok).toBe(false);
   });
+
+  it.each([
+    ['report-v1.1.valid.json', validateReport, parseReportEnvelope],
+    ['baseline-v1.1.valid.json', validateBaseline, parseBaselineDocument],
+    ['policy-v1.1.valid.json', validatePolicy, parsePolicyDocument],
+  ] as const)('rejects a malformed source version in %s in both schema and runtime validator',
+    (name, validate, parse) => {
+      const value = fixture<Record<string, any>>(name);
+      value.provenance.sourceContractVersion = { major: 1 };
+      expect(validate(value)).toBe(false);
+      expect(parse(value).ok).toBe(false);
+    });
 });
 
 describe('canonical identity and compatibility', () => {

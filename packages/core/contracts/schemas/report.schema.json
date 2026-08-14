@@ -18,7 +18,8 @@
   "$defs": {
     "version": { "type": "object", "required": ["major", "minor"], "properties": { "major": { "const": 1 }, "minor": { "type": "integer", "minimum": 0 } } },
     "workflow": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string", "minLength": 1 }, "environment": { "type": "string", "minLength": 1 } } },
-    "provenance": { "type": "object", "required": ["producer", "producerVersion", "generatedAt"], "properties": { "producer": { "type": "string" }, "producerVersion": { "type": "string" }, "generatedAt": { "type": "string", "format": "date-time" }, "sourceContractVersion": { "$ref": "#/$defs/version" } } },
+    "provenance": { "type": "object", "required": ["producer", "producerVersion", "generatedAt"], "properties": { "producer": { "type": "string" }, "producerVersion": { "type": "string" }, "generatedAt": { "type": "string", "format": "date-time" }, "sourceContractVersion": { "$ref": "#/$defs/sourceVersion" } } },
+    "sourceVersion": { "type": "object", "required": ["major", "minor"], "properties": { "major": { "type": "integer", "minimum": 0 }, "minor": { "type": "integer", "minimum": 0 } } },
     "finding": { "type": "object", "required": ["ruleId", "severity", "occurrences", "tokensSaved", "monthlySaving"], "properties": { "ruleId": { "type": "string" }, "severity": { "enum": ["high", "medium", "low"] }, "occurrences": { "type": "integer", "minimum": 0 }, "tokensSaved": { "type": "number", "minimum": 0 }, "monthlySaving": { "type": "number", "minimum": 0 } } }
   }
 }
