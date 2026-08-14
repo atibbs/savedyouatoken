@@ -46,6 +46,8 @@
     "url": "git+https://github.com/atibbs/savedyouatoken.git",
     "directory": "packages/cli"
   },
-  "homepage": "https://savedyouatoken.com",
-  "bugs": "https://github.com/atibbs/savedyouatoken/issues"
+  "homepage": "https://savedyouatoken.com/cli",
+  "bugs": {
+    "url": "https://github.com/atibbs/savedyouatoken/issues"
+  }
 }

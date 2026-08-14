@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "description": "savedyouatoken.com — find the waste in your LLM prompts before your invoice does.",
+  "homepage": "https://savedyouatoken.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atibbs/savedyouatoken.git"
+  },
+  "bugs": {
+    "url": "https://github.com/atibbs/savedyouatoken/issues"
+  },
   "workspaces": [
     "packages/*",
     "apps/*"

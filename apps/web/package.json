@@ -2,6 +2,17 @@
   "name": "@savedyouatoken/web",
   "version": "0.1.0",
   "private": true,
+  "description": "The local-first savedyouatoken web analyser and public documentation site.",
+  "homepage": "https://savedyouatoken.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atibbs/savedyouatoken.git",
+    "directory": "apps/web"
+  },
+  "bugs": {
+    "url": "https://github.com/atibbs/savedyouatoken/issues"
+  },
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
