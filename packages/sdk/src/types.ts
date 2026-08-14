@@ -1,4 +1,4 @@
-import type { AnalysisResult, SharedReport, TokenCounter, Workload } from '@savedyouatoken/core';
+import type { AnalysisResult, ReportEnvelope, SharedReport, TokenCounter, Workload } from '@savedyouatoken/core';
 
 /**
  * The normalised, provider-agnostic view of one captured request. Only the static, repeated
@@ -43,6 +43,8 @@ export type AuditEvent =
       result: AnalysisResult;
       /** Prompt- and tool-text-free projection, safe to transmit off-process. */
       report: SharedReport;
+      /** Versioned prompt-free interchange report. Additive; legacy `report` remains supported. */
+      portableReport: ReportEnvelope;
       /** Whether the workload behind this report is measured from matured traffic. */
       matured: boolean;
     }
@@ -63,6 +65,15 @@ export type WorkloadOverrides = Partial<
   Pick<Workload, 'requestsPerDay' | 'outputTokens' | 'cacheHitRate' | 'cacheTtl' | 'batch'>
 >;
 
+export interface PortableReportContext {
+  /** Stable workflow identity. Defaults to the SDK's deterministic request-shape key. */
+  workflowId?: string;
+  environment?: string;
+  /** Deployment, commit, or release identity. Defaults to `unversioned`. */
+  releaseId?: string;
+  deployedAt?: string;
+}
+
 export interface AuditorOptions {
   /** Where results go. A single sink, or several. Defaults to console in dev, silence in prod. */
   sink?: AuditSink;
@@ -71,6 +82,8 @@ export interface AuditorOptions {
   counter?: TokenCounter;
   /** Pin any workload field instead of measuring it from traffic. */
   workload?: WorkloadOverrides;
+  /** Identity metadata attached to the portable report envelope. */
+  reportContext?: PortableReportContext;
   /**
    * Mask variable regions of the system prompt before it contributes to shape identity, so a
    * per-request interpolation (tenant id, retrieved snippet) does not mint a new shape.
@@ -92,4 +105,4 @@ export interface AuditorOptions {
   reauditIntervalMs?: number;
 }
 
-export type { AnalysisResult, SharedReport, TokenCounter, Workload };
+export type { AnalysisResult, ReportEnvelope, SharedReport, TokenCounter, Workload };

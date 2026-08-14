@@ -15,11 +15,15 @@ import {
   MODELS,
   PRICES_VERIFIED_ON,
   PROVIDER_LABELS,
+  ANALYSIS_ENGINE_VERSION,
+  RULESET_ID,
   analyze,
+  canonicalStringify,
   createCounterFromO200k,
   formatTokens,
   formatUsd,
   getModel,
+  toReportEnvelope,
   type AnalysisResult,
 } from '@savedyouatoken/core';
 
@@ -39,6 +43,9 @@ interface Options {
   aggressive: boolean;
   fix: boolean;
   json: boolean;
+  contractJson: boolean;
+  workflowId?: string;
+  releaseId?: string;
   quiet: boolean;
 }
 
@@ -59,6 +66,9 @@ OPTIONS
       --aggressive          Also remove instructions duplicated elsewhere
       --fix                 Write the rewritten prompt back to the file
       --json                Emit JSON instead of a report
+      --contract-json       Emit canonical versioned report JSON (one document per line)
+      --workflow <id>       Stable workflow id for contract output
+      --release <id>        Release or commit id for contract output
   -q, --quiet               Only print failures
   -h, --help                Show this help
   -v, --version             Show version
@@ -82,6 +92,7 @@ function parseArgs(argv: string[]): { files: string[]; options: Options; command
     aggressive: false,
     fix: false,
     json: false,
+    contractJson: false,
     quiet: false,
   };
   let command: string | undefined;
@@ -139,6 +150,15 @@ function parseArgs(argv: string[]): { files: string[]; options: Options; command
         break;
       case '--json':
         options.json = true;
+        break;
+      case '--contract-json':
+        options.contractJson = true;
+        break;
+      case '--workflow':
+        options.workflowId = next();
+        break;
+      case '--release':
+        options.releaseId = next();
         break;
       case '-q':
       case '--quiet':
@@ -245,6 +265,7 @@ function main() {
   if (!getModel(options.model)) {
     fail(`Unknown model "${options.model}". Run \`savedyouatoken models\` for the list.`);
   }
+  if (options.json && options.contractJson) fail('Choose either --json or --contract-json, not both.');
 
   const counter = createCounterFromO200k((text) => encode(text), 'o200k_base');
   const toolsSource = options.toolsFile ? readFileSync(options.toolsFile, 'utf8') : '';
@@ -292,7 +313,24 @@ function main() {
     }
   }
 
-  if (options.json) {
+  if (options.contractJson) {
+    const generatedAt = new Date().toISOString();
+    for (const [index, { result }] of results.entries()) {
+      const workflowId = options.workflowId
+        ? (results.length === 1 ? options.workflowId : `${options.workflowId}:${index + 1}`)
+        : `cli-audit:${index + 1}`;
+      const report = toReportEnvelope(result, {
+        workflow: { id: workflowId },
+        release: { id: options.releaseId ?? 'unversioned' },
+        provenance: { producer: 'savedyouatoken', producerVersion: VERSION, generatedAt },
+        maturity: { state: 'provisional', observations: 1 },
+        window: { startedAt: generatedAt, endedAt: generatedAt, requests: 1 },
+        engineVersion: ANALYSIS_ENGINE_VERSION,
+        rulesetId: RULESET_ID,
+      });
+      process.stdout.write(canonicalStringify(report) + '\n');
+    }
+  } else if (options.json) {
     process.stdout.write(
       JSON.stringify(
         {

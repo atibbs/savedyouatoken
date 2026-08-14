@@ -12,6 +12,9 @@ export interface MeasuredWorkload {
   workload: Workload;
   /** Whether the request-rate estimate is backed by enough observations and elapsed time. */
   matured: boolean;
+  observations: number;
+  startedAt: number;
+  endedAt: number;
 }
 
 export interface TrafficConfig {
@@ -87,6 +90,9 @@ export class TrafficWindow {
 
     return {
       matured,
+      observations: this.obs.length,
+      startedAt: this.obs[0]?.t ?? now,
+      endedAt: now,
       workload: {
         requestsPerDay,
         outputTokens,

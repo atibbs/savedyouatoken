@@ -1,4 +1,7 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'tsup';
+
+const version = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version;
 
 export default defineConfig({
   entry: ['src/index.ts'],
@@ -13,4 +16,5 @@ export default defineConfig({
   // The core package is TypeScript source shared with the web app, CLI and tests, so it is
   // bundled in rather than published separately — guaranteeing identical analysis logic.
   noExternal: ['@savedyouatoken/core'],
+  define: { __SDK_VERSION__: JSON.stringify(version) },
 });

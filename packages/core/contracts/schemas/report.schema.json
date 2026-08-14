@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://savedyouatoken.com/contracts/v1/report.schema.json",
+  "title": "Saved You a Token report",
+  "type": "object",
+  "required": ["contract", "workflow", "release", "provenance", "maturity", "window", "catalogue", "workload", "analysis"],
+  "properties": {
+    "contract": { "type": "object", "required": ["kind", "version"], "properties": { "kind": { "const": "report" }, "version": { "$ref": "#/$defs/version" } } },
+    "workflow": { "$ref": "#/$defs/workflow" },
+    "release": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string", "minLength": 1 }, "deployedAt": { "type": "string", "format": "date-time" } } },
+    "provenance": { "$ref": "#/$defs/provenance" },
+    "maturity": { "type": "object", "required": ["state", "observations"], "properties": { "state": { "enum": ["provisional", "mature"] }, "observations": { "type": "integer", "minimum": 0 } } },
+    "window": { "type": "object", "required": ["startedAt", "endedAt", "requests"], "properties": { "startedAt": { "type": "string", "format": "date-time" }, "endedAt": { "type": "string", "format": "date-time" }, "requests": { "type": "integer", "minimum": 0 } } },
+    "catalogue": { "type": "object", "required": ["engineVersion", "rulesetId", "modelCatalogueDate", "currency", "tokenizer"], "properties": { "engineVersion": { "type": "string", "minLength": 1 }, "rulesetId": { "type": "string", "minLength": 1 }, "modelCatalogueDate": { "type": "string", "format": "date" }, "currency": { "const": "USD" }, "tokenizer": { "type": "object", "required": ["family", "accuracy", "counter"], "properties": { "family": { "type": "string" }, "accuracy": { "enum": ["exact", "estimated"] }, "counter": { "type": "string" } } } } },
+    "workload": { "type": "object", "required": ["requestsPerDay", "outputTokens", "cacheHitRate", "cacheTtl", "batch"], "properties": { "requestsPerDay": { "type": "number", "minimum": 0 }, "outputTokens": { "type": "number", "minimum": 0 }, "cacheHitRate": { "type": "number", "minimum": 0, "maximum": 1 }, "cacheTtl": { "enum": ["5m", "1h"] }, "batch": { "type": "boolean" } } },
+    "analysis": { "type": "object", "required": ["modelId", "promptTokens", "toolTokens", "inputTokens", "optimizedTokens", "monthlyNow", "monthlyAfterRewrite", "cacheSaving", "findings"], "properties": { "modelId": { "type": "string" }, "promptTokens": { "type": "number", "minimum": 0 }, "toolTokens": { "type": "number", "minimum": 0 }, "inputTokens": { "type": "number", "minimum": 0 }, "optimizedTokens": { "type": "number", "minimum": 0 }, "monthlyNow": { "type": "number", "minimum": 0 }, "monthlyAfterRewrite": { "type": "number", "minimum": 0 }, "cacheSaving": { "type": "number", "minimum": 0 }, "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } } } }
+  },
+  "$defs": {
+    "version": { "type": "object", "required": ["major", "minor"], "properties": { "major": { "const": 1 }, "minor": { "type": "integer", "minimum": 0 } } },
+    "workflow": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string", "minLength": 1 }, "environment": { "type": "string", "minLength": 1 } } },
+    "provenance": { "type": "object", "required": ["producer", "producerVersion", "generatedAt"], "properties": { "producer": { "type": "string" }, "producerVersion": { "type": "string" }, "generatedAt": { "type": "string", "format": "date-time" }, "sourceContractVersion": { "$ref": "#/$defs/version" } } },
+    "finding": { "type": "object", "required": ["ruleId", "severity", "occurrences", "tokensSaved", "monthlySaving"], "properties": { "ruleId": { "type": "string" }, "severity": { "enum": ["high", "medium", "low"] }, "occurrences": { "type": "integer", "minimum": 0 }, "tokensSaved": { "type": "number", "minimum": 0 }, "monthlySaving": { "type": "number", "minimum": 0 } } }
+  }
+}

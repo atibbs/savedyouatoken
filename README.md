@@ -216,6 +216,7 @@ docs/              Product discovery, architecture, monetization, growth,
 - [Roadmap](docs/future-roadmap.md) — next, later, and what was deliberately excluded
 - [Decisions](docs/decisions.md) — consequential choices and their tradeoffs
 - [SDK user story](docs/sdk-user-story.md) — end-to-end production adoption and cost-reduction scenario
+- [Portable contracts](docs/contracts.md) — versioned reports, baselines, policies, compatibility, and privacy
 - [Product platform strategy](docs/product-platform-strategy.md) — product family, journey gaps, tiers,
   flagship north star and website information architecture
 - [Open-source transition plan](docs/open-source-plan.md) — public/private boundaries, publication
