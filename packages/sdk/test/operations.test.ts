@@ -110,6 +110,58 @@ describe('operational identity and metadata', () => {
     expect(analyses[0]?.operations.configurationMode).toBe('legacy');
   });
 
+  it('falls back to legacy workflow identity as a unit when the configured name is invalid', async () => {
+    const health: HealthEvent[] = [];
+    const { events, sink } = collectingSink();
+    const auditor = createAuditor(anthropicAdapter, {
+      counter: testCounter(), workload: FIXED_WORKLOAD, sink,
+      reportContext: { workflowId: 'legacy/support', environment: 'staging', releaseId: 'legacy-release' },
+      operations: {
+        workflow: {
+          name: '', id: 'configured/id', environment: 'production', service: 'configured-service',
+          tags: { owner: 'configured-owner' },
+        },
+        health: callbackHealthDestination((event) => health.push(event)),
+      },
+    });
+    auditor.observe(anthropicRequest());
+    await flushMacrotasks();
+    const report = events.find((event) => event.kind === 'analysis');
+    expect(report?.kind).toBe('analysis');
+    if (report?.kind !== 'analysis') return;
+    expect(report.operations).toMatchObject({
+      configurationMode: 'legacy',
+      workflow: { id: 'legacy/support', name: 'legacy/support', environment: 'staging' },
+    });
+    expect(report.operations.workflow).not.toHaveProperty('service');
+    expect(report.operations.workflow).not.toHaveProperty('tags');
+    expect(report.portableReport.workflow).toEqual({ id: 'legacy/support', environment: 'staging' });
+    expect(health.find((event) => event.kind === 'initialization')).toMatchObject({
+      metadataRejected: expect.arrayContaining([{ field: 'workflow.name', reason: 'missing' }]),
+    });
+  });
+
+  it('distinguishes invalid metadata types from missing values', async () => {
+    const health: HealthEvent[] = [];
+    const { events, sink } = collectingSink();
+    const auditor = createAuditor(anthropicAdapter, {
+      counter: testCounter(), workload: FIXED_WORKLOAD, sink,
+      operations: {
+        workflow: { name: 'Runtime validation', environment: 42 as unknown as string },
+        health: callbackHealthDestination((event) => health.push(event)),
+      },
+    });
+    auditor.observe(anthropicRequest());
+    await flushMacrotasks();
+    const report = events.find((event) => event.kind === 'analysis');
+    expect(report?.operations.workflow).not.toHaveProperty('environment');
+    expect(health.find((event) => event.kind === 'initialization')).toMatchObject({
+      metadataRejected: expect.arrayContaining([
+        { field: 'workflow.environment', reason: 'invalid-type' },
+      ]),
+    });
+  });
+
   it('enforces the serialized tag payload limit', async () => {
     const health: HealthEvent[] = [];
     const { events, sink } = collectingSink();

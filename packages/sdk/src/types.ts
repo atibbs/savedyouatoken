@@ -115,6 +115,7 @@ export interface ShapeChurnDiagnostic {
 
 export type MetadataRejectionReason =
   | 'missing'
+  | 'invalid-type'
   | 'invalid-format'
   | 'too-long'
   | 'too-many-tags'

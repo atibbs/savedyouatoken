@@ -60,32 +60,40 @@ export function resolveOperationalConfiguration(
     OPERATIONAL_METADATA_LIMITS.workflowName,
     rejected,
     false,
+    Boolean(configured),
   );
-  if (configured && !configuredName) configurationMode = 'legacy';
-  const legacyName = boundedText(
-    legacy?.workflowId,
-    'reportContext.workflowId',
-    OPERATIONAL_METADATA_LIMITS.identifier,
-    rejected,
-    true,
-  );
+  const useConfiguredWorkflow = Boolean(configuredName);
+  if (configured && !useConfiguredWorkflow) configurationMode = 'legacy';
+  const legacyName = useConfiguredWorkflow
+    ? undefined
+    : boundedText(
+        legacy?.workflowId,
+        'reportContext.workflowId',
+        OPERATIONAL_METADATA_LIMITS.identifier,
+        rejected,
+        true,
+      );
   const name = configuredName ?? legacyName ?? fallbackName;
 
-  const service = boundedText(
-    configured?.workflow?.service,
-    'workflow.service',
-    OPERATIONAL_METADATA_LIMITS.identifier,
-    rejected,
-    true,
-  );
-  const explicitId = boundedText(
-    configured?.workflow?.id,
-    'workflow.id',
-    OPERATIONAL_METADATA_LIMITS.identifier,
-    rejected,
-    true,
-  );
-  const legacyId = configured
+  const service = useConfiguredWorkflow
+    ? boundedText(
+        configured?.workflow?.service,
+        'workflow.service',
+        OPERATIONAL_METADATA_LIMITS.identifier,
+        rejected,
+        true,
+      )
+    : undefined;
+  const explicitId = useConfiguredWorkflow
+    ? boundedText(
+        configured?.workflow?.id,
+        'workflow.id',
+        OPERATIONAL_METADATA_LIMITS.identifier,
+        rejected,
+        true,
+      )
+    : undefined;
+  const legacyId = useConfiguredWorkflow
     ? undefined
     : boundedText(
         legacy?.workflowId,
@@ -95,14 +103,22 @@ export function resolveOperationalConfiguration(
         true,
       );
   const id = explicitId ?? legacyId ?? generatedWorkflowId(name, service);
-  const environment = boundedText(
-    configured?.workflow?.environment ?? legacy?.environment,
-    configured ? 'workflow.environment' : 'reportContext.environment',
-    OPERATIONAL_METADATA_LIMITS.identifier,
-    rejected,
-    true,
-  );
-  const tags = boundedTags(configured?.workflow?.tags, rejected);
+  const environment = useConfiguredWorkflow
+    ? boundedText(
+        configured?.workflow?.environment,
+        'workflow.environment',
+        OPERATIONAL_METADATA_LIMITS.identifier,
+        rejected,
+        true,
+      )
+    : boundedText(
+        legacy?.environment,
+        'reportContext.environment',
+        OPERATIONAL_METADATA_LIMITS.identifier,
+        rejected,
+        true,
+      );
+  const tags = useConfiguredWorkflow ? boundedTags(configured?.workflow?.tags, rejected) : undefined;
 
   const releaseSource: ReleaseConfiguration = configured?.release ?? {
     deployment: legacy?.releaseId,
@@ -208,9 +224,17 @@ function boundedText(
   maxLength: number,
   rejected: MetadataRejection[],
   identifier: boolean,
+  required = false,
 ): string | undefined {
-  if (value == null) return undefined;
-  if (typeof value !== 'string' || !value.trim()) {
+  if (value == null) {
+    if (required) reject(rejected, field, 'missing');
+    return undefined;
+  }
+  if (typeof value !== 'string') {
+    reject(rejected, field, 'invalid-type');
+    return undefined;
+  }
+  if (!value.trim()) {
     reject(rejected, field, 'missing');
     return undefined;
   }
