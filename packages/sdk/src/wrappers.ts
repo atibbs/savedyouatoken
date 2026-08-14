@@ -149,12 +149,29 @@ function instrument<T extends object>(target: T, path: string[], auditor: Audito
   });
 }
 
+function reportUnsupportedMethod(target: object, path: string[], auditor: Auditor): void {
+  try {
+    let current: unknown = target;
+    for (const segment of path) {
+      if (!current || (typeof current !== 'object' && typeof current !== 'function')) {
+        auditor.notifyUnsupportedMethod(path.join('.'));
+        return;
+      }
+      current = Reflect.get(current as object, segment);
+    }
+    if (typeof current !== 'function') auditor.notifyUnsupportedMethod(path.join('.'));
+  } catch {
+    auditor.notifyUnsupportedMethod(path.join('.'));
+  }
+}
+
 /**
  * Wrap an Anthropic client so every `messages.create` is audited after it returns, off the hot
  * path. The client's requests and responses are unchanged; an audit failure never surfaces.
  */
 export function wrapAnthropic<T extends object>(client: T, options?: AuditorOptions): T {
   const auditor = createAuditor(anthropicAdapter, options);
+  reportUnsupportedMethod(client, ['messages', 'create'], auditor);
   return instrument(client, ['messages', 'create'], auditor);
 }
 
@@ -165,6 +182,8 @@ export function wrapAnthropic<T extends object>(client: T, options?: AuditorOpti
  */
 export function wrapOpenAI<T extends object>(client: T, options?: AuditorOptions): T {
   const auditor = createAuditor(openaiAdapter, options);
+  reportUnsupportedMethod(client, ['chat', 'completions', 'create'], auditor);
+  reportUnsupportedMethod(client, ['responses', 'create'], auditor);
   const withChat = instrument(client, ['chat', 'completions', 'create'], auditor);
   return instrument(withChat, ['responses', 'create'], auditor);
 }

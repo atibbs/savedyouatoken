@@ -15,6 +15,7 @@ export {
   fileSink,
   callbackSink,
   dashboardSink,
+  callbackHealthDestination,
   noopSink,
   type DashboardSinkOptions,
 } from './sinks';
@@ -29,5 +30,22 @@ export type {
   AuditorOptions,
   WorkloadOverrides,
   PortableReportContext,
+  WorkflowConfiguration,
+  ReleaseConfiguration,
+  SdkOperationsConfiguration,
+  OperationalContext,
+  ComparisonProvenance,
+  MeasurementStatus,
+  MaturityThresholds,
+  MaturityProgress,
+  MaturityReasonCode,
+  ShapeChurnDiagnostic,
+  ShapeDiagnosticsConfiguration,
+  MetadataRejection,
+  MetadataRejectionReason,
+  HealthEvent,
+  HealthDestination,
   ReportEnvelope,
 } from './types';
+
+export { OPERATIONAL_METADATA_LIMITS } from './types';

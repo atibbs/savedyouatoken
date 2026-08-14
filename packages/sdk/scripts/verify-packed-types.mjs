@@ -68,14 +68,19 @@ try {
     join(consumer, 'index.ts'),
     `import {
   wrapOpenAI, wrapAnthropic, createAuditor, anthropicAdapter, openaiAdapter,
-  consoleSink, fileSink, callbackSink, dashboardSink, noopSink, normaliseModelId,
+  consoleSink, fileSink, callbackSink, callbackHealthDestination, dashboardSink, noopSink, normaliseModelId,
   type AuditEvent, type AuditorOptions, type CapturedRequest, type RequestAdapter,
-  type PortableReportContext, type ReportEnvelope,
+  type PortableReportContext, type ReportEnvelope, type HealthEvent, type SdkOperationsConfiguration,
 } from '@savedyouatoken/sdk';
 
 const reportContext: PortableReportContext = { workflowId: 'support/triage', releaseId: 'abc123' };
+const operations: SdkOperationsConfiguration = {
+  workflow: { name: 'Support triage', service: 'support-api', tags: { owner: 'platform' } },
+  release: { commit: 'abc123' },
+  health: callbackHealthDestination((event: HealthEvent) => void event.kind),
+};
 const opts: AuditorOptions = {
-  reportContext,
+  operations,
   mask: (s: string) => s,
   sink: callbackSink((e: AuditEvent) => {
     if (e.kind === 'analysis') {
@@ -83,7 +88,9 @@ const opts: AuditorOptions = {
       const model: string = e.result.model.id;
       const summaries: string[] = e.report.findings.map((f) => f.summary);
       const portable: ReportEnvelope = e.portableReport;
-      void perMonth; void model; void summaries; void portable;
+      const workflowName: string = e.operations.workflow.name;
+      const progress: number = e.maturity.progress.overall;
+      void perMonth; void model; void summaries; void portable; void workflowName; void progress;
     }
   }),
 };
@@ -91,6 +98,7 @@ const auditor = createAuditor(anthropicAdapter, opts);
 auditor.observe({ model: 'claude-sonnet-5', system: 'hi' });
 const resolved = normaliseModelId('gpt-5.5');
 void resolved.modelId;
+void reportContext;
 export { wrapOpenAI, wrapAnthropic, openaiAdapter, consoleSink, fileSink, dashboardSink, noopSink };
 export type { CapturedRequest, RequestAdapter };
 `,
