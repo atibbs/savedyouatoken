@@ -340,3 +340,32 @@ analytics only ever sees pageview paths and two event names, never prompt or too
 It is still a script and a small telemetry stream, so the absolute "nothing is transmitted" line no
 longer holds; the affected docs were updated to say so truthfully. Custom events depend on the
 Vercel plan's analytics limits (pageviews work on the free tier regardless).
+
+---
+
+## Decision: Separate SDK workflow operations from prompt-shape analysis
+
+**Context:**
+The SDK originally used a prompt-derived shape hash as its fallback report identity and tracked
+maturity separately for each shape. That made release comparisons hard, let prompt churn repeatedly
+reset apparent progress, and gave operators no safe way to distinguish expected silence from broken
+instrumentation.
+
+**Decision:**
+Use an explicit, bounded workflow configuration as the durable operational identity. Generate an id
+from the caller's workflow name and service when none is supplied, never from prompt content. Track
+traffic maturity at the workflow level while retaining shape-local analysis/deduplication. Deliver
+prompt-free health and mask diagnostics through a separate opt-in, deferred destination; keep the
+legacy `reportContext` path through the current 0.x line.
+
+**Reason:**
+Workflow identity and instrumentation health describe the production integration, while shape hashes
+describe changing analysis inputs. Separating them produces comparison-ready reports and maturity
+that survives harmless prompt variation without weakening deterministic analysis or the privacy
+boundary.
+
+**Tradeoff:**
+One auditor is now expected to represent one operational workflow. If an integration combines truly
+independent workloads behind one auditor, its measured request rate is shared across their shapes;
+those workloads should use separately configured auditors. Health configuration adds setup, but
+production remains silent when no destination is configured.
