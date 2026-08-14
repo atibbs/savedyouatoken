@@ -19,10 +19,15 @@
     "cli": "npm run cli --workspace savedyouatoken --",
     "verify:cli": "node scripts/verify-packed-cli.mjs",
     "guard:cli-release": "node scripts/guard-cli-release.mjs",
-    "build:kit": "node scripts/build-kit.mjs"
+    "build:kit": "node scripts/build-kit.mjs",
+    "openspec:validate": "openspec validate --all --strict --no-interactive",
+    "openspec:validate:archived": "openspec validate --archived --no-interactive"
   },
   "engines": {
     "node": ">=20.9.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@fission-ai/openspec": "1.9.0"
+  }
 }
