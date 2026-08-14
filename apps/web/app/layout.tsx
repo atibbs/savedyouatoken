@@ -40,6 +40,9 @@ export const metadata: Metadata = {
   },
   description: TAGLINE,
   applicationName: SITE_NAME,
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  category: 'technology',
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,
@@ -47,7 +50,11 @@ export const metadata: Metadata = {
     description: TAGLINE,
     url: SITE_URL,
   },
-  twitter: { card: 'summary_large_image' },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'savedyouatoken — audit your LLM prompt costs',
+    description: TAGLINE,
+  },
   robots: { index: true, follow: true },
 };
 
