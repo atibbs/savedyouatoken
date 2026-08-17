@@ -80,10 +80,15 @@ change 1 can ship first and be updated as these features land.
 
 ### 5. Add the CLI regression workflow
 
-**Change:** [`add-cli-regression-workflow`](changes/add-cli-regression-workflow/)
+**Status:** Completed and archived on 2026-08-17.
+
+**Change:** [`add-cli-regression-workflow`](changes/archive/2026-08-17-add-cli-regression-workflow/)
 
 **Outcome:** Teams discover repository assets, import production evidence, create baselines and
-policies, see priced pull-request diffs, and enforce regression budgets in CI.
+policies, see priced pull-request diffs, and enforce regression budgets in CI. Shipped in
+[PR #20](https://github.com/atibbs/savedyouatoken/pull/20): `discover`, `baseline create`,
+`compare`, `policy generate`/`policy check`, `import-report`, and an idempotent GitHub
+pull-request feedback workflow, dogfooded on this repository's own fixtures.
 
 **Why before hosted Monitor:** It supplies durable prevention locally and tests a central paid-value
 assumption without requiring a service.
