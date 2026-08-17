@@ -84,6 +84,27 @@ export interface BaselineDocument {
   release: ReleaseIdentity;
 }
 
+export const BASELINE_BUNDLE_SCHEMA = 'savedyouatoken.cli/baseline-bundle';
+export const BASELINE_BUNDLE_VERSION = { major: 1, minor: 0 } as const;
+
+/**
+ * A committable pairing of a `BaselineDocument` pointer with the full `ReportEnvelope` it points
+ * to. `BaselineDocument` is only an identity pointer (a content hash) — core has no storage model
+ * to resolve that hash back to a report, so any consumer that needs to (the CLI today; a future
+ * SDK/Monitor integration) needs this exact pairing. The shape lives here so every consumer can
+ * share one portable, browser-safe type; reading and writing it is runtime-specific (files for
+ * the CLI, a database for a hosted service) and deliberately stays out of core.
+ */
+export interface BaselineBundle {
+  schema: typeof BASELINE_BUNDLE_SCHEMA;
+  version: ContractVersion;
+  baseline: BaselineDocument;
+  report: ReportEnvelope;
+  /** Relative paths of the files the report was built from. Paths only — never prompt text. */
+  sources?: string[];
+  sourceRevision?: string;
+}
+
 export type EnforcementSeverity = 'warn' | 'fail';
 export interface PolicyBudgets {
   maxInputTokens?: number;
@@ -382,12 +403,29 @@ export function classifyReportCompatibility(a: ReportEnvelope, b: ReportEnvelope
 
 export interface PolicyBreach { budget: keyof PolicyBudgets; actual: number; limit: number }
 export interface PolicyEvaluation { outcome: 'pass' | 'warn' | 'fail'; breaches: PolicyBreach[] }
-export function evaluatePolicy(policy: PolicyDocument, report: ReportEnvelope, baseline?: ReportEnvelope): PolicyEvaluation {
+/**
+ * `baselineId` is the content identity (from `contentIdentity()`) of the actual `baseline`
+ * report being supplied, when the caller has one. It is optional and purely additive — omitting
+ * it preserves prior behavior exactly — but when supplied alongside a `policy.baselineId`, a
+ * mismatch is rejected. Without this, `baseline` only needs to be *compatible* (same workflow,
+ * currency, model) with `report` to be accepted, which would let a caller silently evaluate
+ * regression budgets against a baseline other than the one the policy was actually generated
+ * against (e.g. a stale baseline from a prior release that happens to share those fields).
+ */
+export function evaluatePolicy(
+  policy: PolicyDocument,
+  report: ReportEnvelope,
+  baseline?: ReportEnvelope,
+  baselineId?: string,
+): PolicyEvaluation {
   if (policy.target.id !== report.workflow.id) throw new Error('Policy target does not match report workflow');
   if (policy.pricing.currency !== report.catalogue.currency) throw new Error('Policy currency does not match report');
   if (policy.pricing.modelId !== report.analysis.modelId) throw new Error('Policy model does not match report');
   const needsBaseline = policy.budgets.maxTokenRegressionPercent != null || policy.budgets.maxCostRegressionPercent != null;
   if (needsBaseline && !baseline) throw new Error('Baseline report is required for regression budgets');
+  if (baseline && policy.baselineId && baselineId && policy.baselineId !== baselineId) {
+    throw new Error(`Supplied baseline (${baselineId}) does not match the baseline this policy was generated against (${policy.baselineId})`);
+  }
   const breaches: PolicyBreach[] = [];
   addBreach(breaches, 'maxInputTokens', report.analysis.inputTokens, policy.budgets.maxInputTokens);
   addBreach(breaches, 'maxMonthlyCost', report.analysis.monthlyNow, policy.budgets.maxMonthlyCost);

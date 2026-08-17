@@ -181,6 +181,26 @@ describe('canonical identity and compatibility', () => {
       breaches: expect.arrayContaining([expect.objectContaining({ budget: 'maxTokenRegressionPercent' })]),
     });
   });
+
+  it('rejects a compatible baseline whose identity does not match policy.baselineId', () => {
+    const parsedReport = parseReportEnvelope(fixture('report-v1.1.valid.json'));
+    const parsedPolicy = parsePolicyDocument(fixture('policy-v1.1.valid.json'));
+    expect(parsedReport.ok && parsedPolicy.ok).toBe(true);
+    if (!parsedReport.ok || !parsedPolicy.ok) return;
+    const baseline = structuredClone(parsedReport.value);
+    // Compatible (same workflow/currency/model as the report) but not the specific baseline
+    // policy.baselineId ("sha256:aaa...") points to.
+    const wrongBaselineId = `sha256:${'b'.repeat(64)}`;
+    expect(() => evaluatePolicy(parsedPolicy.value, parsedReport.value, baseline, wrongBaselineId)).toThrow(
+      /does not match the baseline this policy was generated against/,
+    );
+    // Omitting the identity argument entirely preserves prior behavior (no check performed).
+    expect(() => evaluatePolicy(parsedPolicy.value, parsedReport.value, baseline)).not.toThrow();
+    // The correct identity passes.
+    expect(() =>
+      evaluatePolicy(parsedPolicy.value, parsedReport.value, baseline, parsedPolicy.value.baselineId),
+    ).not.toThrow();
+  });
 });
 
 describe('portable report privacy', () => {

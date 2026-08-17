@@ -162,8 +162,11 @@ export function analyze(input: AnalyzeInput): AnalysisResult {
     }
     if (!output) continue;
 
+    // Advisory rules (autofix: false) must never reach the automatic rewrite, even if a rule's
+    // detect() mistakenly returns edits — the split between "safe to fix" and "needs review" is
+    // load-bearing for --fix and must hold structurally, not by convention in each rule file.
     const ruleEdits: Edit[] = [];
-    for (const edit of output.edits ?? []) {
+    for (const edit of rule.autofix ? (output.edits ?? []) : []) {
       if (rule.respectsCodeFences && codeRanges.some((r) => rangesOverlap(edit, r))) continue;
       if (accepted.some((a) => rangesOverlap(edit, a))) continue;
       if (ruleEdits.some((a) => rangesOverlap(edit, a))) continue;

@@ -1,4 +1,9 @@
 node_modules/
+# Discovery test fixtures: deliberately simulate real node_modules directories (including one
+# nested under a package, not just at the fixture root) so the CLI's default ignore rules are
+# actually exercised at every depth in CI, not just present on disk locally.
+!packages/cli/test/fixtures/discovery/**/node_modules/
+!packages/cli/test/fixtures/discovery/**/node_modules/**
 .next/
 out/
 dist/
