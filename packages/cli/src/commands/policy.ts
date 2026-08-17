@@ -149,6 +149,15 @@ async function runGenerate(argv: string[]): Promise<void> {
 
   if (baselinePath) {
     const bundle = await readBaselineBundle(baselinePath);
+    if (workflowId && workflowId !== bundle.report.workflow.id) {
+      fail(
+        `--workflow "${workflowId}" does not match the baseline's own workflow ` +
+          `("${bundle.report.workflow.id}"). policy.baselineId hashes the baseline's report, workflow ` +
+          `included, so a policy generated with a different target could never pass a policy check ` +
+          `against this baseline — recreate the baseline instead: ` +
+          `\`savedyouatoken baseline create --workflow ${workflowId} ...\`.`,
+      );
+    }
     report = bundle.report;
     baselineId = bundle.baseline.reportId;
   } else if (fromReport) {

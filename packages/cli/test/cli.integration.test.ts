@@ -139,6 +139,16 @@ describe('CLI regression workflow (end to end)', () => {
     expect(result.stderr).toContain('at most one file');
   });
 
+  it('policy generate --baseline rejects a --workflow override that does not match the baseline', () => {
+    // Regression test: policy.baselineId hashes the baseline's own report (workflow included),
+    // so overriding --workflow here used to produce a policy check could never pass.
+    const baselineOut = join(dir, 'baseline.json'); // workflow: e2e/triage
+    const policyOut = join(dir, 'should-not-exist.json');
+    const result = run(['policy', 'generate', '--baseline', baselineOut, '--workflow', 'different/workflow', '--out', policyOut]);
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain("does not match the baseline's own workflow");
+  });
+
   it('rejects a policy check against a baseline it was not generated from', () => {
     const policyOut = join(dir, 'policy.json');
     const otherBaselineOut = join(dir, 'other-baseline.json');
