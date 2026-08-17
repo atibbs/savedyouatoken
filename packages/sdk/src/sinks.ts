@@ -138,3 +138,66 @@ export function dashboardSink(opts: DashboardSinkOptions): AuditSink {
     },
   };
 }
+
+export interface LocalWorkbenchSinkOptions {
+  /** The ephemeral token `savedyouatoken workbench start` prints — required, since the
+   *  workbench's /ingest route rejects anything else. */
+  token: string;
+  /** Defaults to the workbench's default local port. Override if it started on another one. */
+  url?: string;
+  /** Total attempts is `1 + maxRetries`. Defaults to 2 retries (3 attempts). */
+  maxRetries?: number;
+  /** Base delay before a retry, doubling each attempt. Defaults to 200ms. */
+  retryDelayMs?: number;
+  /** Injectable for testing; defaults to global `fetch`. */
+  fetchImpl?: typeof fetch;
+}
+
+const DEFAULT_WORKBENCH_URL = 'http://127.0.0.1:4590/ingest';
+
+/**
+ * Opt-in local destination: posts the portable report directly to a running
+ * `savedyouatoken workbench` instance on the same machine. Nothing else in the event — no
+ * per-prompt `result`, no tool text — ever leaves the process; an `unknown-model` event has no
+ * report to store and is skipped.
+ *
+ * The workbench is a local, on-demand process, so a request can legitimately arrive before it
+ * has finished starting or during a restart — unlike `dashboardSink`, this retries a bounded
+ * number of times with backoff before giving up. A final failure still throws, so the existing
+ * sink-delivery health-event reporting in the auditor surfaces it the same way any other sink
+ * failure would.
+ */
+export function localWorkbenchSink(opts: LocalWorkbenchSinkOptions): AuditSink {
+  const doFetch = opts.fetchImpl ?? globalThis.fetch;
+  const url = opts.url ?? DEFAULT_WORKBENCH_URL;
+  const maxRetries = opts.maxRetries ?? 2;
+  const retryDelayMs = opts.retryDelayMs ?? 200;
+
+  return {
+    async emit(event) {
+      if (!doFetch || event.kind !== 'analysis') return;
+      const body = JSON.stringify(event.portableReport);
+
+      let lastError: unknown;
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await doFetch(url, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', authorization: `Bearer ${opts.token}` },
+            body,
+          });
+          if (response.ok) return;
+          lastError = new Error(`Workbench ingest returned HTTP ${response.status}`);
+        } catch (err) {
+          lastError = err;
+        }
+        if (attempt < maxRetries) await delay(retryDelayMs * 2 ** attempt);
+      }
+      throw lastError;
+    },
+  };
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

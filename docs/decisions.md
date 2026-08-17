@@ -430,3 +430,44 @@ means `scripts/post-regression-comment.mjs` cannot `import` `@savedyouatoken/cor
 ships as unbuilt TypeScript source), so its dollar-formatting logic is a deliberate, commented copy
 of `packages/core/src/cost.ts`'s `formatUsd` rather than a shared import — a real duplication risk
 if core's formatting rules change without this copy being updated to match.
+
+---
+
+## Decision: Build the local monitoring workbench as a loopback-only `node:http` server with no new dependencies
+
+**Context:**
+`add-local-monitoring-workbench` needed a local server, a local storage convention (none existed
+anywhere in this repo), and a UI — the kind of surface that usually pulls in a web framework, a
+database, and a frontend build step.
+
+**Decision:**
+The workbench is a single CLI subcommand (`savedyouatoken workbench start`) that boots a
+`node:http` server bound to `127.0.0.1` only — no LAN option exists at all, not just a default.
+State-changing routes require a random token generated fresh on every `start` and never persisted;
+the server embeds that token in every page it renders, so it doubles as CSRF protection for the
+UI's own forms. The UI is server-rendered HTML template strings styled with the product's color
+tokens but the system font stack, not a copy of `apps/web`'s self-hosted Manrope/DM Mono files.
+Storage is immutable `ReportEnvelope` documents on disk plus a disposable, rebuildable index, at a
+new `~/.savedyouatoken/workbench` convention (`$SAVEDYOUATOKEN_WORKBENCH_DIR` to override).
+Comparison and policy construction reuse `packages/core`'s existing `diffReports`/
+`classifyReportCompatibility`/`evaluatePolicy` rather than reimplementing that logic against the
+workbench's own storage. The SDK's new `localWorkbenchSink` is `dashboardSink`'s pattern plus
+bounded retry with backoff, since a local process (unlike a hosted dashboard) can legitimately not
+be running yet when a request tries to reach it.
+
+**Reason:**
+None of the three needs justified new infrastructure: `node:http` is sufficient for a handful of
+routes serving one local user, a relational database would harden a schema before the design has
+been validated by real use (the explicit reason design.md rejects one), and a build-step UI
+framework would break the CLI's single-file `tsup` bundle for a local tool that only needs tables,
+forms, and a couple of buttons. This keeps `packages/cli`'s dependency graph exactly as it was
+after the CLI regression workflow — still just `gpt-tokenizer`.
+
+**Tradeoff:**
+The UI does not visually match `apps/web` pixel-for-pixel (system fonts, not the self-hosted
+webfonts) and has no client-side interactivity beyond one small inline script for the compare
+picker. Loopback-only with no LAN option means the workbench cannot be shared with a teammate or
+reached from a container without port-forwarding — an explicit, deliberate limitation from
+design.md, not an oversight. Building this in `packages/cli` rather than a separate package also
+means the CLI's bundle grew (~195KB from ~160KB) even for the audit-only workflow, since tsup
+still ships every subcommand in one file.

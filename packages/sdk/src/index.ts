@@ -15,9 +15,11 @@ export {
   fileSink,
   callbackSink,
   dashboardSink,
+  localWorkbenchSink,
   callbackHealthDestination,
   noopSink,
   type DashboardSinkOptions,
+  type LocalWorkbenchSinkOptions,
 } from './sinks';
 
 export { normaliseModelId, type ModelResolution } from './normalise-model';

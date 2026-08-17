@@ -58,6 +58,7 @@ USAGE
   savedyouatoken policy generate <file>|--baseline <path>|--from-report <path> [options]
   savedyouatoken policy check <file> --policy <path> [--baseline <path>] [options]
   savedyouatoken import-report <path> [options]
+  savedyouatoken workbench start|import|approve|export|delete [options]
 
 AUDIT OPTIONS
   -m, --model <id>          Model to price against (default: ${DEFAULT_MODEL_ID})
@@ -83,7 +84,7 @@ CI EXAMPLE
   Exits 1 when a budget is breached, so a pull request that inflates a prompt
   fails the build instead of surprising you on the invoice.
 
-Run \`savedyouatoken <command> --help\` for discover/baseline/compare/policy/import-report options.
+Run \`savedyouatoken <command> --help\` for discover/baseline/compare/policy/import-report/workbench options.
 Prices last verified ${PRICES_VERIFIED_ON}. Nothing is uploaded; no model is called.
 `;
 

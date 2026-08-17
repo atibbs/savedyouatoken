@@ -13,8 +13,9 @@ import { runCompare } from './commands/compare';
 import { runDiscover } from './commands/discover';
 import { runImportReport } from './commands/import-report';
 import { runPolicy } from './commands/policy';
+import { runWorkbench } from './commands/workbench';
 
-const SUBCOMMANDS = new Set(['discover', 'baseline', 'compare', 'policy', 'import-report']);
+const SUBCOMMANDS = new Set(['discover', 'baseline', 'compare', 'policy', 'import-report', 'workbench']);
 
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
@@ -32,6 +33,8 @@ async function main(): Promise<void> {
         return runPolicy(rest);
       case 'import-report':
         return runImportReport(rest);
+      case 'workbench':
+        return runWorkbench(rest);
     }
   }
 
