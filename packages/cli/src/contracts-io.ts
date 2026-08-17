@@ -71,6 +71,14 @@ export async function readBaselineBundle(path: string): Promise<BaselineBundle> 
   if (raw?.schema !== BASELINE_BUNDLE_SCHEMA) {
     fail(`${path} is not a savedyouatoken baseline bundle (missing or unrecognised "schema").`);
   }
+  const version = raw.version as { major?: unknown; minor?: unknown } | undefined;
+  if (typeof version?.major !== 'number' || version.major !== BASELINE_BUNDLE_VERSION.major) {
+    fail(
+      `${path} has an unsupported baseline-bundle version ` +
+        `(expected major ${BASELINE_BUNDLE_VERSION.major}, got ${JSON.stringify(raw.version) ?? 'missing'}). ` +
+        `Re-run \`savedyouatoken baseline create\` with a current CLI version to regenerate it.`,
+    );
+  }
   const reportParsed = parseReportEnvelope(raw.report);
   if (!reportParsed.ok) {
     fail(`${path}: embedded report failed validation:\n${formatContractErrors(reportParsed.errors)}`);
@@ -93,7 +101,7 @@ export async function readBaselineBundle(path: string): Promise<BaselineBundle> 
 
   return {
     schema: BASELINE_BUNDLE_SCHEMA,
-    version: (raw.version as { major: number; minor: number } | undefined) ?? { ...BASELINE_BUNDLE_VERSION },
+    version: { major: version.major, minor: typeof version.minor === 'number' ? version.minor : 0 },
     baseline,
     report,
     sources: Array.isArray(raw.sources) ? (raw.sources as string[]) : undefined,

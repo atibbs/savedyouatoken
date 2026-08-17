@@ -36,7 +36,14 @@ export function scan(config: DiscoveryConfig, cwd = process.cwd()): DiscoveryRes
   const candidates: AssetCandidate[] = [];
   const seen = new Set<string>();
   for (const root of config.roots) {
-    walk(join(cwd, root), cwd, config, candidates, seen);
+    const absRoot = join(cwd, root);
+    const rel = relative(cwd, absRoot);
+    // A root that escapes cwd (a config typo like ".." or "../secrets") must never be scanned —
+    // discovery only ever inspects the repository it was pointed at, never its surroundings.
+    if (rel === '..' || rel.startsWith(`..${sep}`)) {
+      fail(`Discovery root "${root}" resolves outside the scan directory (${absRoot}). Configured roots must stay within it.`);
+    }
+    walk(absRoot, cwd, config, candidates, seen);
   }
   candidates.sort((a, b) => a.id.localeCompare(b.id));
   return { config, candidates };

@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { scan } from '../../src/discovery/scan';
 import { DEFAULT_IGNORE, type AssetCandidate } from '../../src/discovery/types';
 
@@ -64,5 +64,27 @@ describe('scan', () => {
     const ids = candidates.map((c) => c.id);
     expect(ids.every((id) => !id.startsWith('/'))).toBe(true);
     expect(ids).toEqual([...ids].sort((a, b) => a.localeCompare(b)));
+  });
+});
+
+describe('scan root containment', () => {
+  it('refuses a configured root that resolves outside the scan directory', () => {
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => {
+      throw new Error(`process.exit(${code})`);
+    }) as never);
+    const errSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+    expect(() => scan({ roots: ['..'], ignore: DEFAULT_IGNORE }, fixtureRoot)).toThrow('process.exit(2)');
+    expect(errSpy.mock.calls.join('\n')).toContain('resolves outside the scan directory');
+
+    expect(() => scan({ roots: ['../../etc'], ignore: DEFAULT_IGNORE }, fixtureRoot)).toThrow('process.exit(2)');
+
+    exitSpy.mockRestore();
+    errSpy.mockRestore();
+  });
+
+  it('still allows "." and nested subdirectories, which stay within the scan directory', () => {
+    expect(() => scan({ roots: ['.'], ignore: DEFAULT_IGNORE }, fixtureRoot)).not.toThrow();
+    expect(() => scan({ roots: ['apps/a'], ignore: DEFAULT_IGNORE }, fixtureRoot)).not.toThrow();
   });
 });

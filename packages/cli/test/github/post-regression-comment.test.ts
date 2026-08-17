@@ -141,6 +141,48 @@ describe('postOrUpdateComment (idempotency and permission fallback)', () => {
     expect(calls.some((c) => c.method === 'POST')).toBe(false);
   });
 
+  it('paginates past a full first page to find the marker comment, instead of posting a duplicate', async () => {
+    // Regression test: a PR with >100 comments previously only ever saw page 1, so a marker
+    // comment living on page 2 was invisible and every rerun posted a new duplicate comment.
+    const fullPageOfOthers = Array.from({ length: 100 }, (_, i) => ({ id: i, body: `unrelated comment ${i}` }));
+    const secondPage = [{ id: 999, body: `${MARKER}\nprevious` }];
+    const getCalls: string[] = [];
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (init?.method === undefined) {
+          getCalls.push(url);
+          if (url.includes('page=2')) return jsonResponse(secondPage);
+          return jsonResponse(fullPageOfOthers);
+        }
+        return jsonResponse({ id: 999 });
+      }),
+    );
+
+    const action = await postOrUpdateComment('body v3');
+    expect(action).toBe('updated');
+    expect(getCalls.some((u) => u.includes('page=1'))).toBe(true);
+    expect(getCalls.some((u) => u.includes('page=2'))).toBe(true);
+  });
+
+  it('stops paginating as soon as a page comes back short (no unnecessary requests)', async () => {
+    const getCalls: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (init?.method === undefined) {
+          getCalls.push(url);
+          return jsonResponse([{ id: 1, body: 'short page, well under 100' }]);
+        }
+        return jsonResponse({ id: 1 });
+      }),
+    );
+
+    await postOrUpdateComment('body');
+    expect(getCalls).toHaveLength(1);
+  });
+
   it('throws on an API failure (e.g. missing pull-requests: write permission), so the caller can fall back', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({ message: 'Resource not accessible by integration' }, 403)));
     await expect(postOrUpdateComment('body')).rejects.toThrow('403');

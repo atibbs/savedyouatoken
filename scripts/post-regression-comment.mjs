@@ -130,6 +130,29 @@ export function findExistingCommentId(comments) {
   return existing ? existing.id : null;
 }
 
+const COMMENTS_PER_PAGE = 100;
+// A GitHub-hard cap, not a realistic one — protects against an infinite loop if the API ever
+// returns a full page forever (e.g. a broken mock in a test) rather than reflecting an actual
+// expected PR comment count.
+const MAX_COMMENT_PAGES = 100;
+
+/** Fetches every comment on the PR, not just the first page — a PR with more than one page of
+ *  comments would otherwise never find its own marker comment and would post a duplicate on
+ *  every rerun instead of updating it. */
+export async function listAllComments(api, prNumber, headers) {
+  const comments = [];
+  for (let page = 1; page <= MAX_COMMENT_PAGES; page++) {
+    const response = await fetch(`${api}/issues/${prNumber}/comments?per_page=${COMMENTS_PER_PAGE}&page=${page}`, {
+      headers,
+    });
+    if (!response.ok) throw new Error(`listing comments failed: ${response.status} ${await response.text()}`);
+    const batch = await response.json();
+    comments.push(...batch);
+    if (batch.length < COMMENTS_PER_PAGE) break;
+  }
+  return comments;
+}
+
 export async function postOrUpdateComment(body) {
   const token = process.env.GITHUB_TOKEN;
   const repo = process.env.GITHUB_REPOSITORY;
@@ -148,9 +171,7 @@ export async function postOrUpdateComment(body) {
     'X-GitHub-Api-Version': '2022-11-28',
   };
 
-  const listResponse = await fetch(`${api}/issues/${prNumber}/comments?per_page=100`, { headers });
-  if (!listResponse.ok) throw new Error(`listing comments failed: ${listResponse.status} ${await listResponse.text()}`);
-  const comments = await listResponse.json();
+  const comments = await listAllComments(api, prNumber, headers);
   const existingId = findExistingCommentId(comments);
 
   const writeResponse = existingId

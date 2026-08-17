@@ -106,7 +106,14 @@ export function requireKnownModel(options: AuditOptions): void {
 /** Runs the same deterministic pipeline the default audit command uses, for exactly one file. */
 export function analyzeFile(file: string, options: AuditOptions): AnalysisResult {
   const counter = createCounterFromO200k((text) => encode(text), 'o200k_base');
-  const toolsSource = options.toolsFile ? readFileSync(options.toolsFile, 'utf8') : '';
+  let toolsSource = '';
+  if (options.toolsFile) {
+    try {
+      toolsSource = readFileSync(options.toolsFile, 'utf8');
+    } catch {
+      return fail(`Cannot read ${options.toolsFile}`);
+    }
+  }
   let prompt: string;
   try {
     prompt = readFileSync(file, 'utf8');

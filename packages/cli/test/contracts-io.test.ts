@@ -99,4 +99,43 @@ describe('baseline bundle round trip', () => {
     exitSpy.mockRestore();
     errSpy.mockRestore();
   });
+
+  it('rejects a bundle with an unsupported (or missing) major version instead of misreading it', async () => {
+    const report = buildReport();
+    const reportId = await contentIdentity(report);
+    const baseline: BaselineDocument = {
+      contract: { kind: 'baseline', version: { ...CONTRACT_VERSION } },
+      provenance: { producer: 'test', producerVersion: '0.0.0', generatedAt: '2026-01-01T00:00:00.000Z' },
+      reportId,
+      workflow: report.workflow,
+      release: report.release,
+    };
+
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => {
+      throw new Error(`process.exit(${code})`);
+    }) as never);
+    const errSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+    const futureMajorPath = join(dir, 'future-major.json');
+    await writeBaselineBundle(futureMajorPath, {
+      schema: BASELINE_BUNDLE_SCHEMA,
+      version: { major: BASELINE_BUNDLE_VERSION.major + 1, minor: 0 },
+      baseline,
+      report,
+    });
+    await expect(readBaselineBundle(futureMajorPath)).rejects.toThrow('process.exit(2)');
+    expect(errSpy.mock.calls.join('\n')).toContain('unsupported baseline-bundle version');
+
+    const missingVersionPath = join(dir, 'missing-version.json');
+    const raw = JSON.parse(readFileSync(futureMajorPath, 'utf8'));
+    delete raw.version;
+    // writeBaselineBundle only accepts a well-typed BaselineBundle; write the malformed JSON
+    // directly to simulate a hand-edited or pre-versioning file.
+    const { writeFileSync } = await import('node:fs');
+    writeFileSync(missingVersionPath, JSON.stringify(raw));
+    await expect(readBaselineBundle(missingVersionPath)).rejects.toThrow('process.exit(2)');
+
+    exitSpy.mockRestore();
+    errSpy.mockRestore();
+  });
 });

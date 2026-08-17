@@ -255,7 +255,14 @@ export function runAudit(argv: string[]): void {
   if (options.json && options.contractJson) fail('Choose either --json or --contract-json, not both.');
 
   const counter = createCounterFromO200k((text) => encode(text), 'o200k_base');
-  const toolsSource = options.toolsFile ? readFileSync(options.toolsFile, 'utf8') : '';
+  let toolsSource = '';
+  if (options.toolsFile) {
+    try {
+      toolsSource = readFileSync(options.toolsFile, 'utf8');
+    } catch {
+      fail(`Cannot read ${options.toolsFile}`);
+    }
+  }
 
   const results: Array<{ file: string; result: AnalysisResult }> = [];
   const failures: string[] = [];
