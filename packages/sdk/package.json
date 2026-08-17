@@ -54,6 +54,8 @@
     "url": "git+https://github.com/atibbs/savedyouatoken.git",
     "directory": "packages/sdk"
   },
-  "homepage": "https://savedyouatoken.com",
-  "bugs": "https://github.com/atibbs/savedyouatoken/issues"
+  "homepage": "https://savedyouatoken.com/sdk",
+  "bugs": {
+    "url": "https://github.com/atibbs/savedyouatoken/issues"
+  }
 }

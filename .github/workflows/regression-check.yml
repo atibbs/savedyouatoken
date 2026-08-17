@@ -1,0 +1,54 @@
+name: Regression check
+
+# Dogfoods the CLI regression workflow (discover → baseline → policy check → PR comment) on this
+# repository's own non-sensitive example prompts. See examples/.regression/ for the committed
+# baseline and policy, and docs/cli-regression-workflow.md for how a downstream project sets this
+# up for its own prompts.
+#
+# GITHUB_TOKEN is read-only for pull_request runs triggered from a fork, regardless of the
+# `permissions` block below — that is GitHub's security model, not a bug here. That is also
+# exactly the case scripts/post-regression-comment.mjs's job-summary fallback exists for, so a
+# fork PR is expected to land its report in the job summary instead of a comment.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build:cli
+
+      - name: Check examples/support-triage.txt against its committed policy
+        id: check
+        continue-on-error: true
+        run: |
+          node packages/cli/dist/index.js policy check examples/support-triage.txt \
+            --policy examples/.regression/support-triage.policy.json \
+            --baseline examples/.regression/support-triage.baseline.json \
+            --json > /tmp/support-triage.result.json
+
+      - name: Post or update the pull-request comment
+        if: always()
+        run: node scripts/post-regression-comment.mjs /tmp/support-triage.result.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # steps.check.outcome reflects the real result even under continue-on-error, so the actual
+      # CI gate is always the CLI's own exit code — never the comment step, which must not be
+      # able to mask a real budget breach just because posting a comment happened to fail.
+      - name: Fail the job if the policy check failed
+        if: steps.check.outcome == 'failure'
+        run: |
+          echo "policy check failed — see the pull-request comment or job summary above."
+          exit 1

@@ -86,4 +86,68 @@ if (contractOutput.includes('You are a helpful assistant')) {
   process.exit(1);
 }
 
-console.log(`✓ installed CLI shim reports ${expected}, runs an audit, and emits a portable report`);
+// The regression workflow (discover/baseline/compare/policy) must also work through the packed,
+// installed shim — not just from source — since it is bundled the same way as the default
+// command and a missing/unbundled import would only surface here.
+const discoverOutput = run(shim, ['discover', work, '--json']);
+const discovered = JSON.parse(discoverOutput);
+if (discovered.schema !== 'savedyouatoken.cli/discovery') {
+  console.error('✗ discover --json did not produce the expected schema:\n' + discoverOutput);
+  process.exit(1);
+}
+
+const baselinePath = join(work, 'baseline.json');
+run(shim, ['baseline', 'create', promptFile, '--workflow', 'verify/regression', '--out', baselinePath]);
+const baseline = JSON.parse(readFileSync(baselinePath, 'utf8'));
+if (baseline.baseline?.contract?.kind !== 'baseline' || !/^sha256:[a-f0-9]{64}$/.test(baseline.baseline.reportId)) {
+  console.error('✗ baseline create did not produce a valid baseline bundle');
+  process.exit(1);
+}
+if (JSON.stringify(baseline).includes('You are a helpful assistant')) {
+  console.error('✗ baseline bundle leaked prompt text');
+  process.exit(1);
+}
+
+const compareOutput = run(shim, [
+  'compare',
+  promptFile,
+  '--model',
+  'claude-sonnet-5',
+  '--requests',
+  '100',
+  '--baseline',
+  baselinePath,
+  '--json',
+]);
+const compared = JSON.parse(compareOutput);
+if (compared.schema !== 'savedyouatoken.cli/compare' || compared.diff.compatibility.status === 'invalid') {
+  console.error('✗ compare against its own just-created baseline should be compatible:\n' + compareOutput);
+  process.exit(1);
+}
+
+const policyPath = join(work, 'policy.json');
+run(shim, ['policy', 'generate', '--baseline', baselinePath, '--out', policyPath]);
+const checkOutput = run(shim, [
+  'policy',
+  'check',
+  promptFile,
+  '--model',
+  'claude-sonnet-5',
+  '--requests',
+  '100',
+  '--policy',
+  policyPath,
+  '--baseline',
+  baselinePath,
+  '--json',
+]);
+const checked = JSON.parse(checkOutput);
+if (checked.schema !== 'savedyouatoken.cli/policy-check' || checked.outcome !== 'pass') {
+  console.error('✗ policy check against a freshly generated policy should pass:\n' + checkOutput);
+  process.exit(1);
+}
+
+console.log(
+  `✓ installed CLI shim reports ${expected}, runs an audit, emits a portable report, and runs the ` +
+    'discover/baseline/compare/policy regression workflow',
+);

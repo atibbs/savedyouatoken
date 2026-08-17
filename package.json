@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "description": "savedyouatoken.com — find the waste in your LLM prompts before your invoice does.",
+  "homepage": "https://savedyouatoken.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atibbs/savedyouatoken.git"
+  },
+  "bugs": {
+    "url": "https://github.com/atibbs/savedyouatoken/issues"
+  },
   "workspaces": [
     "packages/*",
     "apps/*"
@@ -14,7 +22,7 @@
     "build:sdk": "npm run build --workspace @savedyouatoken/sdk",
     "verify:sdk-types": "node packages/sdk/scripts/verify-packed-types.mjs",
     "start": "npm run start --workspace @savedyouatoken/web",
-    "test": "npm run test --workspace @savedyouatoken/core && npm run test --workspace @savedyouatoken/sdk && npm run test --workspace @savedyouatoken/web",
+    "test": "npm run test --workspace @savedyouatoken/core && npm run test --workspace @savedyouatoken/sdk && npm run test --workspace savedyouatoken && npm run test --workspace @savedyouatoken/web",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "cli": "npm run cli --workspace savedyouatoken --",
     "verify:cli": "node scripts/verify-packed-cli.mjs",

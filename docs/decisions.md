@@ -369,3 +369,64 @@ One auditor is now expected to represent one operational workflow. If an integra
 independent workloads behind one auditor, its measured request rate is shared across their shapes;
 those workloads should use separately configured auditors. Health configuration adds setup, but
 production remains silent when no destination is configured.
+
+---
+
+## Decision: Defer Community source publication from P0 to immediately before the Monitor pilot
+
+**Context:**
+`publish-community-source` was sequenced as P0 change 4, ahead of the P1 CLI regression workflow and
+local monitoring workbench. Re-examining the dependency graph in `openspec/PRIORITIES.md` showed that
+neither P1 change actually depends on publication — both depend only on change 2's contracts — while
+the change itself remains substantially incomplete (private-repo extraction, full history/credential
+audit, npm trusted-publisher setup, and the owner-only authorization steps in
+`docs/community-publication-owner-checklist.md` are all still open). Publication is also irreversible,
+so there is no benefit to rushing it ahead of work it does not block.
+
+**Decision:**
+Move `publish-community-source` out of P0 and into P1, resequenced as change 7, immediately before the
+Monitor validation pilot (now change 8). It can still be prepared in parallel with the CLI regression
+workflow and local workbench, but is no longer treated as a prerequisite for starting them.
+
+**Reason:**
+The only real dependency on public source is the pilot: participants "must be able to evaluate
+instrumentation trust" before a privacy-bounded production integration. That is the first point in the
+critical path where the change's absence has a cost. Everything before it can proceed unblocked.
+
+**Tradeoff:**
+The website's "planned, not yet public" source-status language persists longer, and the trust signal
+of public source is unavailable to early adopters outside the pilot. Community/CLI/SDK adoption growth
+that depends on inspectable source is deferred along with it.
+
+---
+
+## Decision: Implement the CLI regression workflow with zero new dependencies
+
+**Context:**
+`add-cli-regression-workflow` needed repository scanning (normally a `fast-glob`/`minimatch` job),
+a config format (normally YAML), and GitHub PR commenting (normally `@octokit/rest`). The CLI's
+only runtime dependency today is `gpt-tokenizer`.
+
+**Decision:**
+Repository discovery uses a small hand-written glob-to-regex ignore matcher covering only the
+patterns the feature actually needs (`dir/**`, `*.ext`, `**/name`), not the full glob grammar.
+Discovery config is plain JSON, not YAML. The GitHub integration script uses Node 20's global
+`fetch` directly against the REST API instead of an SDK client.
+
+**Reason:**
+None of the three needs justified a new dependency: the glob subset is small and now has direct
+test coverage (`packages/cli/test/discovery/ignore.test.ts`); JSON needs no new parser and the CLI
+already reads/writes JSON everywhere; and `fetch` against three REST endpoints (list/create/update
+a comment) is simpler and more auditable than pulling in an API client for that surface. This
+keeps `packages/cli`'s dependency graph unchanged, matching the project's cost-discipline stance
+against unnecessary dependencies.
+
+**Tradeoff:**
+The ignore matcher does not support the full gitignore/glob grammar (no negation, no brace
+expansion, no character classes) — good enough for every fixture and real ignore rule this
+feature needs today, but a future request for a richer pattern would need either extending this
+matcher or revisiting the trade-off against a real glob library. The same "no build step" reasoning
+means `scripts/post-regression-comment.mjs` cannot `import` `@savedyouatoken/core` either (core
+ships as unbuilt TypeScript source), so its dollar-formatting logic is a deliberate, commented copy
+of `packages/core/src/cost.ts`'s `formatUsd` rather than a shared import — a real duplication risk
+if core's formatting rules change without this copy being updated to match.

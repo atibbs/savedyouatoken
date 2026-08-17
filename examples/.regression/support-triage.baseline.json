@@ -1,0 +1,182 @@
+{
+  "baseline": {
+    "contract": {
+      "kind": "baseline",
+      "version": {
+        "major": 1,
+        "minor": 1
+      }
+    },
+    "provenance": {
+      "generatedAt": "2026-08-17T19:31:46.056Z",
+      "producer": "savedyouatoken",
+      "producerVersion": "0.1.0"
+    },
+    "release": {
+      "id": "baseline"
+    },
+    "reportId": "sha256:f8b2e58689658c92b605b85aa59f46c8eb3d8dfd3eb95b3a510d212761c66952",
+    "workflow": {
+      "id": "examples/support-triage"
+    }
+  },
+  "report": {
+    "analysis": {
+      "cacheSaving": 1.059717,
+      "findings": [
+        {
+          "monthlySaving": 58.895792,
+          "occurrences": 22,
+          "ruleId": "cache-hostile-order",
+          "severity": "high",
+          "tokensSaved": 1445
+        },
+        {
+          "monthlySaving": 31.450833,
+          "occurrences": 7,
+          "ruleId": "few-shot-bloat",
+          "severity": "high",
+          "tokensSaved": 517
+        },
+        {
+          "monthlySaving": 8.273333,
+          "occurrences": 7,
+          "ruleId": "pretty-printed-json",
+          "severity": "medium",
+          "tokensSaved": 136
+        },
+        {
+          "monthlySaving": 7.969167,
+          "occurrences": 1,
+          "ruleId": "output-format-prose",
+          "severity": "high",
+          "tokensSaved": 131
+        },
+        {
+          "monthlySaving": 1.825,
+          "occurrences": 7,
+          "ruleId": "wordy-phrases",
+          "severity": "low",
+          "tokensSaved": 30
+        },
+        {
+          "monthlySaving": 1.825,
+          "occurrences": 10,
+          "ruleId": "decorative-separators",
+          "severity": "low",
+          "tokensSaved": 30
+        },
+        {
+          "monthlySaving": 1.6425,
+          "occurrences": 2,
+          "ruleId": "empty-role-preamble",
+          "severity": "medium",
+          "tokensSaved": 27
+        },
+        {
+          "monthlySaving": 1.216667,
+          "occurrences": 8,
+          "ruleId": "politeness-filler",
+          "severity": "low",
+          "tokensSaved": 20
+        },
+        {
+          "monthlySaving": 1.034167,
+          "occurrences": 2,
+          "ruleId": "prompt-folklore",
+          "severity": "low",
+          "tokensSaved": 17
+        },
+        {
+          "monthlySaving": 0.486667,
+          "occurrences": 7,
+          "ruleId": "shouting-emphasis",
+          "severity": "low",
+          "tokensSaved": 8
+        },
+        {
+          "monthlySaving": 0,
+          "occurrences": 12,
+          "ruleId": "negative-instruction-pileup",
+          "severity": "medium",
+          "tokensSaved": 0
+        },
+        {
+          "monthlySaving": 0,
+          "occurrences": 1,
+          "ruleId": "tokenizer-family-shift",
+          "severity": "medium",
+          "tokensSaved": 0
+        },
+        {
+          "monthlySaving": 0,
+          "occurrences": 1,
+          "ruleId": "output-dominates-bill",
+          "severity": "medium",
+          "tokensSaved": 0
+        }
+      ],
+      "inputTokens": 1518,
+      "modelId": "claude-sonnet-5",
+      "monthlyAfterRewrite": 229.0375,
+      "monthlyNow": 244.428333,
+      "optimizedTokens": 1265,
+      "promptTokens": 1518,
+      "toolTokens": 0
+    },
+    "catalogue": {
+      "currency": "USD",
+      "engineVersion": "0.1.0",
+      "modelCatalogueDate": "2026-08-10",
+      "rulesetId": "savedyouatoken-rules-2026-08-13",
+      "tokenizer": {
+        "accuracy": "estimated",
+        "counter": "o200k_base",
+        "family": "claude-next"
+      }
+    },
+    "contract": {
+      "kind": "report",
+      "version": {
+        "major": 1,
+        "minor": 1
+      }
+    },
+    "maturity": {
+      "observations": 1,
+      "state": "provisional"
+    },
+    "provenance": {
+      "generatedAt": "2026-08-17T19:31:46.051Z",
+      "producer": "savedyouatoken",
+      "producerVersion": "0.1.0"
+    },
+    "release": {
+      "id": "baseline"
+    },
+    "window": {
+      "endedAt": "2026-08-17T19:31:46.051Z",
+      "requests": 1,
+      "startedAt": "2026-08-17T19:31:46.051Z"
+    },
+    "workflow": {
+      "id": "examples/support-triage"
+    },
+    "workload": {
+      "batch": false,
+      "cacheHitRate": 0,
+      "cacheTtl": "5m",
+      "outputTokens": 500,
+      "requestsPerDay": 1000
+    }
+  },
+  "schema": "savedyouatoken.cli/baseline-bundle",
+  "sourceRevision": "b1f8bfbf217972b98306ec69d76a0a44700cb57f",
+  "sources": [
+    "examples/support-triage.txt"
+  ],
+  "version": {
+    "major": 1,
+    "minor": 0
+  }
+}

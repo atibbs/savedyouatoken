@@ -7,6 +7,7 @@ export * from './analyze';
 export * from './diff';
 export * from './report';
 export * from './contracts';
+export * from './regression';
 export * from './examples';
 export { ALL_RULES, RULES_BY_ID, getRule } from './rules/index';
 export { MIN_CACHEABLE_TOKENS } from './rules/cache';

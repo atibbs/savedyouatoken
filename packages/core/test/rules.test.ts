@@ -3,6 +3,7 @@ import { analyze } from '../src/analyze';
 import { DEFAULT_WORKLOAD } from '../src/cost';
 import { heuristicCounter } from '../src/tokens';
 import { EXAMPLES } from '../src/examples';
+import { getRule } from '../src/rules/index';
 
 function run(prompt: string, overrides: Partial<Parameters<typeof analyze>[0]> = {}) {
   return analyze({
@@ -452,5 +453,32 @@ describe('end to end', () => {
     const sonnet46 = r.comparison.find((c) => c.model.id === 'claude-sonnet-4-6')!;
     // Same text, newer tokenizer, ~30% more tokens.
     expect(opus5.inputTokens / sonnet46.inputTokens).toBeCloseTo(1.3, 1);
+  });
+});
+
+describe('fix-risk classification', () => {
+  it('never lets an advisory (autofix: false) finding contribute an edit to the rewrite', () => {
+    for (const example of EXAMPLES) {
+      for (const aggressive of [false, true]) {
+        const r = analyze({
+          prompt: example.prompt,
+          toolsSource: example.tools,
+          modelId: example.modelId,
+          workload: { ...DEFAULT_WORKLOAD, requestsPerDay: example.requestsPerDay },
+          counter: heuristicCounter,
+          aggressive,
+        });
+        for (const finding of r.findings) {
+          if (!finding.autofix) expect(finding.edits, `${finding.ruleId} is advisory`).toHaveLength(0);
+        }
+      }
+    }
+  });
+
+  it("a finding's autofix flag always matches its rule definition", () => {
+    const r = run(EXAMPLES[0]!.prompt);
+    for (const finding of r.findings) {
+      expect(finding.autofix).toBe(getRule(finding.ruleId)!.autofix);
+    }
   });
 });

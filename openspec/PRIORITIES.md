@@ -76,19 +76,6 @@ pilot teams to keep it installed.
 **Depends on:** Contract field and compatibility decisions from change 2. Product documentation from
 change 1 can ship first and be updated as these features land.
 
-### 4. Publish the Community source
-
-**Change:** [`publish-community-source`](changes/publish-community-source/)
-
-**Outcome:** Core, CLI, SDK, static web analyser, agent kit, contracts, tests, and documentation are
-public under MIT and reproducibly released, while hosted stateful implementation remains private.
-
-**Why P0:** Inspectable source is a trust and distribution prerequisite for broader SDK adoption, but
-publication is irreversible and must follow the boundary and history audit.
-
-**Depends on:** Stable package boundaries; change 2's shared-contract location; accurate website
-language from change 1; reconciliation of existing release changes. It does **not** depend on Monitor.
-
 ## P1 — validate the recurring loop
 
 ### 5. Add the CLI regression workflow
@@ -117,7 +104,24 @@ low cost.
 **Depends on:** Changes 2 and 3. Policy round-trip verification also depends on the relevant portion
 of change 5.
 
-### 7. Run the Monitor validation pilot
+### 7. Publish the Community source
+
+**Change:** [`publish-community-source`](changes/publish-community-source/)
+
+**Outcome:** Core, CLI, SDK, static web analyser, agent kit, contracts, tests, and documentation are
+public under MIT and reproducibly released, while hosted stateful implementation remains private.
+
+**Why here, deferred from P0:** Inspectable source is a trust and distribution prerequisite for
+broader SDK adoption, but it does not gate change 5 or 6 engineering work, which only depend on
+change 2's contracts. Publication is also irreversible and must follow the boundary and history
+audit, so it is sequenced immediately before the step that actually needs it: recruiting pilot teams
+who must be able to evaluate instrumentation trust from source. Deferred on 2026-08-17; see
+[`docs/decisions.md`](../docs/decisions.md).
+
+**Depends on:** Stable package boundaries; change 2's shared-contract location; accurate website
+language from change 1; reconciliation of existing release changes. It does **not** depend on Monitor.
+
+### 8. Run the Monitor validation pilot
 
 **Change:** [`validate-monitor-pilot`](changes/validate-monitor-pilot/)
 
@@ -128,12 +132,12 @@ behavioral evidence and a predeclared proceed, iterate, or stop decision.
 use or willingness to pay. A hosted build before this step would automate an unvalidated workflow.
 
 **Depends on:** Changes 2, 3, 5, and 6 sufficiently complete for real onboarding, comparison,
-notification, and policy handoff. The Community source should be public or publication-ready so pilot
+notification, and policy handoff. Change 7 should be public or publication-ready so pilot
 participants can evaluate instrumentation trust.
 
 ## P2 — flagship product
 
-### 8. Launch Developer Monitor
+### 9. Launch Developer Monitor
 
 **Change:** [`launch-developer-monitor`](changes/launch-developer-monitor/)
 
@@ -143,13 +147,13 @@ deployments, receive regression alerts, export CI policy, and manage a predictab
 **North star:** This is the smallest implementation of savedyouatoken Monitor—the flagship closed
 loop—not a paid SDK tier.
 
-**Hard gate:** Change 7 must record a **proceed** decision against its predeclared evidence threshold.
-Changes 2 and 4 must establish the public/private boundary, and local comparison parity must pass.
+**Hard gate:** Change 8 must record a **proceed** decision against its predeclared evidence threshold.
+Changes 2 and 7 must establish the public/private boundary, and local comparison parity must pass.
 Billing remains inactive until those conditions are true.
 
 ## P3 — expansion after retention
 
-### 9. Expand team, enterprise, and ecosystem capabilities
+### 10. Expand team, enterprise, and ecosystem capabilities
 
 **Change:** [`expand-team-enterprise-ecosystem`](changes/expand-team-enterprise-ecosystem/)
 
@@ -178,13 +182,16 @@ Reconcile existing work
   → version shared contracts
   → improve SDK operations
   → CLI regression workflow + local workbench
+  → publish the Community source
   → validation pilot
   → proceed / iterate / stop
   → Developer Monitor only on proceed
 ```
 
-The Community source release branches from the shared-contract and product-boundary work and should
-complete before broad pilot recruitment. Team and enterprise work stays outside the critical path.
+The Community source release depends only on the shared-contract and product-boundary work from
+changes 1–3, so it can be prepared in parallel with changes 5–6, but it is sequenced immediately
+before pilot recruitment because that is the first point where its absence actually costs something.
+Team and enterprise work stays outside the critical path.
 
 ## Portfolio rules
 

@@ -2,6 +2,11 @@
 
 **Find the waste in your LLM prompts before your invoice does.**
 
+> **Source status:** Public MIT-licensed source is planned, but this repository remains private
+> during the boundary and history audit. See the
+> [open-source transition plan](docs/open-source-plan.md) and
+> [publication inventory](docs/community-boundary.md).
+
 Paste a system prompt. Get a ranked list of what is wasting tokens — each priced in dollars per
 month at your real request volume — plus a rewritten version you can copy, the prompt-caching maths
 for your workload, and what the same prompt would cost on every other model.
@@ -200,6 +205,7 @@ Do not deploy without first verifying the prices in `packages/core/src/models.ts
 ```
 packages/core/     Analysis engine: pricing, cost maths, 26 rules, tests
 packages/cli/      npx savedyouatoken — CI budgets, --fix, --json
+packages/sdk/      In-process runtime capture for Anthropic and OpenAI clients
 apps/web/          Next.js site: analyser island + static content
 examples/          Sample prompts for the CLI and the web examples
 docs/              Product discovery, architecture, monetization, growth,
@@ -221,6 +227,20 @@ docs/              Product discovery, architecture, monetization, growth,
   flagship north star and website information architecture
 - [Open-source transition plan](docs/open-source-plan.md) — public/private boundaries, publication
   phases, safety audit and release gate
+- [Community boundary](docs/community-boundary.md) — path-by-path publication classification and
+  private control-plane extraction targets
+- [Community development](docs/community-development.md) — fresh-clone verification, local-only
+  operation and release boundaries
+- [Repository-owner publication checklist](docs/community-publication-owner-checklist.md) — external
+  decisions, settings, rights checks, and final launch approvals required from the owner
+
+## Community
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing a change. Community support is best effort
+and scoped in [SUPPORT.md](SUPPORT.md). Report vulnerabilities privately according to
+[SECURITY.md](SECURITY.md). Project decisions follow the lightweight maintainer model in
+[GOVERNANCE.md](GOVERNANCE.md), and participation is governed by
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## A note on the numbers
 

@@ -14,7 +14,8 @@ fixtures, and canonical test vectors live under `packages/core/contracts/`.
 | CLI `--json` | `savedyouatoken` | Existing automation output and budget failures | File-oriented aggregate; finding `detail` can contain prompt-derived content |
 | Core `Workload` | All analysis surfaces | Pricing assumptions | No observation maturity or evidence window |
 | Core `Finding` | Analysis engine | UI and local diagnosis | `detail`, ranges, and edits are intentionally not portable |
-| CLI token/cost flags | CLI | Absolute CI limits | No portable baseline or regression policy document |
+| CLI token/cost flags | CLI | Absolute CI limits | No baseline or regression policy — superseded for that use case by `baseline`/`policy` below; flags themselves are unchanged |
+| `baseline`/`policy`/`compare` | `savedyouatoken` | Committed regression baseline, policy, and priced diff | CLI-only file commands; see [`docs/cli-regression-workflow.md`](cli-regression-workflow.md) |
 
 These formats remain supported. The portable contract is additive: SDK analysis events expose
 `portableReport`, and the CLI exposes `--contract-json`. Existing `report`, share links, and
