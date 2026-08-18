@@ -85,7 +85,12 @@ Static generation covers everything, including the 26 rule pages and 38 model pa
 ### `packages/cli` — the CI surface
 
 `npx savedyouatoken prompts/*.txt --max-tokens 4000` exits non-zero over budget. Bundled with tsup,
-which inlines core, so the published package has one runtime dependency (`gpt-tokenizer`).
+which inlines core, so the published package has one runtime dependency (`gpt-tokenizer`). Beyond
+the default audit, it also carries a repository-wide regression workflow (discover/baseline/
+compare/policy — see [`docs/cli-regression-workflow.md`](cli-regression-workflow.md)) and a
+loopback-only local monitoring workbench (`workbench start` — see
+[`docs/local-monitoring-workbench.md`](local-monitoring-workbench.md)), both still zero-dependency
+and bundled into the same single `dist/index.js`.
 
 ## Data model
 
