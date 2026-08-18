@@ -5,6 +5,7 @@
  */
 
 import { CONTRACT_VERSION, type PolicyDocument } from '@savedyouatoken/core';
+import { VERSION } from '../support';
 import { getReport, latestBaselineApproval, type BaselineApproval } from './store';
 
 export type ExportPolicyResult = { ok: true; policy: PolicyDocument } | { ok: false; error: string };
@@ -23,7 +24,7 @@ export function buildExportedPolicyFromApproval(dataDir: string, approval: Basel
     contract: { kind: 'policy', version: { ...CONTRACT_VERSION } },
     provenance: {
       producer: 'savedyouatoken-workbench',
-      producerVersion: '0.1.0',
+      producerVersion: VERSION,
       generatedAt: new Date().toISOString(),
     },
     target: {

@@ -39,6 +39,20 @@ export async function runWorkbench(argv: string[]): Promise<void> {
   fail(`Unknown workbench command "${sub}". Try start, import, approve, export, or delete.`);
 }
 
+function parsePort(flag: string, raw: string): number {
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 0 || value > 65535) {
+    fail(`${flag} must be an integer between 0 and 65535, got "${raw}"`);
+  }
+  return value;
+}
+
+function parseNumberFlag(flag: string, raw: string): number {
+  const value = Number(raw);
+  if (!Number.isFinite(value)) fail(`${flag} must be a number, got "${raw}"`);
+  return value;
+}
+
 function extractDataDirFlag(argv: string[]): { dataDir: string | undefined; rest: string[] } {
   const rest: string[] = [];
   let dataDir: string | undefined;
@@ -61,7 +75,7 @@ async function runStart(argv: string[]): Promise<void> {
     if (arg === '--port') {
       const value = rest[++i];
       if (value == null) fail('Missing value for --port');
-      port = Number(value);
+      port = parsePort('--port', value);
     } else if (arg === '-h' || arg === '--help') {
       process.stdout.write(HELP);
       return;
@@ -150,16 +164,16 @@ async function runApprove(argv: string[]): Promise<void> {
         acknowledgeProvisional = true;
         break;
       case '--max-input-tokens':
-        tolerance.maxInputTokens = Number(next());
+        tolerance.maxInputTokens = parseNumberFlag(arg, next());
         break;
       case '--max-monthly-cost':
-        tolerance.maxMonthlyCost = Number(next());
+        tolerance.maxMonthlyCost = parseNumberFlag(arg, next());
         break;
       case '--max-token-regression-percent':
-        tolerance.maxTokenRegressionPercent = Number(next());
+        tolerance.maxTokenRegressionPercent = parseNumberFlag(arg, next());
         break;
       case '--max-cost-regression-percent':
-        tolerance.maxCostRegressionPercent = Number(next());
+        tolerance.maxCostRegressionPercent = parseNumberFlag(arg, next());
         break;
       case '-h':
       case '--help':

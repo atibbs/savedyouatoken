@@ -113,6 +113,31 @@ describe('workbench CLI subcommands (import/export/delete)', () => {
     const stored = readFileSync(reportPath, 'utf8');
     expect(stored).not.toContain('CANARY_WORKBENCH_CLI_TEXT_Z9');
   });
+
+  it('rejects a non-numeric or out-of-range --port instead of passing NaN through', () => {
+    const dir = withDataDir();
+    const notANumber = run(['workbench', 'start', '--port', 'not-a-number', '--data-dir', dir]);
+    expect(notANumber.status).toBe(2);
+    expect(notANumber.stderr).toContain('--port must be an integer between 0 and 65535');
+
+    const outOfRange = run(['workbench', 'start', '--port', '999999', '--data-dir', dir]);
+    expect(outOfRange.status).toBe(2);
+    expect(outOfRange.stderr).toContain('--port must be an integer between 0 and 65535');
+  });
+
+  it('rejects a non-numeric approval tolerance flag instead of storing NaN', () => {
+    const dir = withDataDir();
+    const reportPath = join(dir, 'report.json');
+    writeFileSync(reportPath, run([fixture, '--contract-json', '--workflow', 'cli/bad-tolerance']).stdout);
+    const reportId = run(['workbench', 'import', reportPath, '--data-dir', dir]).stdout.match(/\((sha256:[a-f0-9]+)\)/)?.[1];
+
+    const result = run([
+      'workbench', 'approve', '--report', reportId!, '--data-dir', dir,
+      '--max-token-regression-percent', 'not-a-number',
+    ]);
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain('--max-token-regression-percent must be a number');
+  });
 });
 
 describe('workbench start (packaging + process lifecycle)', () => {

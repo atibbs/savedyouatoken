@@ -118,6 +118,19 @@ describe('report store', () => {
     expect(listReports(dataDir)).toHaveLength(1);
   });
 
+  it('keeps receivedAt stable across repeated rebuilds (deterministic, not rebuild-time)', async () => {
+    const result = await ingestReport(dataDir, buildReportJson());
+    expect(result.ok).toBe(true);
+
+    const first = rebuildIndex(dataDir);
+    // A real gap between rebuilds, not just a fast successive call, is what would previously have
+    // shifted `receivedAt` to each rebuild's own wall-clock time.
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    const second = rebuildIndex(dataDir);
+
+    expect(second[0]!.receivedAt).toBe(first[0]!.receivedAt);
+  });
+
   it('records and retrieves the latest baseline approval per workflow', async () => {
     const a = await ingestReport(dataDir, buildReportJson({ releaseId: 'v1' }));
     const b = await ingestReport(dataDir, buildReportJson({ releaseId: 'v2' }));

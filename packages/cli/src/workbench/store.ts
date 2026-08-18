@@ -11,7 +11,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -117,11 +117,11 @@ export async function ingestReport(dataDir: string, raw: string): Promise<Ingest
 function appendToIndex(dataDir: string, id: string, report: ReportEnvelope): void {
   const index = readIndexRaw(dataDir) ?? [];
   if (index.some((e) => e.id === id)) return;
-  index.push(toIndexEntry(id, report));
+  index.push(toIndexEntry(id, report, new Date().toISOString()));
   writeFileSync(indexPath(dataDir), JSON.stringify(index, null, 2), 'utf8');
 }
 
-function toIndexEntry(id: string, report: ReportEnvelope): IndexEntry {
+function toIndexEntry(id: string, report: ReportEnvelope, receivedAt: string): IndexEntry {
   return {
     id,
     workflowId: report.workflow.id,
@@ -133,7 +133,7 @@ function toIndexEntry(id: string, report: ReportEnvelope): IndexEntry {
     maturityState: report.maturity.state,
     observations: report.maturity.observations,
     generatedAt: report.provenance.generatedAt,
-    receivedAt: new Date().toISOString(),
+    receivedAt,
     inputTokens: report.analysis.inputTokens,
     monthlyNow: report.analysis.monthlyNow,
   };
@@ -148,7 +148,10 @@ function readIndexRaw(dataDir: string): IndexEntry[] | null {
 }
 
 /** The index is disposable: if it's missing or corrupt, rebuild it by re-reading every stored
- *  report from scratch. Source documents are the only durable state. */
+ *  report from scratch. Source documents are the only durable state. Reports are written once and
+ *  never modified (content-addressed), so each file's mtime is a stable stand-in for its original
+ *  receipt time — using it (instead of the rebuild's own wall-clock time) keeps `receivedAt`, and
+ *  any ordering derived from it, unchanged across repeated rebuilds. */
 export function rebuildIndex(dataDir: string): IndexEntry[] {
   ensureDataDir(dataDir);
   const dir = reportsDir(dataDir);
@@ -156,9 +159,11 @@ export function rebuildIndex(dataDir: string): IndexEntry[] {
   for (const filename of existsSync(dir) ? readdirSync(dir) : []) {
     if (!filename.endsWith('.json')) continue;
     try {
-      const report = JSON.parse(readFileSync(join(dir, filename), 'utf8')) as ReportEnvelope;
+      const filePath = join(dir, filename);
+      const report = JSON.parse(readFileSync(filePath, 'utf8')) as ReportEnvelope;
       const id = `sha256:${filename.replace(/\.json$/, '')}`;
-      entries.push(toIndexEntry(id, report));
+      const receivedAt = statSync(filePath).mtime.toISOString();
+      entries.push(toIndexEntry(id, report, receivedAt));
     } catch {
       // A corrupt individual report file must not block rebuilding the rest of the index.
       continue;
