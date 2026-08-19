@@ -1,8 +1,12 @@
 name: Release SDK
 
-# Publication is coupled to the merge: on every push to main that touches the SDK, if its
-# version is new and higher than what is on npm, the exact built artifact is verified and
-# published. A merged version bump therefore ships automatically — no manual tag.
+# Publication is coupled to a protected release tag (`sdk-v*`), not to every push to main that
+# touches the SDK — task 4.3 of publish-community-source. tag-releases.yml creates that tag the
+# moment a version bump merges to main and dispatches this workflow automatically; a maintainer
+# can also push an `sdk-v*` tag by hand as an independent path. Either way, if the tagged
+# version is new and higher than what is on npm, the exact code at that tag is verified and
+# published — no untagged commit is ever published, and npm provenance attributes the release
+# to the tag, not to main's tip.
 #
 # Unlike the CLI (invoked live via `npx ...@latest`, so it must never be stale), the SDK is a
 # pinned dependency, so releases are driven only by a deliberate `packages/sdk` version bump —
@@ -17,9 +21,13 @@ name: Release SDK
 
 on:
   push:
-    branches: [main]
-    paths:
-      - 'packages/sdk/**'
+    tags: ['sdk-v*']
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag to release (e.g. sdk-v0.2.1)'
+        required: true
+        type: string
 
 concurrency: release-sdk
 
@@ -31,6 +39,8 @@ jobs:
       id-token: write # OIDC — npm trusted publishing + automatic provenance, no stored token
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
       - uses: actions/setup-node@v7
         with:
           node-version: 22

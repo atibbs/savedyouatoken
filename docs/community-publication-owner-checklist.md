@@ -63,8 +63,11 @@ attribution.
 
 - [ ] Enable GitHub private vulnerability reporting and test the advisory link in `SECURITY.md`.
 - [ ] Enable dependency and secret scanning available for the repository.
-- [ ] Configure `main` and release-tag protection, required checks, review requirements, and least
-  privilege maintainer access.
+- [ ] Configure `main` and release-tag protection (rulesets for `cli-v*`/`sdk-v*`), required
+  checks, review requirements, and least privilege maintainer access. Confirmed blocked while
+  private, same as branch protection: `repos/{owner}/{repo}/rulesets` 403s with "Upgrade to
+  GitHub Pro or make this repository public to enable this feature." Configurable the moment
+  either condition is met.
 - [ ] Confirm whether GitHub Discussions should be enabled; until then, support remains issue-based.
 - [ ] Choose an official security/conduct contact if GitHub advisories should not be the only private
   reporting channel.
