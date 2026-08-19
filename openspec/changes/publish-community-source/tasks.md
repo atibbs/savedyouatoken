@@ -2,7 +2,7 @@
 
 - [x] 1.1 Inventory every package, app route, workflow, deployment file, migration, asset, document, and generated artifact
 - [x] 1.2 Classify each path as public Community, private control plane, or shared contract and record approval
-- [ ] 1.3 Create a private `savedyouatoken-cloud` repository with protected access and a recovery backup
+- [x] 1.3 Create a private `savedyouatoken-cloud` repository with protected access and a recovery backup
 - [ ] 1.4 Move auth, persistence, entitlement, billing, webhook, customer administration, and private operations code
 - [ ] 1.5 Replace required repository crossings with versioned public contract dependencies
 - [ ] 1.6 Verify Community packages and the static analyser have no private build or runtime dependency
@@ -10,9 +10,9 @@
 ## 2. Publication safety audit
 
 - [x] 2.1 Define the exact branches, tags, history, submodules, LFS objects, and release artifacts to publish
-- [ ] 2.2 Scan the working tree and complete history for credentials, private keys, tokens, cookies, and environment files
-- [ ] 2.3 Review history for customer prompts, reports, personal data, internal URLs, screenshots, logs, and commercial notes
-- [ ] 2.4 Review third-party source, assets, fonts, datasets, and dependencies for redistribution compatibility
+- [x] 2.2 Scan the working tree and complete history for credentials, private keys, tokens, cookies, and environment files
+- [x] 2.3 Review history for customer prompts, reports, personal data, internal URLs, screenshots, logs, and commercial notes
+- [x] 2.4 Review third-party source, assets, fonts, datasets, and dependencies for redistribution compatibility
 - [x] 2.5 Remove package tarballs, local settings, build output, and accidental artifacts from the publication set
 - [ ] 2.6 Revoke or rotate every exposed credential and remediate history before continuing
 - [ ] 2.7 Have a maintainer manually review the exact fresh clone and history proposed for publication
@@ -22,7 +22,7 @@
 - [x] 3.1 Verify MIT copyright attribution and add `CONTRIBUTING.md`
 - [x] 3.2 Add `CODE_OF_CONDUCT.md`, `SECURITY.md`, private reporting instructions, and supported-version policy
 - [x] 3.3 Add governance, maintainer authority, Community support boundary, and issue/PR templates
-- [ ] 3.4 Add dependency, secret, package-content, and license checks to protected CI
+- [x] 3.4 Add dependency, secret, package-content, and license checks to protected CI
 - [x] 3.5 Correct repository, issue tracker, documentation, funding, and license metadata in every package
 - [x] 3.6 Document fresh-clone setup, architecture boundaries, releases, and local-only operation
 
@@ -32,7 +32,7 @@
 - [x] 4.2 Inspect CLI and SDK tarballs, source maps, declarations, licenses, and filesystem paths
 - [ ] 4.3 Configure protected tag-based npm publishing with least privilege and provenance
 - [ ] 4.4 Produce and install exact-version release candidates from the reviewed public commit
-- [ ] 4.5 Prepare release notes explaining Community scope, private Monitor scope, contribution, and security handling
+- [x] 4.5 Prepare release notes explaining Community scope, private Monitor scope, contribution, and security handling
 
 ## 5. Publication
 

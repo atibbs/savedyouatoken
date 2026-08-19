@@ -19,10 +19,12 @@ boundary document.
 
 ## 2. Establish the private recovery boundary
 
-- [ ] Create the private `savedyouatoken-cloud` repository under the intended long-term owner.
+- [x] Create the private `savedyouatoken-cloud` repository under the intended long-term owner.
+  Created 2026-08-19 — see the [audit log](community-publication-audit.md#2026-08-19--private-cloud-repository-created-and-backed-up).
 - [ ] Limit repository access to the people who should see hosted and commercial implementation.
-- [ ] Create and verify a recoverable private backup of the current repository, including all
-  branches, tags, and history, before any extraction or history rewrite.
+- [x] Create and verify a recoverable private backup of the current repository, including all
+  branches, tags, and history, before any extraction or history rewrite. Verified 2026-08-19: every
+  branch's commit hash matches between source and backup (no tags exist in this repository).
 - [ ] Confirm where private infrastructure, deployment configuration, and operational documentation
   will live.
 
