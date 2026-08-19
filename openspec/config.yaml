@@ -22,7 +22,7 @@ context: |
   The dormant Pro stack (Auth.js v5, Drizzle ORM + Postgres, Stripe) that used to live in
   apps/web has moved to the private `savedyouatoken-cloud` repository as part of publishing
   this repository's source (see docs/community-boundary.md) — it is not part of this repo
-  or its stack anymore. Pro itself remains shelved (docs/decisions.md).
+  or its stack anymore. Pro itself remains shelved.
 
   Design identity: editorial neo-brutalist — paper #f6f4ed, ink #171713, acid #eaff3f,
   orange #ff6534, mint #bbf4da; Manrope display, Georgia italic accent, DM Mono for
@@ -44,8 +44,9 @@ context: |
     7. Token counts are exact for OpenAI (o200k) and clearly-labelled estimates for
        Claude/Gemini. Never present an estimate as exact.
 
-  Conventions: keep packages/core dependency-free; prefer static rendering; record
-  consequential product/architecture decisions in docs/decisions.md.
+  Conventions: keep packages/core dependency-free; prefer static rendering. Product strategy,
+  monetization, growth, roadmap, and decision-log documents are maintained privately, not in this
+  repository — do not recreate them here.
 
 rules:
   proposal:

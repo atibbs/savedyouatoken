@@ -14,9 +14,9 @@ The durable product boundary is:
 
 > **Open analysis and instrumentation; paid operational control.**
 
-This supports the product strategy already established in
-[`product-platform-strategy.md`](product-platform-strategy.md): the free products diagnose and prevent
-waste locally, while Monitor earns revenue by remembering, comparing, coordinating, and alerting.
+This supports the product strategy already established privately: the free products diagnose and
+prevent waste locally, while Monitor earns revenue by remembering, comparing, coordinating, and
+alerting.
 
 ## Why open source fits this product
 

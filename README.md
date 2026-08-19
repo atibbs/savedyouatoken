@@ -43,8 +43,7 @@ AI answers, which is exactly the low-value content search engines demote, needs 
 spend, and is worse than just asking a model yourself. It points instead at a tool that audits what a
 prompt costs and hands back the saving.
 
-Six interpretations were evaluated and scored. The full analysis is in
-[`docs/product-discovery.md`](docs/product-discovery.md).
+Six interpretations were evaluated and scored before this one was chosen.
 
 ## Who it is for
 
@@ -183,8 +182,7 @@ There are none required. The application runs with no configuration, no API keys
 
 Payment integration is **not part of this repository** — the checkout, billing, and account code
 that would need `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` lives in the private
-`savedyouatoken-cloud` repository, not here; see [`docs/monetization.md`](docs/monetization.md). No
-secrets are committed to this repository.
+`savedyouatoken-cloud` repository, not here. No secrets are committed to this repository.
 
 ## Deployment
 
@@ -209,23 +207,14 @@ packages/cli/      npx savedyouatoken — CI budgets, --fix, --json
 packages/sdk/      In-process runtime capture for Anthropic and OpenAI clients
 apps/web/          Next.js site: analyser island + static content
 examples/          Sample prompts for the CLI and the web examples
-docs/              Product discovery, architecture, monetization, growth,
-                   roadmap and decision log
+docs/              Architecture, contracts, and publication process
 ```
 
 ## Documentation
 
-- [Product discovery](docs/product-discovery.md) — the six interpretations considered and why this
-  one won
 - [Architecture](docs/architecture.md) — components, data model, tradeoffs, price maintenance
-- [Monetization](docs/monetization.md) — free vs paid, costs, scaling economics
-- [Growth](docs/growth.md) — acquisition channels, SEO, launch sequence
-- [Roadmap](docs/future-roadmap.md) — next, later, and what was deliberately excluded
-- [Decisions](docs/decisions.md) — consequential choices and their tradeoffs
 - [SDK user story](docs/sdk-user-story.md) — end-to-end production adoption and cost-reduction scenario
 - [Portable contracts](docs/contracts.md) — versioned reports, baselines, policies, compatibility, and privacy
-- [Product platform strategy](docs/product-platform-strategy.md) — product family, journey gaps, tiers,
-  flagship north star and website information architecture
 - [Open-source transition plan](docs/open-source-plan.md) — public/private boundaries, publication
   phases, safety audit and release gate
 - [Community boundary](docs/community-boundary.md) — path-by-path publication classification and

@@ -37,10 +37,9 @@ Once the domain is live, confirm `NEXT_PUBLIC_SITE_URL` matches it.
 
 ## Later — activating Pro (optional, currently deferred)
 
-Pro is shelved (see `docs/decisions.md`). Its account/database/billing implementation lives in the
+Pro is shelved. Its account/database/billing implementation and activation checklist live in the
 private `savedyouatoken-cloud` repository, not here — activating it is a `savedyouatoken-cloud`
-deployment, separate from this static site, not an env var set on this one. See
-`docs/monetization.md` for the full checklist.
+deployment, separate from this static site, not an env var set on this one.
 
 ## Related: publishing the CLI
 
