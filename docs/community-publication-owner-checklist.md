@@ -36,9 +36,15 @@ not record private backup locations or credentials in the Community repository.
 - [ ] Review the tree/history scan findings produced during the publication audit.
 - [ ] Revoke or rotate every exposed credential, even if it appears inactive or is removed from
   history.
-- [ ] Choose either reviewed existing ancestry or a clean-root public history based on the audit.
-- [ ] Confirm that all non-`main` remote branches are privately archived and safe to remove before
-  visibility changes.
+- [x] Choose either reviewed existing ancestry or a clean-root public history based on the audit.
+  Decided 2026-08-19: clean-root — see
+  [`community-boundary.md`](community-boundary.md#proposed-publication-topology). Not yet executed;
+  scoped as a final-release-prep step.
+- [x] Confirm that all non-`main` remote branches are privately archived and safe to remove before
+  visibility changes. Done 2026-08-19: 24 fully-merged branches deleted (their content already
+  lives in `main`'s history, so nothing was lost). 4 branches remain — open Dependabot dependency-bump
+  PRs (#21–24) — left alone since deleting a branch under an open PR is messy; merge or close those
+  PRs first, then delete the branches, before the visibility change.
 
 **Evidence:** a redacted audit sign-off listing scan scope, remediation status, and the chosen history
 strategy. Never record credential values in the sign-off.
