@@ -2,7 +2,9 @@
 
 > **Status:** Proposed publication inventory, reviewed through the pull request that introduces
 > this document. It records the intended public/private split; it does not authorize changing
-> repository visibility. Last audited: 2026-08-13.
+> repository visibility. Last audited: 2026-08-19. The private-control-plane paths below were
+> extracted on 2026-08-19 — see the
+> [publication audit log](community-publication-audit.md#2026-08-19--private-control-plane-extraction-task-14).
 
 ## Classification rules
 
@@ -29,21 +31,21 @@ new stateful web route requires an explicit classification before merge.
 | `packages/cli/**` | Community | Local/CI product and its release documentation. |
 | `packages/sdk/**` | Community | In-process capture, adapters, privacy controls, tests, and release documentation. |
 | `apps/web/app/**` except the API routes listed below | Community | Static analyser, reference, methodology, product pages, metadata, and public assets. |
-| `apps/web/components/**` except `AccountMenu.tsx` and `UpgradeButton.tsx` | Community | Static/local-first UI. `analyzer/SavedPrompts.tsx` remains public because it uses browser-local storage only. |
-| `apps/web/lib/tokenizer.ts`, `apps/web/lib/products.ts`, `apps/web/lib/site.ts`, `apps/web/lib/limits.ts` | Community | Local analysis and public product configuration. Remove hosted-tier wording from `limits.ts` consumers if it stops matching Community behaviour. |
-| `apps/web/app/fonts/**` | Community, rights gate pending | Self-hosted Manrope and DM Mono files stay only after redistribution rights are verified in the asset audit. |
-| `apps/web/package.json`, Next.js, PostCSS, TypeScript, and test config | Community after extraction | Remove Auth.js, Drizzle, Postgres, Stripe, database scripts, and other private-only dependencies. |
-| `apps/web/.env.example` | Split | Keep public site variables; move auth, database, and Stripe variables to the private repository. |
-| `apps/web/app/api/auth/**` | Private control plane | Move to `savedyouatoken-cloud`. |
-| `apps/web/app/api/billing/**` | Private control plane | Move to `savedyouatoken-cloud`. |
-| `apps/web/app/api/checkout/**` | Private control plane | Move to `savedyouatoken-cloud`. |
-| `apps/web/app/api/me/**` | Private control plane | Account and entitlement endpoint; move to `savedyouatoken-cloud`. |
-| `apps/web/app/api/prompts/**` | Private control plane | Server-side prompt persistence; move to `savedyouatoken-cloud`. |
-| `apps/web/app/api/stripe/**` | Private control plane | Move webhook implementation to `savedyouatoken-cloud`. |
-| `apps/web/auth.ts`, `apps/web/types/next-auth.d.ts` | Private control plane | Move Auth.js configuration and types. |
-| `apps/web/drizzle.config.ts`, `apps/web/drizzle/**`, `apps/web/lib/db/**` | Private control plane | Move database configuration, migration, client, and schema. |
-| `apps/web/lib/entitlements.ts`, `apps/web/lib/stripe.ts` | Private control plane | Move entitlement and billing implementation. |
-| `apps/web/components/AccountMenu.tsx`, `apps/web/components/UpgradeButton.tsx` | Private control plane | Move account/billing UI; replace public references with Monitor-neutral calls to action. |
+| `apps/web/components/**` | Community | Static/local-first UI. `analyzer/SavedPrompts.tsx` remains public because it uses browser-local storage only. `AccountMenu.tsx` and `UpgradeButton.tsx` were extracted 2026-08-19 (see below); `layout.tsx` and `pricing/page.tsx` were edited to drop the two references into them. |
+| `apps/web/lib/tokenizer.ts`, `apps/web/lib/products.ts`, `apps/web/lib/site.ts`, `apps/web/lib/limits.ts` | Community | Local analysis and public product configuration. |
+| `apps/web/app/fonts/**` | Community, rights verified | Self-hosted Manrope and DM Mono, both SIL OFL-1.1; license text added at `apps/web/app/fonts/*-OFL.txt`. |
+| `apps/web/package.json`, Next.js, PostCSS, TypeScript, and test config | Community | Auth.js, Drizzle, Postgres, Stripe, and the `db:generate`/`db:push` scripts were removed 2026-08-19. |
+| `apps/web/.env.example` | Community | Auth, database, and Stripe variable blocks removed 2026-08-19; only the two public site variables remain. |
+| `apps/web/app/api/auth/**` | Extracted 2026-08-19 | Moved to `savedyouatoken-cloud` (preserved there via the full-history backup); deleted from this repository. |
+| `apps/web/app/api/billing/**` | Extracted 2026-08-19 | Moved to `savedyouatoken-cloud`; deleted from this repository. |
+| `apps/web/app/api/checkout/**` | Extracted 2026-08-19 | Moved to `savedyouatoken-cloud`; deleted from this repository. |
+| `apps/web/app/api/me/**` | Extracted 2026-08-19 | Account and entitlement endpoint; moved to `savedyouatoken-cloud`; deleted from this repository. |
+| `apps/web/app/api/prompts/**` | Extracted 2026-08-19 | Server-side prompt persistence; moved to `savedyouatoken-cloud`; deleted from this repository. |
+| `apps/web/app/api/stripe/**` | Extracted 2026-08-19 | Webhook implementation; moved to `savedyouatoken-cloud`; deleted from this repository. |
+| `apps/web/auth.ts`, `apps/web/types/next-auth.d.ts` | Extracted 2026-08-19 | Auth.js configuration and types; moved to `savedyouatoken-cloud`; deleted from this repository. |
+| `apps/web/drizzle.config.ts`, `apps/web/drizzle/**`, `apps/web/lib/db/**` | Extracted 2026-08-19 | Database configuration, migration, client, and schema; moved to `savedyouatoken-cloud`; deleted from this repository. |
+| `apps/web/lib/entitlements.ts`, `apps/web/lib/stripe.ts` | Extracted 2026-08-19 | Entitlement and billing implementation; moved to `savedyouatoken-cloud`; deleted from this repository. |
+| `apps/web/components/AccountMenu.tsx`, `apps/web/components/UpgradeButton.tsx` | Extracted 2026-08-19 | Account/billing UI; moved to `savedyouatoken-cloud`. The two public references into them (`layout.tsx`, `pricing/page.tsx`) now render a static, honest "not yet available" state instead. |
 | `examples/**` | Community | Synthetic prompts and tool definitions; no customer data is permitted. |
 | `kit/**` | Community | Agent instructions, documentation, and matching MIT license. |
 | `docs/**` | Community | Public product, architecture, methodology, and contributor documentation. Commercial notes require sensitive-content review before publication. |

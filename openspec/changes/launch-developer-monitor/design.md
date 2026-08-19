@@ -1,9 +1,9 @@
 ## Context
 
 Monitor is gated on successful pilot evidence. Community clients emit versioned prompt-free reports;
-the existing repository has dormant auth, database, entitlement, and Stripe boundaries that will
-live in a private control-plane repository. Hosted state introduces security, deletion, availability,
-and billing obligations absent from the free product.
+the dormant auth, database, entitlement, and Stripe boundaries that used to live in this repository
+now live in the private `savedyouatoken-cloud` repository. Hosted state introduces security,
+deletion, availability, and billing obligations absent from the free product.
 
 ## Goals / Non-Goals
 

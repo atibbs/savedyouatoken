@@ -13,12 +13,16 @@ context: |
       source; web + CLI + tests import it directly so all three run identical logic.
       Vitest (58 tests).
     - packages/cli  — `npx savedyouatoken`; token/cost budgets over files, for CI.
-    - apps/web      — Next.js 16 App Router (Turbopack), React 19, Tailwind v4. Content
-      and SEO pages are Static/SSG; only API routes are dynamic.
+    - apps/web      — Next.js 16 App Router (Turbopack), React 19, Tailwind v4. Fully
+      static/SSG — no API routes, no server.
 
-  Stack: TypeScript, Next.js 16, React 19, Tailwind v4, Auth.js v5 (JWT sessions),
-  Drizzle ORM + Postgres (Neon/Supabase free tier), Stripe. Fonts (Manrope, DM Mono)
-  self-hosted via next/font/local. Deploy target: Vercel free tier + free-tier Postgres.
+  Stack: TypeScript, Next.js 16, React 19, Tailwind v4. Fonts (Manrope, DM Mono)
+  self-hosted via next/font/local. Deploy target: Vercel free tier, zero configuration.
+
+  The dormant Pro stack (Auth.js v5, Drizzle ORM + Postgres, Stripe) that used to live in
+  apps/web has moved to the private `savedyouatoken-cloud` repository as part of publishing
+  this repository's source (see docs/community-boundary.md) — it is not part of this repo
+  or its stack anymore. Pro itself remains shelved (docs/decisions.md).
 
   Design identity: editorial neo-brutalist — paper #f6f4ed, ink #171713, acid #eaff3f,
   orange #ff6534, mint #bbf4da; Manrope display, Georgia italic accent, DM Mono for
@@ -30,10 +34,12 @@ context: |
     2. The prompt never leaves the browser. Share links carry a prompt-free report
        (packages/core codec) — a test asserts the payload contains no prompt text.
     3. All analysis is deterministic. No model calls anywhere in the product.
-    4. Everything stateful (auth, DB, Stripe) is OPTIONAL and switched on by env vars;
-       with none set, the app runs as the free static tool. Free = stateless,
-       Pro = stateful is the exact free/paid line.
-    5. Entitlement is read from the database only; the Stripe webhook is its sole writer.
+    4. This repository has no stateful surface at all (no auth, DB, or billing) — that
+       code lives in the private `savedyouatoken-cloud` repository. Free = stateless,
+       Pro = stateful is the exact free/paid line, and this repo is entirely the former.
+    5. If Pro's stateful boundary is ever rebuilt here in error, entitlement must be read
+       from the database only, with the Stripe webhook as its sole writer — but that
+       boundary belongs in `savedyouatoken-cloud`, not this repository.
     6. Prices are a hand-maintained, dated file (PRICES_VERIFIED_ON), never scraped.
     7. Token counts are exact for OpenAI (o200k) and clearly-labelled estimates for
        Claude/Gemini. Never present an estimate as exact.

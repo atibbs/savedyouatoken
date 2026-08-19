@@ -69,9 +69,11 @@ repository to build, test, or deliver their local value.
 
 ### Code that must be separated before publication
 
-The current monorepo includes dormant hosted-product boundaries such as Auth.js routes, database
-schema and migrations, entitlement logic, Stripe helpers, billing routes, and a webhook. Before the
-repository becomes public, make an explicit choice for each file:
+The monorepo used to include dormant hosted-product boundaries — Auth.js routes, database schema
+and migrations, entitlement logic, Stripe helpers, billing routes, and a webhook. These have moved
+to the private `savedyouatoken-cloud` repository (see `docs/community-boundary.md` and the
+`publish-community-source` audit log); before the repository becomes public, confirm no new file
+introduces the same kind of boundary without an explicit choice:
 
 1. move commercial control-plane implementation to `savedyouatoken-cloud`;
 2. retain only a public client contract, schema, or adapter when interoperability requires it; or
