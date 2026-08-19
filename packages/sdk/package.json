@@ -33,7 +33,7 @@
     "observability"
   ],
   "dependencies": {
-    "gpt-tokenizer": "^2.9.0"
+    "gpt-tokenizer": "^4.0.0"
   },
   "devDependencies": {
     "@savedyouatoken/core": "*",

@@ -23,8 +23,8 @@
   "dependencies": {
     "@savedyouatoken/core": "*",
     "@vercel/analytics": "^2.0.1",
-    "gpt-tokenizer": "^2.9.0",
-    "next": "^16.3.0",
+    "gpt-tokenizer": "^4.0.0",
+    "next": "^16.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
