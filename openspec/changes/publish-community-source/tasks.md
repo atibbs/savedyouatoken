@@ -2,7 +2,7 @@
 
 - [x] 1.1 Inventory every package, app route, workflow, deployment file, migration, asset, document, and generated artifact
 - [x] 1.2 Classify each path as public Community, private control plane, or shared contract and record approval
-- [ ] 1.3 Create a private `savedyouatoken-cloud` repository with protected access and a recovery backup
+- [x] 1.3 Create a private `savedyouatoken-cloud` repository with protected access and a recovery backup
 - [ ] 1.4 Move auth, persistence, entitlement, billing, webhook, customer administration, and private operations code
 - [ ] 1.5 Replace required repository crossings with versioned public contract dependencies
 - [ ] 1.6 Verify Community packages and the static analyser have no private build or runtime dependency

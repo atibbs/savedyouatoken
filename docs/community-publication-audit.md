@@ -159,3 +159,29 @@ checklist's final-review and launch sections are complete.
 - Finalize and date the draft release notes against the actual release version at publication time.
 - Owner sign-off on this scan (§3 of the owner checklist) before any credential-rotation or
   history-strategy decision is finalized.
+
+## 2026-08-19 — private cloud repository created and backed up
+
+### Recovery backup (task 1.3)
+
+- The repository owner created `github.com/atibbs/savedyouatoken-cloud`. On creation it was
+  briefly **public**; caught before any content was pushed (`isEmpty: true` at the time), flagged,
+  and the owner switched it to private. Verified directly against the REST API afterward
+  (`private: true, visibility: "private"`), not just the creation UI, before anything was written
+  to it.
+- Backed up every branch and tag from `savedyouatoken` into it: `git clone --mirror` of the source
+  followed by `git push --all` and `git push --tags` to the cloud repository (run by the repository
+  owner directly, not CI).
+- Verified the backup by comparing `git ls-remote` output for both repositories, restricted to
+  `refs/heads/*` and `refs/tags/*` (GitHub's auto-generated `refs/pull/*` refs are excluded from
+  both sides — they cannot be pushed to another repository and GitHub regenerates them itself, so
+  they are not part of what "backup" means here): **26 branches, 0 tags** (confirmed earlier that
+  this repository has no tags), every commit hash identical between source and backup.
+- This satisfies the owner checklist's evidence requirement for
+  [§2](community-publication-owner-checklist.md#2-establish-the-private-recovery-boundary)
+  ("a dated successful backup/restore check"). Still open in that section: limiting
+  `savedyouatoken-cloud`'s access to the intended people, and confirming where private
+  infrastructure/deployment/operational documentation will live within it.
+- No local working copy of `savedyouatoken-cloud` exists yet — the backup was pushed from a
+  disposable mirror clone, not a persistent checkout. Task 1.4 (extracting the private
+  control-plane paths into it) will need one, and is unstarted.
