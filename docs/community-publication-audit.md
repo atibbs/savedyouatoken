@@ -354,3 +354,31 @@ documentation only.
 Considered and rejected: `.gitignore`. It only affects untracked files — `CLAUDE.md` has been
 tracked since nearly the first commit, so adding it to `.gitignore` would have no effect on either
 the working tree or history, and would not achieve exclusion from a future publication in any form.
+
+## 2026-08-19 — non-main branch cleanup
+
+Resolves owner checklist §3's branch-cleanup item. 28 non-`main` remote branches existed; checked
+each against `git branch -r --merged origin/main` and against open PRs before touching anything:
+
+- **24 were fully merged into `main`** — every commit they contained already exists in `main`'s
+  history, so deleting the branch ref removes nothing. Deleted: `add/sdk-release`,
+  `add/vercel-analytics`, `apply/agent-kit-download`, `apply/prompt-capture-sdk`,
+  `apply/publish-cli`, `change/agent-kit-download`, `change/prompt-capture-sdk`,
+  `change/publish-cli`, `codex/add-local-monitoring-workbench`,
+  `codex/archive-cli-regression-workflow`, `codex/archive-completed-openspec-changes`,
+  `codex/auto-version-bump-ci`, `codex/clarify-product-surfaces`,
+  `codex/extract-private-control-plane`, `codex/improve-sdk-operations`,
+  `codex/privatize-strategy-docs`, `codex/product-strategy-openspec-roadmap`,
+  `codex/publish-community-source-audit-prep`, `codex/seo-foundations`,
+  `codex/verify-clean-clone-builds`, `codex/version-report-policy-contracts`,
+  `content/approachable-copy`, `deploy/prep`, `fix/cli-releasing-doc`.
+- **4 were left alone**: `dependabot/github_actions/actions/checkout-7`,
+  `dependabot/github_actions/actions/setup-node-7`,
+  `dependabot/npm_and_yarn/npm-development-dependencies-d6f16f7376`,
+  `dependabot/npm_and_yarn/npm-production-dependencies-3f12f1722a` — each has an open PR (#21–24).
+  Deleting a branch out from under an open PR is messy (GitHub leaves the PR open but unmergeable
+  rather than closing it cleanly); these need a merge-or-close decision on the PR first.
+
+Remaining before the visibility change: resolve #21–24, then delete their branches too. Only `main`
+should remain when the repository goes public — every other branch becomes publicly visible the
+moment visibility changes.
