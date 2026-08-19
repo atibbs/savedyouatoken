@@ -1,0 +1,81 @@
+name: Version packages
+
+# Keeps packages/cli and packages/sdk's versions honest without relying on a human remembering
+# to bump them. On every push to main that touches a publishable package (or packages/core,
+# which is bundled into both rather than published on its own), this computes the semver bump
+# each package needs — from Conventional Commit messages, via scripts/version-bump.mjs — and
+# opens or updates a standing "chore: version packages" pull request with the result.
+#
+# This deliberately does NOT push the bump directly to main: the default GITHUB_TOKEN does not
+# trigger other workflows when it pushes (a GitHub anti-loop protection), so a direct commit to
+# main would silently fail to fire release.yml/release-sdk.yml — the entire point of bumping in
+# the first place. A human merging this PR is a normal push under their own identity, and that
+# does trigger the release workflows as usual.
+#
+# The same GITHUB_TOKEN restriction also means this PR's own `opened`/`synchronize` events do not
+# auto-trigger ci.yml's checks — GitHub suppresses workflow runs triggered by GITHUB_TOKEN activity
+# generally, not just direct pushes to a branch. Closing and reopening the PR (a human action) does
+# trigger them normally, as does pushing any follow-up commit yourself. Review the diff — it is
+# only ever package.json/package-lock.json version fields — before merging.
+#
+# Merging the resulting PR is what actually ships anything — this workflow only ever proposes.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/cli/**'
+      - 'packages/sdk/**'
+      - 'packages/core/**'
+
+concurrency: version-packages
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the bump script walks full history to find each package's last release
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Compute required version bumps
+        run: |
+          node scripts/version-bump.mjs savedyouatoken packages/cli packages/core/src
+          node scripts/version-bump.mjs @savedyouatoken/sdk packages/sdk packages/core/src
+
+      - name: Open or update the release PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- packages/cli/package.json packages/sdk/package.json; then
+            echo "No package needs a version bump."
+            exit 0
+          fi
+
+          # Resync the lockfile's workspace version fields with the bump — package.json and
+          # package-lock.json out of sync makes `npm ci` fail for anyone who pulls this commit.
+          npm install --package-lock-only
+
+          BRANCH=chore/version-packages
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add packages/cli/package.json packages/sdk/package.json package-lock.json
+          git commit -m "chore: version packages"
+          git push --force origin "$BRANCH"
+
+          node scripts/describe-version-bump.mjs > /tmp/pr-body.md
+
+          if gh pr view "$BRANCH" --json number >/dev/null 2>&1; then
+            gh pr edit "$BRANCH" --body-file /tmp/pr-body.md
+          else
+            gh pr create --base main --head "$BRANCH" --title "chore: version packages" --body-file /tmp/pr-body.md
+          fi
