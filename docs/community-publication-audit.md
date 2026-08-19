@@ -274,3 +274,68 @@ Verified before touching anything, not assumed:
 - Task 1.5 ("replace repository crossings with versioned public contract dependencies") is
   deliberately left unstarted: there is no live cross-repo integration to replace yet, since Monitor
   is unbuilt. Revisit when `savedyouatoken-cloud` actually consumes a published contract.
+
+## 2026-08-19 — strategy and monetization documents extracted
+
+Following review of `community-boundary.md` (task 1.1's classification pass), the owner decided
+several documents should not be public at all, independent of the credential/secrets scan (task
+2.2 found nothing sensitive in any of them) — the concern is competitive/strategic exposure, a
+separate category task 2.3 flagged as needing owner judgment ("commercial notes require
+sensitive-content review before publication"). This is that review's outcome.
+
+### What was removed
+
+11 paths, all product-strategy, monetization, growth, discovery, roadmap, or business-planning
+content: `docs/monetization.md`, `docs/product-discovery.md`, `docs/product-platform-strategy.md`,
+`docs/growth.md`, `docs/future-roadmap.md`, `docs/decisions.md`, `openspec/PRIORITIES.md`, and the
+four OpenSpec change directories `launch-developer-monitor/`, `validate-monitor-pilot/`,
+`expand-team-enterprise-ecosystem/`, `agent-kit-download/`. `docs/decisions.md` and `PRIORITIES.md`
+mix technical and business content; the owner chose wholesale removal over a surgical split.
+`agent-kit-download`'s resulting *feature* (the `/kit` page, CTAs, and `kit/` source) stays public —
+only the specs explaining the monetization reasoning behind it moved.
+
+Preserved, not deleted: every one of these paths exists exactly as it was in the 2026-08-19
+full-history `savedyouatoken-cloud` backup (predates this removal).
+
+### The history problem, and the decision it forced
+
+These files are present from this repository's first commit (2026-08-10) onward. Deleting them
+today only removes them from the tree going forward — every past commit remains inspectable, and
+would still show their full content if `main`'s real ancestry were published as previously planned
+(2026-08-13 tranche above: "reviewed existing ancestry... nothing to hide," which was evaluating
+credential exposure, not this category).
+
+**Decision: publish a clean-root history for the Community repository instead of `main`'s real
+ancestry.** Recorded in `community-boundary.md`'s "Proposed publication topology." This is **not
+yet executed** — it is scoped as a final-release-prep, do-once step (owner checklist §8 / tasks.md
+5.1), performed immediately before the visibility change, not now mid-development. `main` keeps its
+normal, real history privately in the meantime; nothing about today's ongoing development changes.
+
+### Cross-reference cleanup
+
+Grepped every file staying public for references into the 11 removed paths (same method as the
+2026-08-19 control-plane extraction). Fixed: `README.md` (documentation index, product-discovery
+and monetization mentions), `docs/deployment.md`, `docs/open-source-plan.md`,
+`docs/local-monitoring-workbench.md`, `openspec/config.yaml` (the AI context primer — again the one
+that mattered most, since it previously instructed future OpenSpec work to record decisions in
+`docs/decisions.md`, which no longer exists here). `openspec/changes/publish-cli/{proposal,design}.md`
+mention `agent-kit-download` by name in plain text (no markdown links) — left as-is, no broken
+reference and no strategy content exposed. `community-boundary.md`'s classification table updated
+with explicit rows for all 11 paths.
+
+### Verification
+
+Full local pass: `npm run typecheck`, `npm test` (102 tests), `npm run build` (webpack, same sandbox
+note as above), `npm run build:cli` + `verify:cli`, `npm run build:sdk` + `verify:sdk-types`,
+`npm run build:kit`, `npm run check:licenses` (269 dependencies), `npm run check:package-contents`,
+`gitleaks git --log-opts="--all"` (no leaks), `npm audit --omit=dev --audit-level=high` (0
+vulnerabilities), `npm run openspec:validate` (8 items, down from 12, no dangling references from
+the removed change directories) — all passed. No `apps/web` source changed, so no browser
+re-verification was needed.
+
+### Still open
+
+- `CLAUDE.md` itself instructs future agents to maintain several of the now-private files (its own
+  "Documentation" section). Flagged to the owner separately — this needs its own decision (keep
+  CLAUDE.md public and edit it, or exclude it too), not decided as part of this pass.
+- The actual clean-root history squash (above) — deferred to final release prep by design.

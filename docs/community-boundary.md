@@ -5,6 +5,8 @@
 > repository visibility. Last audited: 2026-08-19. The private-control-plane paths below were
 > extracted on 2026-08-19 — see the
 > [publication audit log](community-publication-audit.md#2026-08-19--private-control-plane-extraction-task-14).
+> The product-strategy/monetization/discovery documents were separately extracted the same day —
+> see [that log entry](community-publication-audit.md#2026-08-19--strategy-and-monetization-documents-extracted).
 
 ## Classification rules
 
@@ -48,8 +50,10 @@ new stateful web route requires an explicit classification before merge.
 | `apps/web/components/AccountMenu.tsx`, `apps/web/components/UpgradeButton.tsx` | Extracted 2026-08-19 | Account/billing UI; moved to `savedyouatoken-cloud`. The two public references into them (`layout.tsx`, `pricing/page.tsx`) now render a static, honest "not yet available" state instead. |
 | `examples/**` | Community | Synthetic prompts and tool definitions; no customer data is permitted. |
 | `kit/**` | Community | Agent instructions, documentation, and matching MIT license. |
-| `docs/**` | Community | Public product, architecture, methodology, and contributor documentation. Commercial notes require sensitive-content review before publication. |
-| `openspec/**` | Community | Public roadmap, requirements, designs, and decisions. Review future proposals before merge for private operational detail. |
+| `docs/**` except the rows below | Community | Public product, architecture, methodology, and contributor documentation. |
+| `docs/monetization.md`, `docs/product-discovery.md`, `docs/product-platform-strategy.md`, `docs/growth.md`, `docs/future-roadmap.md`, `docs/decisions.md` | Extracted 2026-08-19 | Product strategy, monetization, growth, discovery, roadmap, and decision-log content — owner decided this stays private rather than public, independent of the credential/secrets scan (which found nothing in any of them). Preserved via the full-history backup; not deleted, just not part of this repository's public tree going forward. |
+| `openspec/**` except the rows below | Community | Requirements, designs, and decisions for shipped or shippable Community-facing work. Review future proposals before merge for private operational detail. |
+| `openspec/PRIORITIES.md`, `openspec/changes/launch-developer-monitor/**`, `openspec/changes/validate-monitor-pilot/**`, `openspec/changes/expand-team-enterprise-ecosystem/**`, `openspec/changes/agent-kit-download/**` | Extracted 2026-08-19 | Same reasoning as the docs row above — Monitor/enterprise/pilot business planning and the kit's monetization-experiment reasoning. `agent-kit-download`'s resulting *feature* (the `/kit` page and CTAs, `kit/` source) stays public; only the strategy spec explaining why it exists this way moved. |
 | `.github/workflows/**` | Community | CI and protected package releases; release credentials must use OIDC. |
 | `.github/ISSUE_TEMPLATE/**`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/dependabot.yml` | Community | Contributor entry points and dependency maintenance. |
 | `.claude/commands/**`, `.claude/skills/**`, `.claude/launch.json`, `CLAUDE.md` | Community | Development workflow instructions; verify they contain no local paths or credentials. |
@@ -80,15 +84,22 @@ versioned, prompt-free report contract.
 
 ## Proposed publication topology
 
-- Publish `main` and its reviewed ancestry only.
+- **Decided 2026-08-19: publish a clean-root history, not `main`'s real ancestry.** The strategy,
+  monetization, and discovery documents extracted above were present from this repository's first
+  commit onward, so deleting them today only removes them going forward — every past commit
+  remains inspectable and would still show their full content if the real history were published.
+  The owner decided that content must not be publicly visible in any form, which real-ancestry
+  publication cannot satisfy. The full real history (including these documents) remains permanently
+  preserved in the private `savedyouatoken-cloud` backup; nothing is lost, only not published.
+  **This has not happened yet** — it is a final-release-prep step (§5.1 of the owner checklist and
+  task 5.1 of `publish-community-source`'s tasks), done once, immediately before the visibility
+  change, not mid-development. Until then `main` keeps its normal history privately as usual.
 - The repository currently has no tags, submodules, or Git LFS objects.
 - Archive private backups outside the public repository, then remove all non-`main` remote branches
   before changing visibility; changing a repository to public exposes every remaining branch.
 - Create future Community releases from protected `v*` tags on reviewed `main` commits.
 - Publish only verified CLI and SDK npm tarballs plus the generated agent-kit archive. Build output,
   local archives, workflow logs, and deployment state are not source-release artifacts.
-- If the full `main` ancestry fails the history audit, publish a reviewed clean-root history instead
-  and retain the original repository privately as the recovery archive.
 
 ## Approval and change control
 

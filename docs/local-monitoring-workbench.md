@@ -3,9 +3,9 @@
 A local, account-free history of versioned reports: import files or point the SDK's local sink
 at a running workbench, browse workflow/release history with maturity context, compare
 before/after, approve a baseline, and export it as a policy `savedyouatoken policy check`
-consumes directly. It is also a low-cost prototype of the hosted Monitor's information model —
-see [`docs/product-platform-strategy.md`](product-platform-strategy.md) — built entirely on the
-same [report/baseline/policy contracts](contracts.md) the CLI regression workflow uses.
+consumes directly. It is also a low-cost prototype of the hosted Monitor's information model, built
+entirely on the same [report/baseline/policy contracts](contracts.md) the CLI regression workflow
+uses.
 
 ## Quick start
 
