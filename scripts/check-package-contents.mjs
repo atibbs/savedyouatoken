@@ -26,13 +26,25 @@ const packages = [
 const work = mkdtempSync(join(tmpdir(), 'syat-pack-contents-'));
 let failed = false;
 
+// eslint-disable-next-line no-control-regex
+const ANSI_ESCAPE = /\x1b\[[0-9;]*m/g;
+
 for (const { workspace, allow } of packages) {
+  // `npm pack` runs the workspace's `prepack`/`build` script first, whose own stdout (tsup's
+  // colored log lines) lands in the same stream ahead of the `--json` payload. A colorized log
+  // line can itself contain a literal "[" (an ANSI escape like "\x1b[34m"), so a naive
+  // `indexOf('[')` can find that instead of the JSON array — this fixes at the source (no color
+  // to begin with) and defensively strips any ANSI that slips through anyway, then looks for the
+  // JSON specifically at the start of a line rather than anywhere in the string.
   const stdout = execFileSync(
     'npm',
     ['pack', '--workspace', workspace, '--dry-run', '--json', '--pack-destination', work],
-    { encoding: 'utf8' },
-  );
-  const jsonStart = stdout.indexOf('[');
+    { encoding: 'utf8', env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' } },
+  ).replace(ANSI_ESCAPE, '');
+  const jsonStart = stdout.search(/^\[/m);
+  if (jsonStart === -1) {
+    throw new Error(`${workspace}: could not find a JSON array in \`npm pack\` output:\n${stdout}`);
+  }
   const [{ files }] = JSON.parse(stdout.slice(jsonStart));
   const unexpected = files.map((f) => f.path).filter((path) => !allow.some((re) => re.test(path)));
 
