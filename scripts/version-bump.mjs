@@ -26,17 +26,24 @@
 // This only edits package.json; it does not commit, push, or publish anything.
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
 import { bump } from './semver.mjs';
 
-const [npmName, pkgDir, ...extraWatchPaths] = process.argv.slice(2);
-if (!npmName || !pkgDir) {
+const [npmName, rawPkgDir, ...rawExtraWatchPaths] = process.argv.slice(2);
+if (!npmName || !rawPkgDir) {
   console.error('Usage: node scripts/version-bump.mjs <npmName> <pkgDir> [watchPath...]');
   process.exit(2);
 }
 
-const watchPaths = [pkgDir, ...extraWatchPaths].map((p) => (p.endsWith('/') ? p : `${p}/`));
-const pkgJsonRelPath = join(pkgDir, 'package.json');
+// Git pathspecs, refs (`<ref>:<path>`), and `--name-only` output are always POSIX ("/"), on every
+// OS git itself runs on — never the platform separator. Every path below is normalized to that
+// form up front and used as a plain string for all git-facing work; only the final filesystem
+// read/write reconverts to a native path.
+const toPosix = (p) => p.split(sep).join('/').replace(/\/+$/, '');
+
+const pkgDir = toPosix(rawPkgDir);
+const watchPaths = [pkgDir, ...rawExtraWatchPaths.map(toPosix)].map((p) => `${p}/`);
+const pkgJsonRelPath = `${pkgDir}/package.json`;
 
 const git = (args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 
@@ -86,7 +93,7 @@ if (!bumpType) {
   process.exit(0);
 }
 
-const pkgJsonPath = join(process.cwd(), pkgJsonRelPath);
+const pkgJsonPath = join(process.cwd(), ...pkgJsonRelPath.split('/'));
 const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf8'));
 const oldVersion = pkgJson.version;
 const newVersion = bump(oldVersion, bumpType);
