@@ -185,3 +185,21 @@ checklist's final-review and launch sections are complete.
 - No local working copy of `savedyouatoken-cloud` exists yet — the backup was pushed from a
   disposable mirror clone, not a persistent checkout. Task 1.4 (extracting the private
   control-plane paths into it) will need one, and is unstarted.
+
+## 2026-08-19 — clean-clone build verification (task 4.1)
+
+Built and tested `main` (`d8eb33d`) from a fresh, unconfigured clone — no `.env`/`.env.local`, no
+prior `node_modules`, no npm/tsup cache within the clone — on both ends of the supported range:
+
+- **Node 20.20.2** (the `engines.node` floor, `>=20.9.0`)
+- **Node 22.23.2** (matches `release.yml`/`release-sdk.yml`'s `node-version: 22`; GitHub-hosted
+  runners themselves have started defaulting to Node 24, per a deprecation notice seen in recent
+  Actions logs, so the newer end of the range is moving further up over time)
+
+On each: `npm ci`, `npm run typecheck`, `npm test` (102 tests), `npm run build` (webpack — the
+default Turbopack build cannot bind its CSS worker's port in this sandboxed environment, a
+sandbox-specific limitation already noted in the 2026-08-13 tranche above, not a product issue; the
+default build already runs successfully in protected CI), `npm run build:cli` + `verify:cli`
+(installed shim correctly reports `0.2.0` and runs a full audit/regression/workbench pass),
+`npm run build:sdk` + `verify:sdk-types`, `npm run build:kit`, and `npm run openspec:validate` — all
+passed identically on both runtimes, with no configuration beyond the committed lockfile.
