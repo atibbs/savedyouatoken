@@ -58,11 +58,12 @@ Activation is *configuration, not code*, but it now means deploying and configur
   `STRIPE_WEBHOOK_SECRET`, and `STRIPE_PRICE_PRO_MONTHLY`.
 - **Auth** — set `AUTH_SECRET` and a GitHub OAuth app (`AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET`);
   without sign-in there is no user to attach an entitlement to, and checkout requires a session.
-- **Database** — set `DATABASE_URL` and apply the schema (`db:push`); the webhook persists
-  entitlement there, and without it everyone reads as free.
+- **Database** — set `DATABASE_URL` and apply the schema via `savedyouatoken-cloud`'s own
+  `db:push`; the webhook persists entitlement there, and without it everyone reads as free.
 
-See `.env.example` for the full set. None of this is built further while the tier is deferred (see
-`docs/decisions.md`).
+These variables live in `savedyouatoken-cloud`'s own environment configuration, not this
+repository's `apps/web/.env.example` (which now covers only the static site's public variables).
+None of this is built further while the tier is deferred (see `docs/decisions.md`).
 
 ## Secondary opportunities
 

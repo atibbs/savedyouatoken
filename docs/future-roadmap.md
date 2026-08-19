@@ -48,10 +48,11 @@ when they happen.
 Stripe checkout, webhook and customer portal were wired and inactive, and now live in
 `savedyouatoken-cloud` rather than this repository. Activation is *configuration, not code*, but it
 is more than the Stripe keys: create a Stripe product and monthly price
-(`STRIPE_PRICE_PRO_MONTHLY`), set the Stripe, Auth, and Database env groups — sign-in (Auth) and
-entitlement persistence (a `DATABASE_URL` with the schema applied via `db:push`) are both required
-for a working purchase flow. Deliberately gated behind item 1 and (5): there must be a validated
-something to sell before the switch is flipped.
+(`STRIPE_PRICE_PRO_MONTHLY`), set the Stripe, Auth, and Database env groups on the
+`savedyouatoken-cloud` deployment — sign-in (Auth) and entitlement persistence (a `DATABASE_URL`
+with the schema applied via `savedyouatoken-cloud`'s own `db:push`) are both required for a working
+purchase flow. Deliberately gated behind item 1 and (5): there must be a validated something to
+sell before the switch is flipped.
 
 **6a. The prompt-capture SDK.**
 A drop-in wrapper (`packages/sdk`) that captures the real, assembled outbound request and audits it

@@ -181,9 +181,10 @@ There are none required. The application runs with no configuration, no API keys
 |---|---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | No | `https://savedyouatoken.com` | Canonical URLs, sitemap, share links |
 
-Payment integration is **not connected** and needs credentials this build does not have. When it is
-activated it will require `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`; see
-[`docs/monetization.md`](docs/monetization.md). No secrets are committed to this repository.
+Payment integration is **not part of this repository** — the checkout, billing, and account code
+that would need `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` lives in the private
+`savedyouatoken-cloud` repository, not here; see [`docs/monetization.md`](docs/monetization.md). No
+secrets are committed to this repository.
 
 ## Deployment
 
