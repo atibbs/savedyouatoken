@@ -56,7 +56,8 @@ new stateful web route requires an explicit classification before merge.
 | `openspec/PRIORITIES.md`, `openspec/changes/launch-developer-monitor/**`, `openspec/changes/validate-monitor-pilot/**`, `openspec/changes/expand-team-enterprise-ecosystem/**`, `openspec/changes/agent-kit-download/**` | Extracted 2026-08-19 | Same reasoning as the docs row above — Monitor/enterprise/pilot business planning and the kit's monetization-experiment reasoning. `agent-kit-download`'s resulting *feature* (the `/kit` page and CTAs, `kit/` source) stays public; only the strategy spec explaining why it exists this way moved. |
 | `.github/workflows/**` | Community | CI and protected package releases; release credentials must use OIDC. |
 | `.github/ISSUE_TEMPLATE/**`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/dependabot.yml` | Community | Contributor entry points and dependency maintenance. |
-| `.claude/commands/**`, `.claude/skills/**`, `.claude/launch.json`, `CLAUDE.md` | Community | Development workflow instructions; verify they contain no local paths or credentials. |
+| `.claude/commands/**`, `.claude/skills/**`, `.claude/launch.json` | Community | Development workflow instructions; verify they contain no local paths or credentials. |
+| `CLAUDE.md` | Excluded at clean-root (deferred) | The AI build-agent's operating instructions — Mission, Autonomy, Repository Boundaries, and a "Documentation" section that mandates maintaining several of the now-private docs above. Owner decided (2026-08-19) it stays fully in place and active on `main` for ongoing Claude Code sessions in this repository, but is excluded specifically from the clean-root history commit at final release prep — same mechanism and same timing as the strategy documents, not removed today. |
 | `scripts/**` | Community | Build, package-content, and release verification. |
 | `README.md`, `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `GOVERNANCE.md`, `SUPPORT.md` | Community | Public project entry points. |
 | `package.json`, `package-lock.json`, `.gitignore` | Community | Reproducible workspace and publication exclusions. |
@@ -94,6 +95,8 @@ versioned, prompt-free report contract.
   **This has not happened yet** — it is a final-release-prep step (§5.1 of the owner checklist and
   task 5.1 of `publish-community-source`'s tasks), done once, immediately before the visibility
   change, not mid-development. Until then `main` keeps its normal history privately as usual.
+  `CLAUDE.md` joins the same exclusion list at that step (owner decision, 2026-08-19) — it stays
+  fully active for ongoing development until then.
 - The repository currently has no tags, submodules, or Git LFS objects.
 - Archive private backups outside the public repository, then remove all non-`main` remote branches
   before changing visibility; changing a repository to public exposes every remaining branch.

@@ -335,7 +335,22 @@ re-verification was needed.
 
 ### Still open
 
-- `CLAUDE.md` itself instructs future agents to maintain several of the now-private files (its own
-  "Documentation" section). Flagged to the owner separately — this needs its own decision (keep
-  CLAUDE.md public and edit it, or exclude it too), not decided as part of this pass.
 - The actual clean-root history squash (above) — deferred to final release prep by design.
+
+## 2026-08-19 — CLAUDE.md added to the clean-root exclusion list
+
+Resolves the "still open" item above. `CLAUDE.md` — the AI build-agent's operating instructions,
+which mandate maintaining several of the now-private docs — is unlike the 11 paths removed today:
+it's actively used for ongoing Claude Code sessions in this repository, not pure reference material.
+Deleting it now (the same treatment as the other 11) would break that guidance immediately for
+every future session, not just once the repository eventually goes public.
+
+**Owner decision: `CLAUDE.md` stays fully in place and active on `main`** for ongoing development.
+It's added to the same clean-root exclusion list as the strategy documents (recorded in
+`community-boundary.md`'s topology section and tracked-path table) — excluded specifically from the
+clean-root history commit at final release prep, not touched today. No file changes in this entry;
+documentation only.
+
+Considered and rejected: `.gitignore`. It only affects untracked files — `CLAUDE.md` has been
+tracked since nearly the first commit, so adding it to `.gitignore` would have no effect on either
+the working tree or history, and would not achieve exclusion from a future publication in any form.
