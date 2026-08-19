@@ -203,3 +203,74 @@ default build already runs successfully in protected CI), `npm run build:cli` + 
 (installed shim correctly reports `0.2.0` and runs a full audit/regression/workbench pass),
 `npm run build:sdk` + `verify:sdk-types`, `npm run build:kit`, and `npm run openspec:validate` — all
 passed identically on both runtimes, with no configuration beyond the committed lockfile.
+
+## 2026-08-19 — private control-plane extraction (task 1.4)
+
+Deleted the dormant private-control-plane implementation from this repository. It is not lost: the
+2026-08-19 full-history backup into `savedyouatoken-cloud` already contains every one of these files
+exactly as they were, so nothing needed to be separately copied there.
+
+### What was removed
+
+15 files/directories: `apps/web/auth.ts`, `apps/web/types/next-auth.d.ts`,
+`apps/web/app/api/{auth,billing,checkout,me,prompts,stripe}/`, `apps/web/drizzle.config.ts`,
+`apps/web/drizzle/`, `apps/web/lib/db/`, `apps/web/lib/entitlements.ts`, `apps/web/lib/stripe.ts`,
+`apps/web/components/AccountMenu.tsx`, `apps/web/components/UpgradeButton.tsx` — every path
+`community-boundary.md` classified as private control plane. `apps/web/app/api/` no longer exists;
+this repository now has zero server routes.
+
+### Why this was safe to remove today
+
+Verified before touching anything, not assumed:
+
+- Grepped every file in the app for imports of the private cluster. Every file in the cluster only
+  imports from *within* the cluster, except exactly two crossing points from public code:
+  `apps/web/app/layout.tsx` (rendered `<AccountMenu />`) and `apps/web/app/pricing/page.tsx`
+  (rendered `<UpgradeButton />`). No test file references any of it.
+- `docs/deployment.md` and `docs/decisions.md` already establish that this boundary is inert in
+  production today: zero environment variables are configured on the live deployment, "no
+  account/Sign in control appears," and there is a standing, dated decision
+  ("Defer the Pro tier — keep it specced, do not build the paid product yet") to not build the paid
+  features on top of it. Removing it changes nothing about what a visitor to savedyouatoken.com
+  experiences today — `AccountMenu` already rendered nothing (`authConfigured: false`) and
+  `UpgradeButton` already showed a disabled "Checkout not connected" state.
+
+### Public-code changes
+
+- `apps/web/app/layout.tsx`: dropped the `AccountMenu` import and usage. Rendered output is
+  unchanged (it already rendered nothing).
+- `apps/web/app/pricing/page.tsx`: dropped the `UpgradeButton` import and usage, replaced with a
+  static, honest "Not yet available" state — no fabricated functionality, no dead reference to a
+  component that no longer exists in this repository.
+- `apps/web/package.json`: removed `next-auth`, `drizzle-orm`, `drizzle-kit`, `postgres`, `stripe`,
+  and the `db:generate`/`db:push` scripts (task 1.6). `npm install` afterward removed 23 packages
+  from the tree and, as a side effect, resolved 3 of the 4 pre-existing moderate `npm audit`
+  findings (they were transitive to `drizzle-kit`'s bundled `esbuild`/`@esbuild-kit/*`).
+- `apps/web/.env.example`: removed the Auth/Database/Stripe variable blocks; only the two public
+  site variables remain.
+- Updated every doc that described this boundary as present in this repository rather than moved:
+  `community-boundary.md` (the authoritative inventory — every affected row now says "Extracted
+  2026-08-19"), `deployment.md`, `monetization.md`, `future-roadmap.md`, `open-source-plan.md`, and
+  `openspec/config.yaml` (the AI context primer fed to future OpenSpec work on this repo — this one
+  mattered most to get right, since a stale primer would actively mislead future changes). Left
+  `docs/decisions.md`'s existing "Defer the Pro tier" entry untouched as a historical record, and
+  left the *other* OpenSpec changes' forward-looking references to Auth.js/Drizzle/Stripe as-is
+  where they describe what `savedyouatoken-cloud` will eventually need, not this repository's
+  current state — one exception: `launch-developer-monitor/design.md`'s context paragraph was
+  present-tense-wrong ("the existing repository has dormant... boundaries that will live in a
+  private repository") and got a one-line tense fix.
+
+### Verification
+
+- Full local pass after: `npm run typecheck`, `npm test` (102 tests), `npm run build` (webpack, same
+  sandbox note as above), `npm run build:cli` + `verify:cli`, `npm run build:sdk` +
+  `verify:sdk-types`, `npm run build:kit`, `npm run check:licenses` (269 dependencies, down from 292
+  — the removed packages), `npm run check:package-contents`, `gitleaks git --log-opts="--all"` (no
+  leaks), `npm audit --omit=dev --audit-level=high` (0 vulnerabilities), `npm run
+  openspec:validate` — all passed.
+- Visually verified in a browser: home page header renders identically to before (no account
+  control, matching production); `/pricing` renders the new static "Not yet available" state with
+  no console errors.
+- Task 1.5 ("replace repository crossings with versioned public contract dependencies") is
+  deliberately left unstarted: there is no live cross-repo integration to replace yet, since Monitor
+  is unbuilt. Revisit when `savedyouatoken-cloud` actually consumes a published contract.

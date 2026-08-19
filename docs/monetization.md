@@ -45,11 +45,14 @@ stateless/stateful line, which is the honest place for it.
 
 ### Current state
 
-Billing is **wired but inactive**. The checkout, webhook, and customer-portal route handlers all
-exist and entitlement persistence is implemented; the `/pricing` page shows a "checkout not
-connected" state until it is switched on, and no waitlist collects addresses.
+Billing was **wired but inactive** — the checkout, webhook, and customer-portal route handlers and
+entitlement persistence were built and merged, then moved to the private `savedyouatoken-cloud`
+repository as part of publishing this repository's source (see `docs/community-boundary.md`); they
+are preserved there, not deleted, but are no longer part of this repository. The `/pricing` page
+shows a plain "not yet available" state, and no waitlist collects addresses.
 
-Activation is now *configuration, not code*:
+Activation is *configuration, not code*, but it now means deploying and configuring
+`savedyouatoken-cloud` rather than setting env vars on this static site:
 
 - **Stripe** — create a product and monthly price, and set `STRIPE_SECRET_KEY`,
   `STRIPE_WEBHOOK_SECRET`, and `STRIPE_PRICE_PRO_MONTHLY`.

@@ -5,7 +5,6 @@ import { PRICES_VERIFIED_ON } from '@savedyouatoken/core';
 import { SITE_NAME, SITE_URL, TAGLINE, RESOURCE_NAV } from '@/lib/site';
 import { PRODUCT_NAV } from '@/lib/products';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { AccountMenu } from '@/components/AccountMenu';
 import { GetTheKit } from '@/components/GetTheKit';
 import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
@@ -104,7 +103,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </Link>
               ))}
               <div className="ml-1 flex shrink-0 items-center gap-2">
-                <AccountMenu />
                 <ThemeToggle />
               </div>
             </nav>

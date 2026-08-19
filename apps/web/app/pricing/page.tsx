@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { ALL_RULES } from '@savedyouatoken/core';
 import { Panel } from '@/components/ui';
 import { FREE_SAVED_LIMIT } from '@/lib/limits';
-import { UpgradeButton } from '@/components/UpgradeButton';
 
 export const metadata: Metadata = {
   title: 'Pricing',
@@ -87,7 +86,13 @@ export default function PricingPage() {
               </li>
             ))}
           </ul>
-          <UpgradeButton />
+          <button type="button" disabled className="mt-6 w-full cursor-not-allowed border border-line-strong bg-raised px-3 py-2 text-[13px] text-faint">
+            Not yet available
+          </button>
+          <p className="mt-2 text-[12px] leading-relaxed text-faint">
+            Pro is fully specced but deliberately not built yet — see &ldquo;Why this split&rdquo;
+            below.
+          </p>
         </Panel>
       </div>
 

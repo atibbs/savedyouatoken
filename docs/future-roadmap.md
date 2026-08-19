@@ -5,10 +5,13 @@
 Work that should follow the MVP directly, ordered by value.
 
 > **Status — Pro is shelved pending validation (see `docs/decisions.md`).** The stateful boundary
-> for Pro (Auth.js, Postgres/Drizzle schema, Stripe checkout/webhook/portal) is already built and
-> merged, but inert and env-gated. The paid features below are specced and deferred: item 1 is the
-> gate, and nothing past it is built or billed until a recurring hook is shown to be adopted and
-> retained. Items already partly built are marked **[boundary built]**.
+> for Pro (Auth.js, Postgres/Drizzle schema, Stripe checkout/webhook/portal) was built, merged, and
+> inert/env-gated, then moved to the private `savedyouatoken-cloud` repository as part of publishing
+> this repository's source (see `docs/community-boundary.md`) — it is preserved there, not deleted,
+> but is no longer part of this repository. The paid features below are specced and deferred: item 1
+> is the gate, and nothing past it is built or billed until a recurring hook is shown to be adopted
+> and retained. Items whose boundary already exists in `savedyouatoken-cloud` are marked
+> **[boundary built]**.
 
 **1. Validate the CI thesis with real teams.**
 Get three or four teams running `savedyouatoken` in CI and watch where it fails or annoys them. The
@@ -37,16 +40,18 @@ downloadable asset. Requires publishing the CLI to npm first.
 **5. Prompt history and regression alerts. [boundary built]**
 The first genuinely paid feature and the first that needs a server. Store prompt versions, diff any
 two, price the delta, and alert when a prompt crosses its budget. The database and auth this needs
-already exist (`saved_prompts` / `entitlements` tables, Auth.js). The *features* — history UI,
-diffing, alerting — are deferred behind item 1.
+already exist in `savedyouatoken-cloud` (`saved_prompts` / `entitlements` tables, Auth.js). The
+*features* — history UI, diffing, alerting — are deferred behind item 1, and are private-repo work
+when they happen.
 
 **6. Payment integration. [boundary built]**
-Stripe checkout, webhook and customer portal are wired and inactive. Activation is *configuration,
-not code*, but it is more than the Stripe keys: create a Stripe product and monthly price
-(`STRIPE_PRICE_PRO_MONTHLY`), set the Stripe, Auth, and Database env groups from `.env.example` —
-sign-in (Auth) and entitlement persistence (a `DATABASE_URL` with the schema applied via `db:push`)
-are both required for a working purchase flow. Deliberately gated behind item 1 and (5): there must
-be a validated something to sell before the switch is flipped.
+Stripe checkout, webhook and customer portal were wired and inactive, and now live in
+`savedyouatoken-cloud` rather than this repository. Activation is *configuration, not code*, but it
+is more than the Stripe keys: create a Stripe product and monthly price
+(`STRIPE_PRICE_PRO_MONTHLY`), set the Stripe, Auth, and Database env groups — sign-in (Auth) and
+entitlement persistence (a `DATABASE_URL` with the schema applied via `db:push`) are both required
+for a working purchase flow. Deliberately gated behind item 1 and (5): there must be a validated
+something to sell before the switch is flipped.
 
 **6a. The prompt-capture SDK.**
 A drop-in wrapper (`packages/sdk`) that captures the real, assembled outbound request and audits it

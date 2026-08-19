@@ -1,7 +1,9 @@
 # Deployment
 
-The free product is a static Next.js site with a few serverless API routes that stay **inert until
-their env vars are set**. It deploys to Vercel's free tier with **zero required configuration**.
+The free product is a fully static Next.js site. It deploys to Vercel's free tier with **zero
+required configuration** and has no serverless API routes at all — the account/billing routes that
+used to exist here (inert, env-gated) moved to the private `savedyouatoken-cloud` repository as part
+of publishing this repository's source; see `docs/community-boundary.md`.
 
 ## One-time setup (Vercel)
 
@@ -23,11 +25,7 @@ Once the domain is live, confirm `NEXT_PUBLIC_SITE_URL` matches it.
 ## What deploys
 
 - **Content + SEO pages** (`/`, `/waste/*`, `/models/*`, `/pricing`, `/cli`, `/methodology`, `/r`) —
-  static / SSG, served from the CDN.
-- **API routes** (`/api/me`, `/api/auth/*`, `/api/checkout`, `/api/stripe/webhook`,
-  `/api/prompts/*`, `/api/billing/portal`) — serverless functions. With no env set they degrade
-  cleanly: `/api/me` reports the free plan without invoking auth, and the account/upgrade UI hides
-  itself. Nothing charges or stores anything.
+  static / SSG, served from the CDN. Nothing charges or stores anything.
 
 ## Go-live checks
 
@@ -35,13 +33,14 @@ Once the domain is live, confirm `NEXT_PUBLIC_SITE_URL` matches it.
 - A model page (e.g. `/models/claude-opus-5`) and a waste page render with content.
 - `/sitemap.xml` and `/robots.txt` resolve; the sitemap lists the content routes.
 - A shared report (`/r#…`) decodes into the receipt.
-- No account/"Sign in" control appears (auth is not configured).
+- No account/"Sign in" control appears (there is none — the site has no accounts).
 
 ## Later — activating Pro (optional, currently deferred)
 
-Pro is shelved (see `docs/decisions.md`). To activate it, set the Stripe, Auth, and Database env
-groups from `apps/web/.env.example`, create a Stripe product/price, and apply the schema (`db:push`).
-See `docs/monetization.md` for the full checklist.
+Pro is shelved (see `docs/decisions.md`). Its account/database/billing implementation lives in the
+private `savedyouatoken-cloud` repository, not here — activating it is a `savedyouatoken-cloud`
+deployment, separate from this static site, not an env var set on this one. See
+`docs/monetization.md` for the full checklist.
 
 ## Related: publishing the CLI
 
