@@ -37,7 +37,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # the bump script walks full history to find each package's last release
       - uses: actions/setup-node@v4
