@@ -28,7 +28,7 @@
 
 ## 4. Reproducible release preparation
 
-- [ ] 4.1 Build and test the public repository from a clean unconfigured clone on every supported runtime
+- [x] 4.1 Build and test the public repository from a clean unconfigured clone on every supported runtime
 - [x] 4.2 Inspect CLI and SDK tarballs, source maps, declarations, licenses, and filesystem paths
 - [ ] 4.3 Configure protected tag-based npm publishing with least privilege and provenance
 - [ ] 4.4 Produce and install exact-version release candidates from the reviewed public commit
