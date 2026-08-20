@@ -547,3 +547,29 @@ Owner checklist §5 is now fully resolved: everything actionable on this plan wh
 done (Dependabot alerts, access limits, Discussions/contact decisions); everything else in that
 section (private vulnerability reporting, GHAS secret/code scanning, branch/tag protection) is
 confirmed blocked until public or a GHAS-eligible plan, not outstanding work.
+
+## 2026-08-20 — @savedyouatoken/sdk bootstrapped on npm
+
+Resolves owner checklist §6's first two items.
+
+- **npm ownership confirmed** for both packages under the owner's own account (`atibbs`).
+  `@savedyouatoken/sdk` needed the `savedyouatoken` npm organization created first — npm scopes
+  aren't auto-created, and a package can't publish under a scope with no account/org behind it.
+  This, not a permissions problem, was the cause of the initial `404 Not Found - PUT
+  .../@savedyouatoken%2fsdk` errors on the first two publish attempts (confirmed by the same
+  error persisting even after org creation, until the owner's local npm CLI session was
+  re-authenticated — a stale local token, not a registry-side problem).
+- **`@savedyouatoken/sdk@0.2.1` published** via a one-time manual bootstrap
+  (`npm publish --access public`, matching exactly how `savedyouatoken` itself was originally
+  bootstrapped). Verified live and functional, not just "published": `npm view` confirms the
+  registry entry (MIT, correct repository metadata, `atibbs` as maintainer); a real
+  `npm install @savedyouatoken/sdk` into a throwaway project followed by `import * as sdk from
+  '@savedyouatoken/sdk'` confirms every expected export is present (`createAuditor`,
+  `wrapAnthropic`, `wrapOpenAI`, adapters, sinks, `installFetchInterceptor`, etc.).
+- **Trusted publisher configured** for `@savedyouatoken/sdk` (GitHub Actions →
+  `atibbs`/`savedyouatoken` → `release-sdk.yml`, no environment), matching `savedyouatoken`'s
+  already-proven configuration. **Not yet end-to-end proven for the SDK** — the current version
+  is already published, so re-running `release-sdk.yml` today would hit `release-gate.mjs`'s
+  idempotent skip before ever reaching the OIDC publish step. Real proof needs a genuine future
+  SDK version bump; deliberately did not create an artificial one just to test this.
+- Bootstrap token revocation is explicitly gated on that real proof happening first — not done.
