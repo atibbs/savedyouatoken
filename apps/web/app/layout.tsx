@@ -133,6 +133,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </Link>
                   ))}
                 </nav>
+                <nav aria-label="Open source" className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-[12px] font-medium">
+                  <a href="https://github.com/atibbs/savedyouatoken" target="_blank" rel="noopener noreferrer" className="hover:underline hover:underline-offset-4">
+                    Source
+                  </a>
+                  <a href="https://github.com/atibbs/savedyouatoken/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="hover:underline hover:underline-offset-4">
+                    License
+                  </a>
+                  <a href="https://github.com/atibbs/savedyouatoken/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" className="hover:underline hover:underline-offset-4">
+                    Contributing
+                  </a>
+                  <a href="https://github.com/atibbs/savedyouatoken/blob/main/SECURITY.md" target="_blank" rel="noopener noreferrer" className="hover:underline hover:underline-offset-4">
+                    Security
+                  </a>
+                </nav>
               </div>
               <div className="flex flex-col items-start gap-4 sm:items-end">
                 <p className="max-w-xs font-serif text-[22px] italic leading-snug sm:text-right sm:text-[24px]">

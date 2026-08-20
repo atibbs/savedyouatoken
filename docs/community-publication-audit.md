@@ -594,3 +594,79 @@ With this, everything in `publish-community-source` and the owner checklist that
 before the actual freeze-and-launch sequence is done. What remains is owner checklist §8 itself:
 freeze, re-verify the backup one more time, then the irreversible visibility change — at which
 point this candidate branch becomes the real `main`.
+
+## 2026-08-20 — launch: main swapped to clean-root history, repository made public
+
+Resolves task 5.1–5.6 and owner checklist §8. Executed in this order, deliberately:
+
+1. **Freeze and re-verify.** Confirmed no unmerged nonessential work was in flight. Re-verified the
+   `savedyouatoken-cloud` private backup was current (every branch's commit hash matched between
+   source and backup).
+2. **Rebuilt the candidate fresh.** The earlier `community-release-candidate` branch (reviewed and
+   GO'd above) predated several later merges to `main` (PR #34's Copilot fix, dependency updates).
+   Rebuilt it as a fresh single history-free commit — `main`'s exact current tree at `21f5063`,
+   minus `CLAUDE.md` — and re-ran the complete verification suite against it (typecheck, tests,
+   build, CLI/SDK build+verify+install, `check:licenses`, `check:package-contents`, `gitleaks`,
+   `npm audit --omit=dev --audit-level=high`, `openspec:validate`, plus a `git ls-tree` sweep
+   confirming no excluded path exists in the tree). All clean.
+3. **Swapped `main` while still private.** `git push --force origin
+   community-release-candidate:main`. At this point nothing was yet publicly exposed — the
+   repository was still private, and the real history remained fully recoverable from the
+   `savedyouatoken-cloud` backup if anything had been wrong. This ordering (swap first, flip
+   second) was deliberate: the reverse order would have briefly exposed the real history publicly
+   before the swap could complete.
+4. **Verified the new `main` independently.** Protected CI ran and passed on the swapped history
+   on its own (not just the pre-swap local run), including the same secret/license/package-content
+   scans. Confirmed none of `version-packages.yml`, `tag-releases.yml`, `release.yml`,
+   `release-sdk.yml`, or `regression-check.yml` spuriously triggered on the disconnected-history
+   force-push (all showed unchanged prior run timestamps).
+5. **Changed repository visibility to public.** This was the one genuinely irreversible step in
+   the sequence. Done only after steps 1–4 confirmed the published tree was correct.
+6. **Verified anonymous access.** Confirmed the repository is reachable and browsable without
+   authentication before any website wording changed.
+7. **Proved the tag-based release pipeline for real.** No tag existed yet (a clean-root history
+   carries no prior tags). Tagged and pushed `cli-v0.2.1` by hand, using the owner's own git
+   identity (not `GITHUB_TOKEN`, so normal event triggering applied) — this was a real,
+   already-decided version shipping, not a manufactured bump created just to exercise the
+   pipeline. `tag-releases.yml` dispatched `release.yml` via `workflow_dispatch`, which ran end to
+   end for the first time with real OIDC authentication and real SLSA provenance, and published
+   successfully. Verified installable from the public registry.
+8. **Enabled the newly-unblocked security settings.** Now that the repository is public,
+   previously-blocked GHAS features became available and were turned on:
+   - `PUT repos/{owner}/{repo}/private-vulnerability-reporting` → enabled.
+   - `PATCH repos/{owner}/{repo}` with `security_and_analysis.secret_scanning.status=enabled`.
+   - `PATCH repos/{owner}/{repo}` with
+     `security_and_analysis.secret_scanning_push_protection.status=enabled`.
+   - `PATCH repos/{owner}/{repo}` with
+     `security_and_analysis.dependabot_security_updates.status=enabled`.
+
+   Branch/tag rulesets remain deliberately unconfigured — confirmed no longer 403ing (available
+   the moment the repository went public), but the specific rules (required reviewers, which
+   checks are required) are an explicit owner decision, not something to set unilaterally. See
+   owner checklist §5.
+9. **Fixed public repository metadata.** `PATCH repos/{owner}/{repo}` set `homepage` to
+   `https://savedyouatoken.com` and a real description ("Find the waste in your LLM prompts before
+   your invoice does. Deterministic, local, MIT-licensed."). `PUT repos/{owner}/{repo}/topics` set
+   `anthropic, cli, cost-optimization, llm, openai, prompt-engineering, tokens`.
+10. **Updated website and documentation wording** from planned/future to present-tense open source:
+    `README.md` (banner rewritten), `docs/open-source-plan.md` and `docs/community-boundary.md`
+    (status headers marked Complete/Executed with the swap-then-flip sequence recorded). Full
+    verification suite (build, build:cli, verify:cli, build:sdk, verify:sdk-types, build:kit,
+    check:licenses, check:package-contents, `npm audit`, `openspec:validate`, `gitleaks`) re-run
+    clean against these changes before committing.
+11. **Added public source links to the product site.** `apps/web/app/layout.tsx` footer gained an
+    "Open source" nav (Source, License, Contributing, Security) linking to the public GitHub
+    repository. Verified via DOM inspection (`querySelectorAll`, `getComputedStyle`,
+    `element.innerText`) rather than a screenshot, after the browser screenshot tool returned
+    consistently blank output this session — confirmed real: correct href/text/target on all four
+    links, correct footer background color, correct total link count.
+
+**Outstanding from this sequence, tracked separately, not blocking launch:**
+- `@savedyouatoken/sdk`'s trusted-publisher OIDC path remains formally unproven — no real SDK
+  source change has gone through the tag pipeline yet. Will be proven at the next genuine SDK
+  version bump, not forced artificially.
+- Bootstrap npm token revocation stays gated on that SDK proof landing.
+- Branch/tag ruleset configuration is an explicit pending owner decision (see owner checklist §5),
+  not an oversight.
+- Post-publication monitoring (owner checklist §8's last item, task 6.2) is ongoing by nature, not
+  a one-time completion.

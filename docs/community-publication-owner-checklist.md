@@ -136,10 +136,18 @@ public commits and tags.
 
 ## 8. Execute the irreversible launch
 
-- [ ] Freeze nonessential changes and verify the private backup again.
-- [ ] Change the reviewed Community repository visibility to public.
-- [ ] Verify anonymous access before changing the website to present-tense open-source language.
-- [ ] Publish or verify matching npm releases from the protected public tags.
+- [x] Freeze nonessential changes and verify the private backup again. Done 2026-08-20 immediately
+  before the swap.
+- [x] Change the reviewed Community repository visibility to public. Done 2026-08-20 — visibility
+  changed only after the clean-root candidate had already replaced `main` (still private at that
+  point) and passed CI independently on the new history.
+- [x] Verify anonymous access before changing the website to present-tense open-source language.
+  Done 2026-08-20; website wording updated afterward (`README.md`, `docs/open-source-plan.md`,
+  `docs/community-boundary.md`).
+- [x] Publish or verify matching npm releases from the protected public tags. `cli-v0.2.1` tagged
+  and released 2026-08-20, proving the full OIDC/provenance pipeline for the first time. SDK's
+  trusted publisher is configured but still awaits its own real tag-triggered release — not forced
+  with an artificial version bump.
 - [ ] Monitor advisories, install failures, provenance, issues, and support load during launch.
 
 Repository visibility is the irreversible step. If verification fails after publication, fix forward;
