@@ -21,12 +21,13 @@ boundary document.
 
 - [x] Create the private `savedyouatoken-cloud` repository under the intended long-term owner.
   Created 2026-08-19 — see the [audit log](community-publication-audit.md#2026-08-19--private-cloud-repository-created-and-backed-up).
-- [ ] Limit repository access to the people who should see hosted and commercial implementation.
+- [x] Limit repository access to the people who should see hosted and commercial implementation.
+  Confirmed 2026-08-20.
 - [x] Create and verify a recoverable private backup of the current repository, including all
   branches, tags, and history, before any extraction or history rewrite. Verified 2026-08-19: every
   branch's commit hash matches between source and backup (no tags exist in this repository).
-- [ ] Confirm where private infrastructure, deployment configuration, and operational documentation
-  will live.
+- [x] Confirm where private infrastructure, deployment configuration, and operational documentation
+  will live. Decided 2026-08-20: `savedyouatoken-cloud`'s own `docs/`.
 
 **Evidence:** private repository URL, access review, and a dated successful backup/restore check. Do
 not record private backup locations or credentials in the Community repository.
@@ -62,7 +63,16 @@ attribution.
 ## 5. Configure public-project security and governance
 
 - [ ] Enable GitHub private vulnerability reporting and test the advisory link in `SECURITY.md`.
-- [ ] Enable dependency and secret scanning available for the repository.
+  Confirmed blocked while private (checked 2026-08-20): GitHub's own docs describe this feature
+  only for public repositories, its real navigation path is under Settings → **Advanced
+  Security** (not the general "Code security" page), and `repos/{owner}/{repo}` exposes no
+  security/advanced-security fields at all for this repo — `PUT
+  .../private-vulnerability-reporting` 404s rather than enabling it. Same class of restriction
+  as branch/tag protection below; configurable once public (or on a plan with GHAS).
+- [ ] Enable dependency and secret scanning available for the repository. Dependabot *alerts* are
+  free for private repos and were previously confirmed off — that part is still actionable.
+  Secret/code scanning (GHAS) is likely blocked the same way private vulnerability reporting is;
+  not yet independently confirmed.
 - [ ] Configure `main` and release-tag protection (rulesets for `cli-v*`/`sdk-v*`), required
   checks, review requirements, and least privilege maintainer access. Confirmed blocked while
   private, same as branch protection: `repos/{owner}/{repo}/rulesets` 403s with "Upgrade to
