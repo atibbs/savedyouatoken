@@ -2,10 +2,9 @@
 
 **Find the waste in your LLM prompts before your invoice does.**
 
-> **Source status:** Public MIT-licensed source is planned, but this repository remains private
-> during the boundary and history audit. See the
-> [open-source transition plan](docs/open-source-plan.md) and
-> [publication inventory](docs/community-boundary.md).
+MIT-licensed and open source. The hosted, stateful control plane (accounts, billing, the planned
+Monitor service) is operated separately and privately — see
+[`docs/community-boundary.md`](docs/community-boundary.md) for the exact public/private split.
 
 Paste a system prompt. Get a ranked list of what is wasting tokens — each priced in dollars per
 month at your real request volume — plus a rewritten version you can copy, the prompt-caching maths

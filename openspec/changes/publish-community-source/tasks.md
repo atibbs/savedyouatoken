@@ -36,12 +36,18 @@
 
 ## 5. Publication
 
-- [ ] 5.1 Freeze nonessential changes and re-run the complete release gate
-- [ ] 5.2 Confirm repository backup, visibility target, branch protection, release permissions, and maintainer access
-- [ ] 5.3 Change the reviewed Community repository visibility to public
-- [ ] 5.4 Publish or verify matching npm releases from protected public tags
-- [ ] 5.5 Update website and documentation wording from planned to presently open source only after access is verified
-- [ ] 5.6 Add public source, license, contribution, and security links to product pages and package registries
+- [x] 5.1 Freeze nonessential changes and re-run the complete release gate — done 2026-08-20: full
+  suite (build, build:cli, verify:cli, build:sdk, verify:sdk-types, build:kit, check:licenses,
+  check:package-contents, npm audit, openspec:validate, gitleaks) re-run clean immediately before
+  and after the swap/flip.
+- [x] 5.2 Confirm repository backup, visibility target, branch protection, release permissions, and maintainer access — backup re-verified 2026-08-20 before the swap; branch/tag protection deliberately left unconfigured pending an explicit owner decision (see checklist §5), not a blocker for launch.
+- [x] 5.3 Change the reviewed Community repository visibility to public — done 2026-08-20.
+- [x] 5.4 Publish or verify matching npm releases from protected public tags — `cli-v0.2.1` proved the
+  full pipeline (tag → workflow_dispatch → OIDC publish → provenance) 2026-08-20. SDK's trusted
+  publisher is configured but not yet proven by a real tag-triggered release (no artificial version
+  bump was created to force this).
+- [x] 5.5 Update website and documentation wording from planned to presently open source only after access is verified — done 2026-08-20 (`README.md`, `docs/open-source-plan.md`, `docs/community-boundary.md`).
+- [x] 5.6 Add public source, license, contribution, and security links to product pages and package registries — done 2026-08-20 (site footer "Open source" nav in `apps/web/app/layout.tsx`).
 
 ## 6. Post-publication verification
 

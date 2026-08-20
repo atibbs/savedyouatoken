@@ -1,8 +1,9 @@
 # Open-source transition plan
 
-> **Status:** Planned. The GitHub repository is currently private, so savedyouatoken must not yet be
-> described as an open-source project. The MIT license expresses the intended license; public access
-> to the relevant source is still required to complete the transition.
+> **Status:** Complete. The repository went public on 2026-08-20, from a reviewed clean-root
+> history — see [`docs/community-publication-audit.md`](community-publication-audit.md) for the
+> full record. This document is kept as the historical record of the plan that was executed and
+> the boundary rules that remain in force going forward, not as a forward-looking plan.
 
 ## Decision
 

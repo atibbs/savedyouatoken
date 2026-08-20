@@ -1,8 +1,9 @@
 # Community publication inventory and boundary
 
-> **Status:** Proposed publication inventory, reviewed through the pull request that introduces
-> this document. It records the intended public/private split; it does not authorize changing
-> repository visibility. Last audited: 2026-08-19. The private-control-plane paths below were
+> **Status:** Executed. This repository went public on 2026-08-20 from the clean-root history
+> described below. This document remains the live record of the public/private boundary — the
+> classification rules and per-path decisions here still govern new files going forward, not just
+> the original publication. Last audited: 2026-08-19. The private-control-plane paths below were
 > extracted on 2026-08-19 — see the
 > [publication audit log](community-publication-audit.md#2026-08-19--private-control-plane-extraction-task-14).
 > The product-strategy/monetization/discovery documents were separately extracted the same day —
@@ -95,32 +96,37 @@ versioned, prompt-free report contract.
   `CLAUDE.md` joins the same exclusion list (owner decision, 2026-08-19) — it stays fully active
   on `main` for ongoing development.
 
-  **Built 2026-08-20 as a candidate, not yet installed as `main`:** the `community-release-candidate`
-  branch (pushed to this still-private repository) is a single history-free commit — `main`'s exact
-  tree at the time, minus `CLAUDE.md`, no parent commits. Full local verification pass:
-  `npm run typecheck`, `npm test` (102 tests), `npm run build`, `npm run build:cli` + `verify:cli`
-  (installed shim reports `0.2.1` and runs a full audit/regression/workbench pass),
-  `npm run build:sdk` + `verify:sdk-types`, `npm run build:kit`, `npm run check:licenses` (269
-  dependencies), `npm run check:package-contents`, `gitleaks` scoped to just that one commit (no
-  leaks), `npm audit --omit=dev` (0 vulnerabilities), `npm run openspec:validate` (8 items) — all
-  passed. Confirmed no excluded path exists anywhere in the tree via `git ls-tree -r --name-only`.
-  **This branch replacing `main` — the actual publication — has not happened.** That swap, and the
-  visibility change itself, remain owner-gated final steps (§5.1–5.3 of the owner checklist and
-  tasks 5.1/5.3 of `publish-community-source`), done once, right before going public. Until then
-  `main` keeps its normal real history privately, completely unaffected by this branch's existence.
-- The repository currently has no tags, submodules, or Git LFS objects.
-- Archive private backups outside the public repository, then remove all non-`main` remote branches
-  before changing visibility; changing a repository to public exposes every remaining branch.
+  **Executed 2026-08-20.** The `community-release-candidate` branch (a single history-free
+  commit — `main`'s exact tree, minus `CLAUDE.md`, no parent commits) was rebuilt fresh from
+  `main` immediately before publication to include everything merged since the design decision,
+  re-verified in full, then force-pushed onto `main` (`git push --force origin
+  community-release-candidate:main`) **while the repository was still private** — a fully
+  reversible step at the time, since nothing was yet exposed and the real history remained
+  recoverable from the `savedyouatoken-cloud` backup. Only after `main` was confirmed correct
+  (protected CI passed independently on the new `main`, including the full secret/license/
+  package-content scan) did the repository's visibility change to public. See the
+  [2026-08-20 audit log entries](community-publication-audit.md) for the complete record,
+  including the final pre-swap backup verification.
+- The repository has no tags predating publication; `cli-v0.2.1` was tagged and released
+  immediately after going public, proving the tag-based pipeline end to end with real npm
+  provenance for the first time. No submodules or Git LFS objects.
+- Non-`main` remote branches: resolved before publication per the owner checklist §3 branch
+  cleanup (24 merged branches deleted 2026-08-19); the one exception, an open Dependabot PR
+  branch, remains and is now simply public along with everything else, which is fine — it never
+  contained anything sensitive.
 - **Implemented 2026-08-19 (task 4.3):** CLI and SDK releases now publish from package-scoped
   tags (`cli-v<version>`, `sdk-v<version>`) rather than from every push to `main`.
   `.github/workflows/tag-releases.yml` tags the exact commit a version bump lands on and
   dispatches `release.yml`/`release-sdk.yml` via `workflow_dispatch` (not the tag-push event
   itself — GitHub's GITHUB_TOKEN anti-recursion protection suppresses that the same way it
   suppresses branch pushes; `workflow_dispatch` is the documented exemption). A maintainer can
-  also push a `cli-v*`/`sdk-v*` tag by hand as an independent trigger. Tag *protection*
-  (rulesets restricting who can create/delete `cli-v*`/`sdk-v*`) remains blocked while private —
-  see the owner checklist §5 — so today the tags exist and drive releases, but nothing yet stops
-  a repo admin from deleting or recreating one; revisit once public or upgraded.
+  also push a `cli-v*`/`sdk-v*` tag by hand as an independent trigger. `cli-v0.2.1` proved the
+  full pipeline for the first time on 2026-08-20, immediately after publication — real OIDC
+  publish, real SLSA provenance, verified installable from the registry. Tag *protection*
+  (rulesets restricting who can create/delete `cli-v*`/`sdk-v*`) is now configurable — confirmed
+  unblocked the moment the repository went public (`rulesets` no longer 403s) — but not yet
+  configured; the specific rules (required reviewers, which checks are required) are an owner
+  decision, not something to set unilaterally. See the owner checklist §5.
 - Publish only verified CLI and SDK npm tarballs plus the generated agent-kit archive. Build output,
   local archives, workflow logs, and deployment state are not source-release artifacts.
 
