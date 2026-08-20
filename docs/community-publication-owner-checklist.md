@@ -69,10 +69,14 @@ attribution.
   security/advanced-security fields at all for this repo — `PUT
   .../private-vulnerability-reporting` 404s rather than enabling it. Same class of restriction
   as branch/tag protection below; configurable once public (or on a plan with GHAS).
-- [ ] Enable dependency and secret scanning available for the repository. Dependabot *alerts* are
-  free for private repos and were previously confirmed off — that part is still actionable.
-  Secret/code scanning (GHAS) is likely blocked the same way private vulnerability reporting is;
-  not yet independently confirmed.
+- [x] Enable Dependabot alerts. Confirmed enabled 2026-08-20 (`GET
+  repos/{owner}/{repo}/vulnerability-alerts` now returns 204, was 404 before).
+- [ ] Enable secret/code scanning (GitHub Advanced Security) for the repository. Confirmed
+  blocked 2026-08-20, same class of restriction as the other GHAS-gated items: enabling secret
+  scanning via the API returns 422 "Secret scanning is not available for this repository";
+  code scanning's default-setup endpoint 403s. Not a substitute for this repo's own CI secret
+  scan (`gitleaks`, already running on every push and PR — see task 3.4) or `npm audit`
+  (task 3.4) — those already cover what these would add, until public unlocks them too.
 - [ ] Configure `main` and release-tag protection (rulesets for `cli-v*`/`sdk-v*`), required
   checks, review requirements, and least privilege maintainer access. Confirmed blocked while
   private, same as branch protection: `repos/{owner}/{repo}/rulesets` 403s with "Upgrade to
