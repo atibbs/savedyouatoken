@@ -573,3 +573,24 @@ Resolves owner checklist §6's first two items.
   idempotent skip before ever reaching the OIDC publish step. Real proof needs a genuine future
   SDK version bump; deliberately did not create an artificial one just to test this.
 - Bootstrap token revocation is explicitly gated on that real proof happening first — not done.
+
+## 2026-08-20 — maintainer go/no-go: GO
+
+Owner reviewed the `community-release-candidate` branch (single history-free commit, `main`'s
+tree minus `CLAUDE.md`, built and verified 2026-08-20) and confirmed satisfaction. **Decision:
+GO.** Resolves task 2.7 and owner checklist §7's approval gate.
+
+This was a general review, not itemized against §7's three procedural sub-bullets (clone
+anonymously from an account with no private-repository access; follow the Community setup guide
+from scratch with no private packages/credentials; inspect history, navigation, package source
+links, kit, and website language one by one) — those remain individually unchecked in the
+checklist. What the automated checks already independently covered, regardless of this review:
+typecheck, 102 tests, build, CLI/SDK build+verify+install, license/package-content/secret scans,
+`npm audit`, `openspec:validate`, and an explicit `git ls-tree` sweep confirming no excluded path
+exists anywhere in the candidate's tree (all recorded in the 2026-08-20 "community release
+candidate built" entry above).
+
+With this, everything in `publish-community-source` and the owner checklist that can be done
+before the actual freeze-and-launch sequence is done. What remains is owner checklist §8 itself:
+freeze, re-verify the backup one more time, then the irreversible visibility change — at which
+point this candidate branch becomes the real `main`.

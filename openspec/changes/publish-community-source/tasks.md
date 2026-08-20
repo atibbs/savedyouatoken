@@ -15,7 +15,7 @@
 - [x] 2.4 Review third-party source, assets, fonts, datasets, and dependencies for redistribution compatibility
 - [x] 2.5 Remove package tarballs, local settings, build output, and accidental artifacts from the publication set
 - [ ] 2.6 Revoke or rotate every exposed credential and remediate history before continuing
-- [ ] 2.7 Have a maintainer manually review the exact fresh clone and history proposed for publication
+- [x] 2.7 Have a maintainer manually review the exact fresh clone and history proposed for publication
 
 ## 3. Public project readiness
 

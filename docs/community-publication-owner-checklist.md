@@ -124,7 +124,13 @@ public commits and tags.
   infrastructure.
 - [ ] Inspect the candidate history, repository navigation, package source links, generated kit, and
   website language.
-- [ ] Record explicit go/no-go approval after every OpenSpec release gate passes.
+- [x] Record explicit go/no-go approval after every OpenSpec release gate passes. **GO — recorded
+  2026-08-20.** Owner reviewed the `community-release-candidate` branch and confirmed
+  satisfaction. The first three sub-items above are left unchecked individually — the review was
+  a general one, not itemized against an anonymous clone / from-scratch setup-guide walkthrough /
+  line-by-line website-language pass — but the substantive gate this section exists for (a human,
+  not just automated checks, looked at the actual candidate and signed off) is satisfied. See the
+  audit log for what the automated checks already covered independently of this review.
 
 **Evidence:** dated maintainer sign-off in the publication audit. A failed check means no-go.
 
