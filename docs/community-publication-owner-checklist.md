@@ -82,9 +82,13 @@ attribution.
   private, same as branch protection: `repos/{owner}/{repo}/rulesets` 403s with "Upgrade to
   GitHub Pro or make this repository public to enable this feature." Configurable the moment
   either condition is met.
-- [ ] Confirm whether GitHub Discussions should be enabled; until then, support remains issue-based.
-- [ ] Choose an official security/conduct contact if GitHub advisories should not be the only private
-  reporting channel.
+- [x] Confirm whether GitHub Discussions should be enabled. Decided 2026-08-20: leave it off —
+  issue-based support stays the sole channel until there's actual community demand for it, same
+  wait-for-signal approach already applied to the Pro tier. `SUPPORT.md` already reflects this;
+  no change needed. Revisit post-launch if demand shows up.
+- [x] Choose an official security/conduct contact. Decided 2026-08-20: GitHub-native only —
+  `SECURITY.md` (Security Advisories) and `CODE_OF_CONDUCT.md` (private maintainer message)
+  already describe this and needed no change. No separate email address.
 
 **Evidence:** screenshots or a private settings record plus an anonymous/private-channel test. Do not
 commit sensitive configuration exports.
