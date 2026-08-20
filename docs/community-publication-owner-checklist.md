@@ -95,10 +95,23 @@ commit sensitive configuration exports.
 
 ## 6. Authorize package publishing
 
-- [ ] Confirm the npm owners for `savedyouatoken`, `@savedyouatoken/sdk`, and any future public core
-  package.
-- [ ] Configure npm trusted publishers to match the protected GitHub tag workflows.
-- [ ] Revoke bootstrap or maintainer tokens after OIDC publishing is proven.
+- [x] Confirm the npm owners for `savedyouatoken`, `@savedyouatoken/sdk`, and any future public core
+  package. Both confirmed 2026-08-20 under the owner's own account (`atibbs`); `@savedyouatoken/sdk`
+  required creating the `savedyouatoken` npm organization first (scopes aren't auto-created — a
+  package can't publish under a scope with no org/account behind it, which is what the initial
+  404s were). `@savedyouatoken/core` has no public npm package and none is planned; it ships
+  bundled inside both `savedyouatoken` and `@savedyouatoken/sdk` instead.
+- [x] Configure npm trusted publishers to match the protected GitHub tag workflows.
+  `savedyouatoken`'s has been proven working since its original bootstrap.
+  `@savedyouatoken/sdk`'s configured 2026-08-20 (GitHub Actions → `atibbs`/`savedyouatoken` →
+  `release-sdk.yml`, no environment) after a one-time manual bootstrap publish
+  (`@savedyouatoken/sdk@0.2.1`, verified live: installs cleanly from the public registry and
+  exports everything expected). **Not yet end-to-end proven** — today's version is already
+  published, so re-running `release-sdk.yml` now would just hit `release-gate.mjs`'s idempotent
+  skip before reaching the actual OIDC publish step. Real proof needs a genuine future SDK
+  version bump; no artificial one was created just to test this.
+- [ ] Revoke bootstrap or maintainer tokens after OIDC publishing is proven. Blocked on the above
+  actually being proven for the SDK first — don't revoke anything until then.
 - [ ] Approve the exact release-candidate versions and release notes.
 
 **Evidence:** successful provenance-bearing release candidates or releases that map to reviewed
