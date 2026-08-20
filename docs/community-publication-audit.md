@@ -492,3 +492,25 @@ record.
   irreversible visibility change — swapping this candidate branch in as `main` happens as part of
   this step, not before it).
 - Everything downstream of 5.3 (5.4–5.6, 6.1–6.3).
+
+## 2026-08-20 — owner checklist walkthrough, first pass
+
+Owner worked through the checklist §2/§5 items in order:
+
+- **§2 access and location, both resolved:** `savedyouatoken-cloud` access limited to the intended
+  people; private infrastructure/deployment docs will live in `savedyouatoken-cloud`'s own `docs/`.
+- **§5 private vulnerability reporting: confirmed blocked while private**, not a UI-finding
+  problem. Checked directly rather than repeat an earlier wrong guess (an earlier tranche of this
+  audit gave "Settings → Code security" as the navigation path, which is incorrect): GitHub's own
+  docs (`docs.github.com/.../configuring-private-vulnerability-reporting-for-a-repository`)
+  describe this feature only for public repositories, name the real path as Settings → **Advanced
+  Security** (not the general Code security page), and `repos/{owner}/{repo}` returns zero
+  security/advanced-security fields for this repo — `PUT .../private-vulnerability-reporting`
+  404s outright rather than enabling anything or returning a clearer paid-feature error. Same
+  class of restriction as branch protection and tag rulesets (both confirmed blocked earlier).
+  Nothing to do until the repository is public or on a GHAS-eligible plan.
+- **§5 dependency/secret scanning: split into two, since the checklist's single line conflated an
+  actionable item with a likely-blocked one.** Dependabot *alerts* are free for private
+  repositories and remain the actionable part (previously confirmed off, still open). Secret/code
+  scanning is GitHub Advanced Security and is likely blocked the same way private vulnerability
+  reporting is, though not yet independently confirmed via API the way the other two were.
