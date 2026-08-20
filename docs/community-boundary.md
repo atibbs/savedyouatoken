@@ -92,11 +92,22 @@ versioned, prompt-free report contract.
   The owner decided that content must not be publicly visible in any form, which real-ancestry
   publication cannot satisfy. The full real history (including these documents) remains permanently
   preserved in the private `savedyouatoken-cloud` backup; nothing is lost, only not published.
-  **This has not happened yet** — it is a final-release-prep step (§5.1 of the owner checklist and
-  task 5.1 of `publish-community-source`'s tasks), done once, immediately before the visibility
-  change, not mid-development. Until then `main` keeps its normal history privately as usual.
-  `CLAUDE.md` joins the same exclusion list at that step (owner decision, 2026-08-19) — it stays
-  fully active for ongoing development until then.
+  `CLAUDE.md` joins the same exclusion list (owner decision, 2026-08-19) — it stays fully active
+  on `main` for ongoing development.
+
+  **Built 2026-08-20 as a candidate, not yet installed as `main`:** the `community-release-candidate`
+  branch (pushed to this still-private repository) is a single history-free commit — `main`'s exact
+  tree at the time, minus `CLAUDE.md`, no parent commits. Full local verification pass:
+  `npm run typecheck`, `npm test` (102 tests), `npm run build`, `npm run build:cli` + `verify:cli`
+  (installed shim reports `0.2.1` and runs a full audit/regression/workbench pass),
+  `npm run build:sdk` + `verify:sdk-types`, `npm run build:kit`, `npm run check:licenses` (269
+  dependencies), `npm run check:package-contents`, `gitleaks` scoped to just that one commit (no
+  leaks), `npm audit --omit=dev` (0 vulnerabilities), `npm run openspec:validate` (8 items) — all
+  passed. Confirmed no excluded path exists anywhere in the tree via `git ls-tree -r --name-only`.
+  **This branch replacing `main` — the actual publication — has not happened.** That swap, and the
+  visibility change itself, remain owner-gated final steps (§5.1–5.3 of the owner checklist and
+  tasks 5.1/5.3 of `publish-community-source`), done once, right before going public. Until then
+  `main` keeps its normal real history privately, completely unaffected by this branch's existence.
 - The repository currently has no tags, submodules, or Git LFS objects.
 - Archive private backups outside the public repository, then remove all non-`main` remote branches
   before changing visibility; changing a repository to public exposes every remaining branch.

@@ -31,7 +31,7 @@
 - [x] 4.1 Build and test the public repository from a clean unconfigured clone on every supported runtime
 - [x] 4.2 Inspect CLI and SDK tarballs, source maps, declarations, licenses, and filesystem paths
 - [x] 4.3 Configure protected tag-based npm publishing with least privilege and provenance
-- [ ] 4.4 Produce and install exact-version release candidates from the reviewed public commit
+- [x] 4.4 Produce and install exact-version release candidates from the reviewed public commit
 - [x] 4.5 Prepare release notes explaining Community scope, private Monitor scope, contribution, and security handling
 
 ## 5. Publication

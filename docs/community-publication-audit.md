@@ -439,3 +439,56 @@ Verified: full local pass (typecheck, 102 tests, build, `check:licenses` at 269 
 this plan while private, same restriction as branch protection — recorded in the owner checklist
 §5. Not yet exercised end-to-end in production (no version bump has landed since this merged);
 first real trigger will be the next CLI/SDK/core change.
+
+## 2026-08-20 — community release candidate built (tasks 4.4, 5.1 partial)
+
+Built the clean-root candidate decided on 2026-08-19. `main` and ongoing development are
+completely untouched by this — the candidate lives entirely on a separate branch pushed to this
+still-private repository, not installed as `main`.
+
+### What was built
+
+1. Refreshed the `savedyouatoken-cloud` full-history backup immediately before touching anything
+   (`git clone --mirror` + `push --all`/`--tags`), verified `main`'s HEAD matches between source
+   and backup (`177ec33`) via `git ls-remote`. One Dependabot working branch (#23's, previously
+   force-pushed multiple times) didn't fast-forward and was left as-is — irrelevant to the
+   candidate and not part of what needs backing up.
+2. `git checkout --orphan community-release-candidate` from `main` at `177ec33`, removed
+   `CLAUDE.md` from the index and working tree (the one addition beyond what's already absent
+   from `main`'s current tree — the 11 strategy/monetization documents were deleted from `main`
+   itself back on 2026-08-19 and needed no further action here), committed as a single root
+   commit. Verified the diff against `main` touches nothing else: `git diff --cached main` showed
+   exactly one file, `CLAUDE.md`, 785 deletions, zero other changes.
+3. Pushed the branch to `origin` (this repository) rather than only leaving it local, so it's
+   reviewable on GitHub — the repository is still private, so this exposes nothing publicly.
+
+### Verification
+
+Full pass on the candidate branch, fresh `npm install`: `npm run typecheck`, `npm test` (102
+tests), `npm run build` (webpack — same sandbox-only Turbopack limitation noted in earlier
+tranches), `npm run build:cli` + `verify:cli` (installed shim reports `0.2.1`, runs a full
+audit/regression/workbench pass), `npm run build:sdk` + `verify:sdk-types`, `npm run build:kit`,
+`npm run check:licenses` (269 dependencies), `npm run check:package-contents`,
+`npm audit --omit=dev --audit-level=high` (0 vulnerabilities), `npm run openspec:validate` (8
+items) — all passed. `gitleaks` run twice: once at `--log-opts="--all"` scope (67 commits across
+every local branch including this new one — no leaks) and once scoped to just this branch's single
+commit (`--log-opts="-1"` — no leaks). `git ls-tree -r --name-only HEAD | grep` against every
+excluded path name (the 11 strategy documents, `PRIORITIES.md`, the four change directories, and
+`CLAUDE.md`) returned nothing.
+
+This satisfies task 4.4 (release candidates produced and installed via the CLI/SDK `verify:*`
+scripts, which install the packed tarball into a throwaway project and exercise it end to end) and
+the "re-run the complete release gate" half of task 5.1. It does not satisfy 5.1's "freeze
+nonessential changes" — that's a standing commitment the owner declares and holds, not a one-time
+action — nor task 2.7 (maintainer manual review), which needs the owner, not this scan, to actually
+look at the candidate. `community-boundary.md`'s "Proposed publication topology" has the full
+record.
+
+### Still open before publication
+
+- 2.6 / 2.7 — owner credential sign-off (nothing to rotate, per the scan) and manual review of this
+  exact candidate.
+- 5.1's freeze commitment, 5.2 (final backup/access/permissions re-confirmation), 5.3 (the
+  irreversible visibility change — swapping this candidate branch in as `main` happens as part of
+  this step, not before it).
+- Everything downstream of 5.3 (5.4–5.6, 6.1–6.3).
