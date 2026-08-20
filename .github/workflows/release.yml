@@ -1,9 +1,12 @@
 name: Release CLI
 
-# Publication is coupled to the merge: on every push to main, if the CLI's version is a new,
-# higher version than what is on npm, it is verified and published. A merged version bump
-# (which the CI staleness guard forces whenever the pricing catalogue changes) therefore
-# ships automatically — no manual tag.
+# Publication is coupled to a protected release tag (`cli-v*`), not to every push to main —
+# task 4.3 of publish-community-source. tag-releases.yml creates that tag the moment a version
+# bump merges to main (enforced by the CI staleness guard whenever the pricing catalogue
+# changes) and dispatches this workflow automatically; a maintainer can also push a `cli-v*`
+# tag by hand as an independent path. Either way, if the tagged version is new and higher than
+# what is on npm, the exact code at that tag is verified and published — no untagged commit is
+# ever published, and npm provenance attributes the release to the tag, not to main's tip.
 #
 # The exact built artifact is verified through npm's installed `savedyouatoken` shim (version
 # + a real audit) BEFORE it is published, and it is published in a single step directly to
@@ -16,10 +19,13 @@ name: Release CLI
 
 on:
   push:
-    branches: [main]
-    paths:
-      - 'packages/cli/**'
-      - 'packages/core/**'
+    tags: ['cli-v*']
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag to release (e.g. cli-v0.2.1)'
+        required: true
+        type: string
 
 concurrency: release-cli
 
@@ -31,6 +37,8 @@ jobs:
       id-token: write # OIDC — npm trusted publishing + automatic provenance, no stored token
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
       - uses: actions/setup-node@v7
         with:
           node-version: 22

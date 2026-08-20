@@ -382,3 +382,60 @@ each against `git branch -r --merged origin/main` and against open PRs before to
 Remaining before the visibility change: resolve #21–24, then delete their branches too. Only `main`
 should remain when the repository goes public — every other branch becomes publicly visible the
 moment visibility changes.
+
+### Update — #21, #22, #24 resolved; #23 held
+
+- **#21** (`actions/checkout` v4→v7) and **#24** (`gpt-tokenizer` v2→v4, `next` patch) merged
+  clean. #24's grouped update also bumped `gpt-tokenizer` inside `packages/cli/package.json` and
+  `packages/sdk/package.json` directly (missed on first review, which only checked
+  `apps/web`'s diff) — verified safe separately: every import in this codebase uses the explicit
+  `gpt-tokenizer/encoding/o200k_base` subpath, never the default export that changed behavior in
+  v3.
+- **#22** (`actions/setup-node` v4→v7) needed manual conflict resolution — Dependabot's own
+  auto-rebase raced with a manual rebase and briefly reverted `checkout` back to v4 in three
+  workflow files. Resolved to `checkout@v7` + `setup-node@v7` consistently across all five
+  workflow files, verified via `git merge-base --is-ancestor`, then merged.
+  `dependabot/npm_and_yarn/npm-development-dependencies-d6f16f7376` (**#23**: TypeScript
+  5.6→7, Vitest 3→4, `@types/node` 22→26) was **not** merged — TypeScript 7 (the Go-rewrite
+  major version) restructured its package exports and dropped the `./bin/tsc` subpath
+  `packages/sdk/scripts/emit-dts.mjs` resolves directly, breaking the SDK build. Left open;
+  not something to force through as a routine bump.
+- The `gpt-tokenizer` bump inside `packages/cli`/`packages/sdk` triggered
+  `version-packages.yml` for the first time with real work to do (every prior run had been a
+  no-op). It correctly proposed a 0.2.0→0.2.1 patch bump, but `gh pr create` **failed**:
+  `GitHub Actions is not permitted to create or approve pull requests`. First real exercise of
+  that code path surfaced a genuine gap — the repository's Actions settings didn't allow
+  Actions to open PRs, regardless of the workflow's own `permissions:` block. Opened and merged
+  that bump PR manually (own `gh` access isn't subject to the restriction), confirming
+  `release.yml`/`release-sdk.yml` then failed for the same two already-known reasons as before
+  (CLI: provenance requires a public source repo; SDK: unregistered trusted publisher) — nothing
+  new, no partial state on npm.
+- **Fixed the root cause**, with owner approval: enabled `can_approve_pull_request_reviews` via
+  `PUT /repos/{owner}/{repo}/actions/permissions/workflow`, leaving `default_workflow_permissions`
+  at `read` — `version-packages.yml` already declares its own narrower `permissions:` block, so
+  only the specific missing capability was granted, not a broader default.
+- 24 fully-merged branches deleted (matches the earlier count); `main` plus #23's branch are now
+  the only ones remaining.
+
+## 2026-08-19 — tag-based release publishing (task 4.3)
+
+CLI and SDK releases now publish from package-scoped tags (`cli-v<version>`, `sdk-v<version>`)
+instead of from every push to `main` — see `community-boundary.md`'s "Proposed publication
+topology" for the full mechanism and the `workflow_dispatch` design reasoning (GITHUB_TOKEN's
+anti-recursion suppression applies to tag pushes exactly like branch pushes, so the tag-creation
+step dispatches the release workflow directly rather than relying on the tag-push event).
+
+New: `scripts/tag-if-version-changed.mjs` (detects a version change between `HEAD` and `HEAD^`,
+mirrors `release-gate.mjs`'s `$GITHUB_OUTPUT` convention) and
+`.github/workflows/tag-releases.yml`. Modified `release.yml`/`release-sdk.yml`'s triggers from
+`push: branches: [main]` to `push: tags: [...]` plus `workflow_dispatch`, and their checkout step
+to build from the dispatched/pushed ref rather than always `main`. `release-gate.mjs`,
+`guard-cli-release.mjs`, and the actual publish/verify steps are unchanged — this only changes
+what triggers a release and from which ref, not how one is verified or published.
+
+Verified: full local pass (typecheck, 102 tests, build, `check:licenses` at 269 dependencies,
+`check:package-contents`, `gitleaks` — no leaks, `npm audit --omit=dev` — 0 vulnerabilities,
+`openspec:validate` — 8 items). Confirmed via API that tag protection (rulesets) is blocked on
+this plan while private, same restriction as branch protection — recorded in the owner checklist
+§5. Not yet exercised end-to-end in production (no version bump has landed since this merged);
+first real trigger will be the next CLI/SDK/core change.

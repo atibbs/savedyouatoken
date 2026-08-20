@@ -100,7 +100,16 @@ versioned, prompt-free report contract.
 - The repository currently has no tags, submodules, or Git LFS objects.
 - Archive private backups outside the public repository, then remove all non-`main` remote branches
   before changing visibility; changing a repository to public exposes every remaining branch.
-- Create future Community releases from protected `v*` tags on reviewed `main` commits.
+- **Implemented 2026-08-19 (task 4.3):** CLI and SDK releases now publish from package-scoped
+  tags (`cli-v<version>`, `sdk-v<version>`) rather than from every push to `main`.
+  `.github/workflows/tag-releases.yml` tags the exact commit a version bump lands on and
+  dispatches `release.yml`/`release-sdk.yml` via `workflow_dispatch` (not the tag-push event
+  itself — GitHub's GITHUB_TOKEN anti-recursion protection suppresses that the same way it
+  suppresses branch pushes; `workflow_dispatch` is the documented exemption). A maintainer can
+  also push a `cli-v*`/`sdk-v*` tag by hand as an independent trigger. Tag *protection*
+  (rulesets restricting who can create/delete `cli-v*`/`sdk-v*`) remains blocked while private —
+  see the owner checklist §5 — so today the tags exist and drive releases, but nothing yet stops
+  a repo admin from deleting or recreating one; revisit once public or upgraded.
 - Publish only verified CLI and SDK npm tarballs plus the generated agent-kit archive. Build output,
   local archives, workflow logs, and deployment state are not source-release artifacts.
 
