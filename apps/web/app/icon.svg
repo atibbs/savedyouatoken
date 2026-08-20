@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Saved You a Token</title>
+  <circle cx="32" cy="32" r="30" fill="#eaff3f" stroke="#171713" stroke-width="4"/>
+  <text x="32" y="39" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22" font-weight="700" fill="#171713">
+    S<tspan fill="#f06b42">/</tspan>T
+  </text>
+</svg>

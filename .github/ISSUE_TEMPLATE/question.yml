@@ -1,0 +1,41 @@
+name: Usage question
+description: Ask for best-effort help with a Community surface
+title: "[Question]: "
+labels: [question, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Community support is best effort. Use synthetic inputs only and read SUPPORT.md before
+        posting. Vulnerabilities must use the private channel in SECURITY.md.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - Analysis engine
+        - CLI
+        - Runtime SDK
+        - Web analyser
+        - Agent kit
+        - Contracts or documentation
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: Explain what you are trying to accomplish and where you are blocked.
+    validations:
+      required: true
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What have you tried?
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed real prompts, credentials, production reports, and customer data.
+          required: true

@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # the release guard diffs the PR against its base
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: CLI release staleness guard
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags origin "${{ github.event.pull_request.base.ref }}"
+          BASE_REF="origin/${{ github.event.pull_request.base.ref }}" npm run guard:cli-release
+
+      # Publication safety gates (openspec/changes/publish-community-source, task 3.4). Run early
+      # so a secret, license, or vulnerability regression fails fast, before the build steps below.
+      - name: Install gitleaks (MIT-licensed binary, no Action license required)
+        run: |
+          curl -fsSL -o gitleaks.tar.gz \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          tar -xzf gitleaks.tar.gz gitleaks
+          sudo mv gitleaks /usr/local/bin/gitleaks
+          rm gitleaks.tar.gz
+      - name: Secret scan (full history)
+        run: gitleaks git --no-banner --log-opts="--all"
+      - name: Dependency vulnerability scan (production dependencies, high severity+)
+        run: npm audit --omit=dev --audit-level=high
+      - name: License compatibility scan
+        run: npm run check:licenses
+      - name: Publishable package content scan
+        run: npm run check:package-contents
+
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run build:cli
+      - run: npm run verify:cli
+      - run: npm run build:sdk
+      # Type-check a clean NodeNext consumer against the PACKED tarball (skipLibCheck off). Guards
+      # both packaging failure modes: a bare @savedyouatoken/core import (TS2307) and extensionless
+      # ESM relative specifiers (TS2834). Fails the build on any declaration regression.
+      - run: npm run verify:sdk-types
+      # Build the kit archive and verify its contents match kit/ exactly (the source is
+      # scanned for prices/model ids by the guard test above, so a match means the shipped
+      # archive is guard-clean too).
+      - run: npm run build:kit
+
+      # The tool auditing itself: the bundled examples must stay analysable and the
+      # budget gate must still fail when it should.
+      - name: Analyse the example prompts
+        run: node packages/cli/dist/index.js examples/*.txt --model claude-sonnet-5 --requests 4000
+      - name: Budget gate must fail when breached
+        run: |
+          if node packages/cli/dist/index.js examples/support-triage.txt --max-tokens 100 --quiet; then
+            echo "Expected a non-zero exit for a breached budget"
+            exit 1
+          fi

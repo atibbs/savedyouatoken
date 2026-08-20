@@ -1,0 +1,56 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_knowledge_base",
+      "description": "Use this tool to search the internal knowledge base. This tool should be used whenever the user asks a question that might be answered by internal documentation. Example usage: search_knowledge_base({\"query\": \"how do refunds work\", \"limit\": 5}). Note that this tool was added in v2.1 of the agent and replaces the older kb_lookup tool which is deprecated. The query parameter should be a string containing the search query. The limit parameter is an optional integer between 1 and 50 which controls how many results are returned, defaulting to 10.",
+      "parameters": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "SearchKnowledgeBaseArguments",
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "title": "Query", "description": "The search query string." },
+          "limit": { "type": "integer", "title": "Limit", "default": 10, "description": "Maximum number of results to return." },
+          "locale": {
+            "type": "string",
+            "title": "Locale",
+            "default": "en-US",
+            "enum": ["en-US","en-GB","en-AU","en-CA","en-IE","en-NZ","en-ZA","fr-FR","fr-CA","fr-BE","de-DE","de-AT","de-CH","es-ES","es-MX","es-AR","es-CL","it-IT","pt-BR","pt-PT","nl-NL","nl-BE","sv-SE","da-DK","nb-NO","fi-FI","pl-PL","cs-CZ","sk-SK","hu-HU","ro-RO","bg-BG","el-GR","tr-TR","ru-RU","uk-UA","he-IL","ar-SA","hi-IN","bn-IN","ta-IN","th-TH","vi-VN","id-ID","ms-MY","ja-JP","ko-KR","zh-CN","zh-TW","zh-HK"]
+          }
+        },
+        "required": ["query"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "create_ticket",
+      "description": "Creates a support ticket in the ticketing system. Use this when the user has a problem that cannot be resolved by documentation alone and requires a human. The title parameter is a string. The body parameter is a string. The priority parameter is a string which must be one of low, medium, high or urgent.",
+      "parameters": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "CreateTicketArguments",
+        "type": "object",
+        "properties": {
+          "title": { "type": "string", "title": "Title" },
+          "body": { "type": "string", "title": "Body" },
+          "priority": { "type": "string", "title": "Priority", "default": "medium", "enum": ["low", "medium", "high", "urgent"] }
+        },
+        "required": ["title", "body"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_account",
+      "description": "Fetches the current user's account record.",
+      "parameters": {
+        "type": "object",
+        "properties": { "account_id": { "type": "string" } },
+        "required": ["account_id"]
+      }
+    }
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "contract": { "kind": "report", "version": { "major": 1, "minor": 2 } },
+  "workflow": { "id": "support/triage", "futureWorkflowField": true },
+  "release": { "id": "future", "futureReleaseField": "ignored" },
+  "provenance": { "producer": "future-producer", "producerVersion": "2.0.0", "generatedAt": "2026-08-14T00:00:00.000Z" },
+  "maturity": { "state": "mature", "observations": 30 },
+  "window": { "startedAt": "2026-08-13T00:00:00.000Z", "endedAt": "2026-08-14T00:00:00.000Z", "requests": 30 },
+  "catalogue": { "engineVersion": "0.2.0", "rulesetId": "rules-v2", "modelCatalogueDate": "2026-08-10", "currency": "USD", "tokenizer": { "family": "o200k_base", "accuracy": "exact", "counter": "o200k_base" } },
+  "workload": { "requestsPerDay": 30, "outputTokens": 100, "cacheHitRate": 0, "cacheTtl": "5m", "batch": false },
+  "analysis": { "modelId": "gpt-5", "promptTokens": 10, "toolTokens": 0, "inputTokens": 10, "optimizedTokens": 10, "monthlyNow": 1, "monthlyAfterRewrite": 1, "cacheSaving": 0, "findings": [], "futureAnalysisField": { "ignored": true } },
+  "futureTopLevelField": "ignored"
+}

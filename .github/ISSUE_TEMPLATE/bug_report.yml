@@ -1,0 +1,64 @@
+name: Bug report
+description: Report a reproducible problem in a Community surface
+title: "[Bug]: "
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Use synthetic inputs only—never include real prompts,
+        credentials, production reports, or customer data. Report vulnerabilities through the
+        private channel in SECURITY.md.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected surface
+      options:
+        - Analysis engine
+        - CLI
+        - Runtime SDK
+        - Web analyser
+        - Agent kit
+        - Contracts or documentation
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: "savedyouatoken 0.1.0, @savedyouatoken/sdk 0.1.0, or commit SHA"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal synthetic reproduction
+      description: Include commands or code needed to reproduce the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "Node version, operating system, provider client version"
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety checks
+      options:
+        - label: I removed real prompts, credentials, production reports, and customer data.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true
