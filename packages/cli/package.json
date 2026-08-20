@@ -1,0 +1,57 @@
+{
+  "name": "savedyouatoken",
+  "version": "0.2.1",
+  "description": "Audit LLM prompt files for token waste and enforce a token budget in CI.",
+  "type": "module",
+  "bin": {
+    "savedyouatoken": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "cli": "node --experimental-strip-types src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "pretest": "npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "llm",
+    "tokens",
+    "prompt",
+    "cost",
+    "openai",
+    "anthropic",
+    "ci"
+  ],
+  "dependencies": {
+    "gpt-tokenizer": "^4.0.0"
+  },
+  "devDependencies": {
+    "@savedyouatoken/core": "*",
+    "@types/node": "^22.10.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vitest": "^3.2.7"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atibbs/savedyouatoken.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://savedyouatoken.com/cli",
+  "bugs": {
+    "url": "https://github.com/atibbs/savedyouatoken/issues"
+  }
+}

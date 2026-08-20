@@ -1,0 +1,7 @@
+{
+  "contract": { "kind": "baseline", "version": { "major": 1, "minor": 1 } },
+  "provenance": { "producer": "savedyouatoken", "producerVersion": "0.1.0", "generatedAt": "2026-08-13T14:00:00.000Z" },
+  "reportId": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "workflow": { "id": "support/triage", "environment": "production" },
+  "release": { "id": "abc123" }
+}

@@ -1,0 +1,66 @@
+name: Tag releases
+
+# The second half of the release loop, after version-packages.yml: that workflow proposes a
+# version bump as a PR; once a human merges it, this workflow tags the exact commit that bump
+# landed on, and release.yml/release-sdk.yml publish FROM that tag rather than from every push
+# to main (task 4.3 of publish-community-source — see docs/community-boundary.md's "Proposed
+# publication topology"). A tag is a stronger release record than a branch commit: once pushed,
+# it is an immutable pointer a maintainer can point at and say "this exact code shipped," and
+# npm provenance then attributes the published package to that tag rather than to main's
+# constantly-moving tip.
+#
+# This pushes the tag using the default GITHUB_TOKEN, which — like every push made with that
+# token — does NOT trigger release.yml/release-sdk.yml's own `push: tags:` listener (GitHub's
+# anti-recursion protection applies to tag pushes exactly like branch pushes; it is not
+# tag-specific). workflow_dispatch is explicitly exempted from that restriction, so instead of
+# relying on the tag-push event, this dispatches the release workflow directly, passing the tag
+# as the ref to build from. A human pushing a tag by hand still works too, independently, via
+# release.yml's own `push: tags:` trigger — this workflow is the automated path, not the only one.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/cli/package.json'
+      - 'packages/sdk/package.json'
+
+concurrency: tag-releases
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write # to dispatch release.yml/release-sdk.yml via workflow_dispatch
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2 # only HEAD and HEAD^ are needed to detect a version change
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+
+      - name: Check whether the CLI's version just changed
+        id: cli
+        run: node scripts/tag-if-version-changed.mjs packages/cli cli-v
+      - name: Check whether the SDK's version just changed
+        id: sdk
+        run: node scripts/tag-if-version-changed.mjs packages/sdk sdk-v
+
+      - name: Tag and dispatch the CLI release
+        if: steps.cli.outputs.shouldTag == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git tag "${{ steps.cli.outputs.tag }}"
+          git push origin "${{ steps.cli.outputs.tag }}"
+          gh workflow run release.yml --ref main -f ref="${{ steps.cli.outputs.tag }}"
+
+      - name: Tag and dispatch the SDK release
+        if: steps.sdk.outputs.shouldTag == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git tag "${{ steps.sdk.outputs.tag }}"
+          git push origin "${{ steps.sdk.outputs.tag }}"
+          gh workflow run release-sdk.yml --ref main -f ref="${{ steps.sdk.outputs.tag }}"

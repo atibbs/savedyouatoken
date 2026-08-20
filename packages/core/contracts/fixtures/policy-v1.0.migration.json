@@ -1,0 +1,8 @@
+{
+  "contract": { "kind": "policy", "version": { "major": 1, "minor": 0 } },
+  "provenance": { "producer": "savedyouatoken", "producerVersion": "0.0.9", "generatedAt": "2026-08-12T15:00:00.000Z" },
+  "target": { "id": "support/triage" },
+  "budgets": { "maxInputTokens": 1600 },
+  "pricing": { "currency": "USD", "modelId": "gpt-5", "catalogueDate": "2026-08-10" },
+  "enforcement": "warn"
+}

@@ -1,0 +1,37 @@
+{
+  "name": "@savedyouatoken/core",
+  "version": "0.1.0",
+  "description": "Deterministic token-waste analysis for LLM prompts. No network, no inference.",
+  "homepage": "https://savedyouatoken.com/methodology",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atibbs/savedyouatoken.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/atibbs/savedyouatoken/issues"
+  },
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./contracts/*": "./contracts/*"
+  },
+  "files": [
+    "src",
+    "contracts"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "typescript": "^5.6.3",
+    "vitest": "^3.2.7"
+  },
+  "license": "MIT"
+}

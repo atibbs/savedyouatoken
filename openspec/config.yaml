@@ -1,0 +1,56 @@
+schema: spec-driven
+
+# Shown to the AI when it creates OpenSpec artifacts (proposals, specs, design, tasks).
+context: |
+  Product: savedyouatoken.com — a deterministic auditor of what an LLM prompt costs.
+  Paste a system prompt (+ optional tool definitions); get priced waste findings, a
+  lossless rewrite, prompt-cache economics, and a cross-model cost comparison. The
+  shareable output is a "receipt" denominated in the customer's own dollars.
+
+  Monorepo (npm workspaces):
+    - packages/core — dependency-free TypeScript engine: 26 waste rules, a 38-model
+      pricing catalogue, cost math, and the prompt-free share-report codec. Shipped as
+      source; web + CLI + tests import it directly so all three run identical logic.
+      Vitest (58 tests).
+    - packages/cli  — `npx savedyouatoken`; token/cost budgets over files, for CI.
+    - apps/web      — Next.js 16 App Router (Turbopack), React 19, Tailwind v4. Fully
+      static/SSG — no API routes, no server.
+
+  Stack: TypeScript, Next.js 16, React 19, Tailwind v4. Fonts (Manrope, DM Mono)
+  self-hosted via next/font/local. Deploy target: Vercel free tier, zero configuration.
+
+  The dormant Pro stack (Auth.js v5, Drizzle ORM + Postgres, Stripe) that used to live in
+  apps/web has moved to the private `savedyouatoken-cloud` repository as part of publishing
+  this repository's source (see docs/community-boundary.md) — it is not part of this repo
+  or its stack anymore. Pro itself remains shelved.
+
+  Design identity: editorial neo-brutalist — paper #f6f4ed, ink #171713, acid #eaff3f,
+  orange #ff6534, mint #bbf4da; Manrope display, Georgia italic accent, DM Mono for
+  numbers; hard offset shadows; the receipt share card.
+
+  Non-negotiable invariants — a change must not break these without calling it out:
+    1. The free tier is fully client-side and static: no runtime AI inference, no server,
+       no database on the free path. Marginal cost per free user ≈ a static file transfer.
+    2. The prompt never leaves the browser. Share links carry a prompt-free report
+       (packages/core codec) — a test asserts the payload contains no prompt text.
+    3. All analysis is deterministic. No model calls anywhere in the product.
+    4. This repository has no stateful surface at all (no auth, DB, or billing) — that
+       code lives in the private `savedyouatoken-cloud` repository. Free = stateless,
+       Pro = stateful is the exact free/paid line, and this repo is entirely the former.
+    5. If Pro's stateful boundary is ever rebuilt here in error, entitlement must be read
+       from the database only, with the Stripe webhook as its sole writer — but that
+       boundary belongs in `savedyouatoken-cloud`, not this repository.
+    6. Prices are a hand-maintained, dated file (PRICES_VERIFIED_ON), never scraped.
+    7. Token counts are exact for OpenAI (o200k) and clearly-labelled estimates for
+       Claude/Gemini. Never present an estimate as exact.
+
+  Conventions: keep packages/core dependency-free; prefer static rendering. Product strategy,
+  monetization, growth, roadmap, and decision-log documents are maintained privately, not in this
+  repository — do not recreate them here.
+
+rules:
+  proposal:
+    - State the change's impact on the free-tier static/zero-cost invariant (or "none").
+    - Call out any new runtime dependency, paid service, or always-on infrastructure.
+  tasks:
+    - End with a verification step (typecheck, test, and build) before marking done.
