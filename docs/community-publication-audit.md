@@ -514,3 +514,20 @@ Owner worked through the checklist §2/§5 items in order:
   repositories and remain the actionable part (previously confirmed off, still open). Secret/code
   scanning is GitHub Advanced Security and is likely blocked the same way private vulnerability
   reporting is, though not yet independently confirmed via API the way the other two were.
+
+## 2026-08-20 — Dependabot alerts enabled; GHAS scanning confirmed blocked too
+
+Owner enabled Dependabot alerts. Verified via API: `GET repos/{owner}/{repo}/vulnerability-alerts`
+now returns 204 (was 404 in the earlier tranche). Checked off in the owner checklist.
+
+While updating that entry, also resolved the "not yet independently confirmed" note on
+secret/code scanning left in the prior entry: attempted to enable each directly via the API.
+Secret scanning: `PATCH repos/{owner}/{repo}` with `security_and_analysis.secret_scanning.status`
+returns 422 "Secret scanning is not available for this repository." Code scanning:
+`GET .../code-scanning/default-setup` 403s with "Code scanning is not enabled for this
+repository. Please enable code scanning in the repository settings" (a circular message, but the
+403 plus secret scanning's explicit "not available" is consistent with the same GHAS/plan
+restriction already confirmed for private vulnerability reporting, branch protection, and tag
+rulesets). Neither is a substitute for what this repository already runs in CI regardless
+(`gitleaks` full-history secret scan and `npm audit`, task 3.4) — those aren't blocked by
+anything and already cover the same ground GHAS would add, until public unlocks it too.
