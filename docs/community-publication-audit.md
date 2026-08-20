@@ -531,3 +531,19 @@ restriction already confirmed for private vulnerability reporting, branch protec
 rulesets). Neither is a substitute for what this repository already runs in CI regardless
 (`gitleaks` full-history secret scan and `npm audit`, task 3.4) — those aren't blocked by
 anything and already cover the same ground GHAS would add, until public unlocks it too.
+
+## 2026-08-20 — Discussions and security/conduct contact decided
+
+Both closed as "no change needed" — current docs already matched the decision:
+
+- **GitHub Discussions:** stays off. Same wait-for-demand-signal approach already used for the
+  Pro tier, rather than shipping an empty, unused tab ahead of any actual community.
+  `SUPPORT.md`'s issue-based model already reflects this.
+- **Security/conduct contact:** GitHub-native only — Security Advisories (`SECURITY.md`) and a
+  private maintainer message (`CODE_OF_CONDUCT.md`) remain the sole channels, no separate email.
+  Both documents already described this exactly; nothing to update.
+
+Owner checklist §5 is now fully resolved: everything actionable on this plan while private is
+done (Dependabot alerts, access limits, Discussions/contact decisions); everything else in that
+section (private vulnerability reporting, GHAS secret/code scanning, branch/tag protection) is
+confirmed blocked until public or a GHAS-eligible plan, not outstanding work.
