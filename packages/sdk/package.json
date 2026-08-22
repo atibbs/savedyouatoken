@@ -1,6 +1,6 @@
 {
   "name": "@savedyouatoken/sdk",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Wrap your Anthropic/OpenAI client and get a token-waste audit of the real request — no prompt leaves your process.",
   "type": "module",
   "main": "./dist/index.js",
