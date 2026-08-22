@@ -38,8 +38,8 @@ export default function HomePage() {
             Free prompt audit
           </span>
           <h1 className="display mt-7 max-w-4xl text-[clamp(40px,7vw,88px)] text-ink">
-            Your system prompt has a{' '}
-            <span className="serif-accent">monthly bill.</span> See the breakdown.
+            Your system prompt is quietly running up your{' '}
+            <span className="serif-accent">AI bill.</span> See exactly how much.
           </h1>
           <p className="mt-7 max-w-2xl text-[17px] leading-relaxed text-muted sm:text-[19px]">
             Paste your prompt. Get a ranked list of what&rsquo;s wasting tokens, each priced in

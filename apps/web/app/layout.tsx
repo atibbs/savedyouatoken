@@ -149,9 +149,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </nav>
               </div>
               <div className="flex flex-col items-start gap-4 sm:items-end">
-                <p className="max-w-xs font-serif text-[22px] italic leading-snug sm:text-right sm:text-[24px]">
-                  Every word should earn its place.
-                </p>
                 <GetTheKit tone="onOrange" />
               </div>
             </div>

@@ -233,7 +233,7 @@ export const promptFolklore: Rule = {
   category: 'filler',
   autofix: true,
   respectsCodeFences: true,
-  summary: 'Tips, deep breaths and dying grandmothers. You are paying rent on a 2023 blog post.',
+  summary: 'Tips, deep breaths, and other emotional-appeal phrasing, copied from 2023-era prompting advice and never removed.',
   why: [
     'A wave of 2023-era advice suggested emotional manipulation improved model output: offer a tip, invoke a career, tell the model to take a deep breath. These lines got copied into production prompts and never removed.',
     'Whatever marginal effect these had on earlier, smaller, less instruction-tuned models, they are a poor trade on current ones. You are paying for them on every request, indefinitely, on the strength of an anecdote.',

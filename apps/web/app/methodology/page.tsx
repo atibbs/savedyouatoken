@@ -138,7 +138,8 @@ export default function MethodologyPage() {
         <div className="prose-doc mt-3 text-[14px]">
           <p>
             The headline &ldquo;safe rewrite saves&rdquo; number is exact: the rewritten prompt is
-            re-counted from scratch and the difference priced. It is not a sum of estimates.
+            re-counted from scratch and the difference priced directly, rather than added up from
+            separate estimates.
           </p>
           <p>
             The per-finding figures are attributions, and{' '}
@@ -151,23 +152,23 @@ export default function MethodologyPage() {
       </section>
 
       <section className="mt-10">
-        <h2 className="text-lg font-medium text-ink">What this deliberately does not do</h2>
+        <h2 className="text-lg font-medium text-ink">Limitations</h2>
         <div className="prose-doc mt-3 text-[14px]">
           <p>
-            <strong className="text-ink">It does not call a model.</strong> Every one of the{' '}
-            {ALL_RULES.length} checks is deterministic string and arithmetic work. That is why it is
-            free, why it is instant, and why your prompt never leaves the page.
+            <strong className="text-ink">No step calls a model.</strong> Every one of the{' '}
+            {ALL_RULES.length} checks is deterministic string and arithmetic work, which is why the
+            tool is free, instant, and never sends your prompt anywhere.
           </p>
           <p>
-            <strong className="text-ink">It does not judge quality.</strong> It cannot tell you
-            whether removing an example will hurt your accuracy — only what that example costs. Any
-            change that touches meaning should go through your evals. This is why deduplication is
-            off by default and why the deeper structural findings are advisory.
+            <strong className="text-ink">It doesn&rsquo;t judge quality.</strong> It can price what
+            an example costs; whether removing it hurts your accuracy is a question for your evals.
+            Deduplication is off by default for that reason, and the deeper structural findings are
+            advisory rather than automatic.
           </p>
           <p>
-            <strong className="text-ink">It does not know your traffic.</strong> Every monthly
-            figure is your stated request volume multiplied out. Change the volume and every number
-            changes with it.
+            <strong className="text-ink">It has no visibility into your traffic.</strong> Every
+            monthly figure comes from the request volume you enter, multiplied out — change that
+            number and every dollar figure changes with it.
           </p>
         </div>
       </section>

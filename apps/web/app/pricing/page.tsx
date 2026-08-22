@@ -100,13 +100,13 @@ export default function PricingPage() {
         <h2 className="text-lg font-medium text-ink">Why this split</h2>
         <div className="prose-doc mt-3 max-w-2xl text-[14px]">
           <p>
-            A one-time audit is a handy utility, not a product. The recurring problem is that prompts
-            grow back — every fix adds a line, and nobody deletes.
+            A one-time audit is a useful check, but it doesn&rsquo;t solve the recurring problem:
+            prompts grow back. Every fix adds a line, and nobody deletes.
           </p>
           <p>
             Pro is the part that keeps that in check: a budget your prompt can&rsquo;t quietly exceed,
-            checked in the pull request where the growth happens. The free tool shows the problem
-            once; Pro stops it coming back. Every insight stays free either way.
+            checked in the pull request where the growth happens. The free tool tells you where you
+            stand today. Pro keeps checking after that. Every insight stays free either way.
           </p>
         </div>
       </section>

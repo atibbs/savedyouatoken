@@ -58,7 +58,7 @@ describe('product routes', () => {
   it('states that the agent kit invokes the CLI and is not the runtime SDK', () => {
     const html = renderToStaticMarkup(<KitPage />);
 
-    expect(html).toContain('The kit is not the runtime SDK');
+    expect(html).toContain('How this differs from the SDK');
     expect(html).toContain('instructions invoke the live');
     expect(html).toContain('href="/sdk"');
   });

@@ -94,7 +94,7 @@ export default function ModelsPage() {
       </div>
 
       <div className="mt-10 rounded-lg border border-line bg-panel px-4 py-4">
-        <h2 className="text-[15px] font-medium text-ink">Price per million is not price per request</h2>
+        <h2 className="text-[15px] font-medium text-ink">Two models can look the same price and cost you differently</h2>
         <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-muted">
           Models count tokens differently. Claude models from Opus 4.7 onward produce roughly 30%
           more tokens for identical text than earlier ones, so two models at the same headline rate

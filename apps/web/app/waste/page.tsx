@@ -13,7 +13,7 @@ const ORDER: Category[] = ['caching', 'structure', 'schema', 'model', 'formattin
 
 const CATEGORY_INTROS: Record<Category, string> = {
   caching:
-    'The biggest numbers on this page. Caching is a configuration change rather than a rewrite, and it routinely moves a bill by more than every text edit combined.',
+    'Caching is a configuration change rather than a rewrite, and it routinely moves a bill by more than every text edit combined.',
   structure:
     'What the prompt is made of, and how much of it earns its place. These need judgement, so the optimizer reports them rather than applying them.',
   schema:
@@ -23,7 +23,7 @@ const CATEGORY_INTROS: Record<Category, string> = {
   formatting:
     'Whitespace, punctuation and emphasis. Individually trivial, collectively real, and always safe to fix automatically.',
   filler:
-    'Words that do not change the output. The cheapest wins available, and a reliable sign of a prompt that has never been audited.',
+    'Words that do not change the output. Usually the easiest tokens to cut, and a sign the prompt has never been audited.',
 };
 
 export default function WasteIndexPage() {
@@ -32,8 +32,7 @@ export default function WasteIndexPage() {
       <h1 className="text-3xl font-semibold tracking-tight text-ink">Token waste patterns</h1>
       <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">
         The {ALL_RULES.length} patterns the analyser looks for, with the reasoning behind each one.
-        These are ordered by how much money they typically move — which is close to the reverse of
-        how much attention they usually get.
+        Ordered by how much money they typically move, largest first.
       </p>
       <p className="mt-3 max-w-2xl text-[13px] text-faint">
         Every entry is checked automatically when you{' '}

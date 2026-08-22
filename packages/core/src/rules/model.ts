@@ -114,7 +114,7 @@ export const supersededModel: Rule = {
   severity: 'high',
   category: 'model',
   autofix: false,
-  summary: 'Some model upgrades are strictly cheaper. Those are free money.',
+  summary: "Some model upgrades cost less on both input and output than the model you're currently using.",
   why: [
     'Model pricing does not move in one direction. Providers periodically ship a model that is both better and cheaper than the one it replaces, and the older one stays available for compatibility.',
     'Pinned model identifiers are how teams end up on the wrong side of that. A version string set eighteen months ago in a config file keeps working, so nobody revisits it, and the bill quietly stays at the old rate.',
@@ -152,11 +152,11 @@ export const supersededModel: Rule = {
 
 export const outputDominatesBill: Rule = {
   id: 'output-dominates-bill',
-  title: 'Your prompt is not the problem',
+  title: 'Output is most of this bill',
   severity: 'medium',
   category: 'model',
   autofix: false,
-  summary: 'When output is most of the bill, trimming the prompt is rearranging deck chairs.',
+  summary: 'When output is most of the bill, shortening the prompt barely moves the total.',
   why: [
     'Output tokens cost five to six times more than input tokens on most models. A workload that generates long responses can spend the large majority of its budget on completions, in which case prompt optimisation has a small ceiling no matter how thorough it is.',
     'This is worth knowing before you spend a day compressing a system prompt. If output is 80% of the bill, halving the prompt changes the total by ten percent.',

@@ -543,9 +543,9 @@ export function Analyzer() {
           <section id="share" className="mt-6 scroll-mt-24 border-t-[1.5px] border-line-strong pt-10">
             <div className="grid items-center gap-10 md:grid-cols-2">
               <div>
-                <span className="eyebrow text-orange">The flex</span>
+                <span className="eyebrow text-orange">Share results</span>
                 <h2 className="display mt-2 text-[clamp(28px,4.5vw,44px)] text-ink">
-                  Send the receipt, not the prompt.
+                  Share the cost. Keep the prompt private.
                 </h2>
                 <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-muted">
                   Share the finding without showing anyone what you were working on. The link carries

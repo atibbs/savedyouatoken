@@ -9,7 +9,7 @@ const product = getProduct('kit');
 export const metadata: Metadata = {
   title: `${product.name} — ${product.job.charAt(0).toLowerCase()}${product.job.slice(1)}`,
   description:
-    'Agent instructions that make Claude Code, Cursor, or another coding assistant invoke the savedyouatoken CLI. This kit is not the runtime SDK.',
+    'Agent instructions that make Claude Code, Cursor, or another coding assistant invoke the savedyouatoken CLI. It is a separate package from the runtime SDK.',
   alternates: { canonical: product.href },
 };
 
@@ -57,7 +57,7 @@ export default function KitPage() {
         <p className="mt-4 text-[13px] text-faint">Plus a short README and an MIT license.</p>
 
         <div className="mt-8 border-[1.5px] border-line-strong bg-panel p-5">
-          <h2 className="text-[15px] font-bold text-ink">The kit is not the runtime SDK</h2>
+          <h2 className="text-[15px] font-bold text-ink">How this differs from the SDK</h2>
           <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-muted">
             The kit contains agent instructions; it does not embed in your production application. Those
             instructions invoke the live <code className="font-mono text-ink">savedyouatoken</code> CLI.
@@ -70,11 +70,11 @@ export default function KitPage() {
         </div>
 
         <div className="mt-10 border-[1.5px] border-line-strong bg-mint p-5 text-[#171713] shadow-hard">
-          <h2 className="text-[15px] font-bold">A launcher, not a snapshot</h2>
+          <h2 className="text-[15px] font-bold">Prices update automatically</h2>
           <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed">
             The kit has no prices baked in. It runs the live tool —{' '}
-            <code className="font-mono">npx savedyouatoken@latest</code> — so the numbers are always
-            current. Nothing to go stale.
+            <code className="font-mono">npx savedyouatoken@latest</code> — so the numbers stay
+            current.
           </p>
         </div>
 

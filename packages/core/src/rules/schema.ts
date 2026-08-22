@@ -24,7 +24,7 @@ export const toolDefinitionOverhead: Rule = {
     'Tool definitions are input tokens. Every name, description, parameter and enum value in your `tools` array is serialised into the request on every call, whether or not the model uses any of them.',
     'On top of that, providers inject their own tool-use instructions. Anthropic publishes the figures: between roughly 286 and 804 tokens depending on model and tool-choice setting, before a single byte of your own schemas. That overhead is invisible in your code and appears only on your invoice.',
     'Teams are routinely surprised to find their tool block is larger than their system prompt. Twenty tools with paragraph-length descriptions is a few thousand tokens on every request, forever.',
-    'Two fixes, in order of leverage. First, cache the tool block — it is perfectly static, which makes it ideal cache content. Second, stop sending tools the current step cannot use: load them per phase, or expose a small set and let the model request more.',
+    'Two fixes, in order of impact. First, cache the tool block — it is perfectly static, which makes it ideal cache content. Second, stop sending tools the current step cannot use: load them per phase, or expose a small set and let the model request more.',
   ],
   example: {
     before: '18 tools, 3,900 tokens, attached to every request including the ones that just answer a question.',
