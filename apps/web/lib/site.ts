@@ -4,10 +4,12 @@ export const TAGLINE = 'Find the waste in your LLM prompts before your invoice d
 
 /**
  * The pay-what-you-want product page for the downloadable agent kit (Gumroad). Public,
- * so it lives in config rather than a secret. Empty until the product is created and set,
- * in which case the /kit page and its CTAs show a "coming soon" state instead of a link.
+ * so it lives in config rather than a secret. NEXT_PUBLIC_KIT_URL can still override this
+ * per environment; if it and the default were both empty, the /kit page and its CTAs would
+ * show a "coming soon" state instead of a link.
  */
-export const KIT_URL = process.env.NEXT_PUBLIC_KIT_URL ?? '';
+export const KIT_URL =
+  process.env.NEXT_PUBLIC_KIT_URL ?? 'https://savedyouatoken.gumroad.com/l/cpvtk';
 
 export const RESOURCE_NAV = [
   { href: '/waste', label: 'Waste patterns', short: 'Waste', smallScreen: true },
