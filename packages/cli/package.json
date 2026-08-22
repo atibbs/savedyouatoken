@@ -53,5 +53,9 @@
   "homepage": "https://savedyouatoken.com/cli",
   "bugs": {
     "url": "https://github.com/atibbs/savedyouatoken/issues"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://savedyouatoken.com/kit"
   }
 }
