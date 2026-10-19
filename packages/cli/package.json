@@ -29,7 +29,7 @@
     "ci"
   ],
   "dependencies": {
-    "gpt-tokenizer": "^4.0.0"
+    "gpt-tokenizer": "^4.0.3"
   },
   "devDependencies": {
     "@savedyouatoken/core": "*",
