@@ -37,16 +37,19 @@ into a single normalised shape used for analysis.
 - **THEN** the model identifier, the system/developer content, and the tool definitions are extracted for analysis
 
 ### Requirement: Prompt privacy by default
-The SDK SHALL NOT transmit prompt or tool text outside the caller's process by default. Any
-payload leaving the process SHALL first pass a redaction step that removes content-derived
-substrings — including tool names, tool descriptions, and prompt fragments that analysis may
-have interpolated into human-readable finding text. Only counts, dollar figures, rule
-identifiers, and redacted finding text may be transmitted; raw finding detail SHALL NOT be
-transmitted, because findings can embed captured tool names and other input-derived content.
+The SDK SHALL NOT transmit prompt or tool text outside the caller's process by default.
 
 #### Scenario: Default configuration transmits nothing off-process
 - **WHEN** the SDK is used with no destination configured
 - **THEN** no prompt text, tool text, or report leaves the process
+
+### Requirement: Redaction before any network transmission
+Any payload leaving the process SHALL first pass a redaction step that removes
+content-derived substrings, including tool names, tool descriptions, and prompt fragments
+that analysis may have interpolated into human-readable finding text. Only counts, dollar
+figures, rule identifiers, and redacted finding text may be transmitted; raw finding detail
+SHALL NOT be transmitted, because findings can embed captured tool names and other
+input-derived content.
 
 #### Scenario: A network destination transmits only redacted, prompt-free data
 - **WHEN** a network-capable destination is explicitly configured and emits a result
