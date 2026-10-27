@@ -43,6 +43,7 @@
   },
   "overrides": {
     "esbuild": "^0.28.1",
+    "next": "^16.4.3",
     "tsup": {
       "esbuild": "^0.28.1"
     }
