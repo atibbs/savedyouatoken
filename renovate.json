@@ -1,0 +1,13 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>atibbs/factory"],
+  "packageRules": [
+    {
+      "description": "Runtime deps of the published npm packages reach SDK/CLI users on the next release — review them by hand.",
+      "matchFileNames": ["packages/**"],
+      "matchDepTypes": ["dependencies", "peerDependencies"],
+      "automerge": false,
+      "addLabels": ["sdk"]
+    }
+  ]
+}

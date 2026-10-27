@@ -1,0 +1,13 @@
+name: security
+
+# Fails only when a PR introduces a dependency with a known vulnerability.
+# Shared gate from the software factory: https://github.com/atibbs/factory
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  osv:
+    uses: atibbs/factory/.github/workflows/osv-pr-gate.yml@main
