@@ -18,6 +18,7 @@ import {
   analyzeFile,
   buildProvisionalReport,
   c,
+  AUDIT_OPTION_HELP,
   consumeAuditFlag,
   defaultAuditOptions,
   fail,
@@ -48,6 +49,7 @@ OPTIONS
       --max-cost-regression-percent <n>    Regression budget (default: 10 when --baseline is set)
       --enforcement <warn|fail>            Breach severity (default: warn)
       --out <path>                         Where to write the policy (default: ./savedyouatoken.policy.json)
+${AUDIT_OPTION_HELP}
   -h, --help                                Show this help
 `;
 
@@ -56,11 +58,15 @@ const CHECK_HELP = `savedyouatoken policy check <file> --policy <path> [--baseli
 Evaluates one file against a committed policy and exits 0 (pass or warn) or 1 (fail), the
 contract for CI. Regression budgets require --baseline and it must match policy.baselineId.
 
+The file is re-audited with the audit options given here, not the baseline's, so pass the same
+model, volume and tools the baseline was created with.
+
 OPTIONS
       --policy <path>     Policy document from \`policy generate\` (required)
       --baseline <path>   Baseline bundle, required if the policy has regression budgets
       --json              Emit a schema-versioned JSON document instead of a report
   -q, --quiet             Only print breaches
+${AUDIT_OPTION_HELP}
   -h, --help               Show this help
 `;
 
