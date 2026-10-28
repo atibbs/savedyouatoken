@@ -291,8 +291,23 @@ describe('model rules', () => {
     });
     const f = finding(r, 'superseded-model');
     expect(f).toBeDefined();
-    expect(f!.detail).toContain('Claude Opus 4.5');
+    expect(f!.detail).toContain('Claude Opus 5.5');
     expect(f!.monthlySaving).toBeGreaterThan(0);
+  });
+
+  it('recommends a successor on a heavier tokenizer when it is still cheaper after re-counting', () => {
+    const r = run('Summarise the ticket below in one paragraph. '.repeat(50), {
+      modelId: 'claude-haiku-4-5',
+      workload: { ...DEFAULT_WORKLOAD, requestsPerDay: 5000 },
+    });
+    const f = finding(r, 'superseded-model');
+    expect(f).toBeDefined();
+    expect(f!.detail).toContain('Claude Haiku 5.5');
+  });
+
+  it('does not recommend a successor that only looks cheaper before the tokenizer uplift', () => {
+    const r = run('Summarise the ticket below in one paragraph. '.repeat(50), { modelId: 'claude-opus-4-6' });
+    expect(ruleIds(r)).not.toContain('superseded-model');
   });
 
   it('says so when output rather than input dominates the bill', () => {
