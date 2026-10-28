@@ -1,6 +1,6 @@
 {
   "name": "savedyouatoken",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Audit LLM prompt files for token waste and enforce a token budget in CI.",
   "type": "module",
   "bin": {
