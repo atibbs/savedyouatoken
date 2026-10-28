@@ -9,7 +9,7 @@
  * Update procedure lives in docs/architecture.md ("Keeping prices honest").
  */
 
-export const PRICES_VERIFIED_ON = '2026-08-10';
+export const PRICES_VERIFIED_ON = '2026-10-27';
 
 export type Provider = 'anthropic' | 'openai' | 'google';
 
@@ -20,6 +20,7 @@ export type Provider = 'anthropic' | 'openai' | 'google';
  */
 export type TokenizerFamily =
   | 'o200k' // OpenAI GPT-4o / GPT-5 family. We can count this exactly.
+  | 'openai-next' // OpenAI GPT-6 family. Not yet in the offline tokenizer, so estimated from o200k.
   | 'claude-legacy' // Claude Sonnet 4.6 and earlier.
   | 'claude-next' // Claude Opus 4.7+ / Sonnet 5 / Fable 5. ~30% more tokens than claude-legacy.
   | 'gemini';
@@ -44,7 +45,7 @@ export interface ModelPricing {
   /** Async batch pricing. Absent = no batch discount modelled. */
   batchInput?: number;
   batchOutput?: number;
-  /** Long-prompt pricing cliff (Gemini Pro tiers). */
+  /** Long-prompt pricing cliff (Gemini Pro, GPT-5.4+, Claude Haiku 5.5). */
   longContext?: PriceTier;
 }
 
@@ -60,7 +61,7 @@ export interface Model {
    * Tokens the provider silently adds to your request when any tool is defined,
    * before your own schemas. auto = tool_choice auto/none, forced = any/tool.
    */
-  toolSystemPromptTokens?: { auto: number; forced: number };
+  toolSystemPromptTokens?: { auto: number; forced?: number };
   /** Not recommended for new work, but kept so people auditing old code can price it. */
   legacy?: boolean;
   /**
@@ -77,11 +78,82 @@ const ANTHROPIC_TOOL_DEFAULT = { auto: 496, forced: 588 };
 export const MODELS: Model[] = [
   // ---------------------------------------------------------------- Anthropic
   {
+    id: 'claude-fable-5-1',
+    name: 'Claude Fable 5.1',
+    provider: 'anthropic',
+    family: 'claude-next',
+    contextWindow: 1_000_000,
+    pricing: {
+      input: 10,
+      output: 50,
+      cacheRead: 0.25,
+      cacheWrite5m: 12.5,
+      cacheWrite1h: 20,
+      batchInput: 5,
+      batchOutput: 25,
+    },
+  },
+  {
+    id: 'claude-opus-5-5',
+    name: 'Claude Opus 5.5',
+    provider: 'anthropic',
+    family: 'claude-next',
+    contextWindow: 1_000_000,
+    pricing: {
+      input: 4,
+      output: 20,
+      cacheRead: 0.2,
+      cacheWrite5m: 5,
+      cacheWrite1h: 8,
+      batchInput: 2,
+      batchOutput: 10,
+    },
+    // No forced figure is published: thinking is always on, which rules out forced tool choice.
+    toolSystemPromptTokens: { auto: 286 },
+  },
+  {
+    id: 'claude-sonnet-5-5',
+    name: 'Claude Sonnet 5.5',
+    provider: 'anthropic',
+    family: 'claude-next',
+    contextWindow: 1_000_000,
+    pricing: {
+      input: 2,
+      output: 10,
+      cacheRead: 0.1,
+      cacheWrite5m: 2.5,
+      cacheWrite1h: 4,
+      batchInput: 1,
+      batchOutput: 5,
+    },
+    toolSystemPromptTokens: { auto: 286 },
+  },
+  {
+    id: 'claude-haiku-5-5',
+    name: 'Claude Haiku 5.5',
+    provider: 'anthropic',
+    family: 'claude-next',
+    contextWindow: 1_000_000,
+    pricing: {
+      input: 0.1,
+      output: 0.5,
+      cacheRead: 0.01,
+      cacheWrite5m: 0.125,
+      cacheWrite1h: 0.2,
+      batchInput: 0.05,
+      batchOutput: 0.25,
+      longContext: { aboveInputTokens: 100_000, input: 0.5, output: 2.5, cacheRead: 0.05 },
+    },
+    toolSystemPromptTokens: { auto: 286, forced: 406 },
+    note: 'Price rises fivefold for prompts over 100k tokens.',
+  },
+  {
     id: 'claude-opus-5',
     name: 'Claude Opus 5',
     provider: 'anthropic',
     family: 'claude-next',
     contextWindow: 1_000_000,
+    supersededBy: 'claude-opus-5-5',
     pricing: {
       input: 5,
       output: 25,
@@ -109,7 +181,7 @@ export const MODELS: Model[] = [
       batchOutput: 5,
     },
     toolSystemPromptTokens: { auto: 354, forced: 474 },
-    note: 'Introductory pricing through 2026-08-31. From 2026-09-01 this becomes $3 / $15 per MTok.',
+    note: 'The $2 / $10 launch price is now standard; the planned rise to $3 / $15 was cancelled.',
   },
   {
     id: 'claude-fable-5',
@@ -133,6 +205,7 @@ export const MODELS: Model[] = [
     provider: 'anthropic',
     family: 'claude-next',
     contextWindow: 1_000_000,
+    supersededBy: 'claude-opus-5-5',
     pricing: {
       input: 5,
       output: 25,
@@ -150,6 +223,7 @@ export const MODELS: Model[] = [
     provider: 'anthropic',
     family: 'claude-next',
     contextWindow: 1_000_000,
+    supersededBy: 'claude-opus-5-5',
     pricing: {
       input: 5,
       output: 25,
@@ -237,6 +311,8 @@ export const MODELS: Model[] = [
     provider: 'anthropic',
     family: 'claude-legacy',
     contextWindow: 200_000,
+    // Still cheaper on both input and output after Haiku 5.5's ~30% tokenizer uplift, in both tiers.
+    supersededBy: 'claude-haiku-5-5',
     pricing: {
       input: 1,
       output: 5,
@@ -255,7 +331,7 @@ export const MODELS: Model[] = [
     family: 'claude-legacy',
     contextWindow: 200_000,
     legacy: true,
-    supersededBy: 'claude-opus-4-5',
+    supersededBy: 'claude-opus-5-5',
     pricing: {
       input: 15,
       output: 75,
@@ -285,16 +361,90 @@ export const MODELS: Model[] = [
       batchOutput: 2,
     },
     toolSystemPromptTokens: { auto: 264, forced: 355 },
+    note: 'Retired on the first-party API; still available on Google Cloud.',
   },
 
   // ------------------------------------------------------------------ OpenAI
+  // cacheWrite5m holds OpenAI's shortest published write TTL (30 minutes).
+  {
+    id: 'gpt-6-astra',
+    name: 'GPT-6 Astra',
+    provider: 'openai',
+    family: 'openai-next',
+    pricing: {
+      input: 10,
+      output: 50,
+      cacheRead: 1,
+      cacheWrite5m: 12.5,
+      longContext: { aboveInputTokens: 272_000, input: 20, output: 75, cacheRead: 2 },
+    },
+  },
+  {
+    id: 'gpt-6-1-sol',
+    name: 'GPT-6.1 Sol',
+    provider: 'openai',
+    family: 'openai-next',
+    pricing: {
+      input: 2,
+      output: 10,
+      cacheRead: 0.1,
+      cacheWrite5m: 2.5,
+      longContext: { aboveInputTokens: 272_000, input: 4, output: 15, cacheRead: 0.2 },
+    },
+  },
+  {
+    id: 'gpt-6-1-terra',
+    name: 'GPT-6.1 Terra',
+    provider: 'openai',
+    family: 'openai-next',
+    pricing: {
+      input: 1,
+      output: 5,
+      cacheRead: 0.05,
+      cacheWrite5m: 1.25,
+      longContext: { aboveInputTokens: 272_000, input: 2, output: 7.5, cacheRead: 0.1 },
+    },
+  },
+  {
+    id: 'gpt-6-sol',
+    name: 'GPT-6 Sol',
+    provider: 'openai',
+    family: 'openai-next',
+    pricing: {
+      input: 2,
+      output: 10,
+      cacheRead: 0.2,
+      cacheWrite5m: 2.5,
+      longContext: { aboveInputTokens: 272_000, input: 4, output: 15, cacheRead: 0.4 },
+    },
+  },
+  {
+    id: 'gpt-6-luna',
+    name: 'GPT-6 Luna',
+    provider: 'openai',
+    family: 'openai-next',
+    pricing: {
+      input: 0.1,
+      output: 0.5,
+      cacheRead: 0.01,
+      cacheWrite5m: 0.125,
+      longContext: { aboveInputTokens: 272_000, input: 0.2, output: 0.75, cacheRead: 0.02 },
+    },
+  },
   {
     id: 'gpt-5-6-sol',
     name: 'GPT-5.6 Sol',
     provider: 'openai',
     family: 'o200k',
     contextWindow: 1_050_000,
-    pricing: { input: 5, output: 30, cacheRead: 0.5, cacheWrite5m: 6.25 },
+    pricing: {
+      input: 4,
+      output: 20,
+      cacheRead: 0.4,
+      cacheWrite5m: 5,
+      longContext: { aboveInputTokens: 272_000, input: 8, output: 30, cacheRead: 0.8 },
+    },
+    note: 'Promotional price, guaranteed through at least 2026-11-21.',
   },
   {
     id: 'gpt-5-6-terra',
@@ -302,7 +452,13 @@ export const MODELS: Model[] = [
     provider: 'openai',
     family: 'o200k',
     contextWindow: 1_050_000,
-    pricing: { input: 2, output: 12, cacheRead: 0.2, cacheWrite5m: 2.5 },
+    pricing: {
+      input: 2,
+      output: 12,
+      cacheRead: 0.2,
+      cacheWrite5m: 2.5,
+      longContext: { aboveInputTokens: 272_000, input: 4, output: 18, cacheRead: 0.4 },
+    },
   },
   {
     id: 'gpt-5-6-luna',
@@ -310,28 +466,44 @@ export const MODELS: Model[] = [
     provider: 'openai',
     family: 'o200k',
     contextWindow: 1_050_000,
-    pricing: { input: 0.2, output: 1.2, cacheRead: 0.02, cacheWrite5m: 0.25 },
+    pricing: {
+      input: 0.2,
+      output: 1.2,
+      cacheRead: 0.02,
+      cacheWrite5m: 0.25,
+      longContext: { aboveInputTokens: 272_000, input: 0.4, output: 1.8, cacheRead: 0.04 },
+    },
   },
   {
     id: 'gpt-5-5',
     name: 'GPT-5.5',
     provider: 'openai',
     family: 'o200k',
-    pricing: { input: 5, output: 30, cacheRead: 0.5 },
+    pricing: {
+      input: 5,
+      output: 30,
+      cacheRead: 0.5,
+      longContext: { aboveInputTokens: 272_000, input: 10, output: 45, cacheRead: 1 },
+    },
   },
   {
     id: 'gpt-5-5-pro',
     name: 'GPT-5.5 Pro',
     provider: 'openai',
     family: 'o200k',
-    pricing: { input: 30, output: 180 },
+    pricing: { input: 30, output: 180, longContext: { aboveInputTokens: 272_000, input: 60, output: 270 } },
   },
   {
     id: 'gpt-5-4',
     name: 'GPT-5.4',
     provider: 'openai',
     family: 'o200k',
-    pricing: { input: 2.5, output: 15, cacheRead: 0.25 },
+    pricing: {
+      input: 2.5,
+      output: 15,
+      cacheRead: 0.25,
+      longContext: { aboveInputTokens: 272_000, input: 5, output: 22.5, cacheRead: 0.5 },
+    },
   },
   {
     id: 'gpt-5-4-mini',
@@ -421,18 +593,37 @@ export const MODELS: Model[] = [
 
   // ------------------------------------------------------------------ Google
   {
+    id: 'gemini-4-argon',
+    name: 'Gemini 4 Argon',
+    provider: 'google',
+    family: 'gemini',
+    pricing: { input: 2, output: 10, cacheRead: 0.1 },
+    note: 'Launch price through 2026-11-30; $4 / $20 from 2026-12-01.',
+  },
+  {
+    id: 'gemini-3-8-flash',
+    name: 'Gemini 3.8 Flash',
+    provider: 'google',
+    family: 'gemini',
+    pricing: { input: 0.75, output: 3.75, cacheRead: 0.075 },
+    note: 'Promotional price through 2026-12-31; $1.50 / $7.50 from 2027-01-01.',
+  },
+  {
     id: 'gemini-3-6-flash',
     name: 'Gemini 3.6 Flash',
     provider: 'google',
     family: 'gemini',
-    pricing: { input: 1.5, output: 7.5, cacheRead: 0.15 },
+    pricing: { input: 0.75, output: 3.75, cacheRead: 0.075 },
+    note: 'Promotional price through 2026-12-31; $1.50 / $7.50 from 2027-01-01.',
   },
   {
     id: 'gemini-3-5-flash',
     name: 'Gemini 3.5 Flash',
     provider: 'google',
     family: 'gemini',
+    legacy: true,
     pricing: { input: 1.5, output: 9, cacheRead: 0.15 },
+    note: 'No longer listed for new use; requests to it now route to Gemini 3.6 Flash.',
   },
   {
     id: 'gemini-3-5-flash-lite',
@@ -466,7 +657,9 @@ export const MODELS: Model[] = [
     name: 'Gemini 3 Flash Preview',
     provider: 'google',
     family: 'gemini',
+    legacy: true,
     pricing: { input: 0.5, output: 3, cacheRead: 0.05 },
+    note: 'Google now lists this as legacy, with Gemini 3.6 Flash as the replacement.',
   },
   {
     id: 'gemini-2-5-pro',

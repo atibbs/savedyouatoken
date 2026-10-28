@@ -33,9 +33,12 @@ export interface TokenCounter {
  *   "produces approximately 30% more tokens for the same text" than the previous Claude
  *   tokenizer. That 1.30 is the only hard number here, and it is relative to claude-legacy.
  * - `gemini`: treated as comparable to o200k for English text. Also an assumption.
+ * - `openai-next`: GPT-6 is not yet supported by the offline tokenizer, so it is estimated
+ *   as comparable to o200k — an assumption, and always labelled as an estimate.
  */
 export const FAMILY_FACTOR: Record<TokenizerFamily, number> = {
   o200k: 1,
+  'openai-next': 1,
   'claude-legacy': 1,
   'claude-next': 1.3,
   gemini: 1,
@@ -43,6 +46,7 @@ export const FAMILY_FACTOR: Record<TokenizerFamily, number> = {
 
 export const FAMILY_LABELS: Record<TokenizerFamily, string> = {
   o200k: 'o200k_base (OpenAI)',
+  'openai-next': 'OpenAI (GPT-6)',
   'claude-legacy': 'Claude (Sonnet 4.6 and earlier)',
   'claude-next': 'Claude (Opus 4.7 and later)',
   gemini: 'Gemini',
