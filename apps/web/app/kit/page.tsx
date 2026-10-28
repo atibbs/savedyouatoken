@@ -9,13 +9,13 @@ const product = getProduct('kit');
 export const metadata: Metadata = {
   title: `${product.name} — ${product.job.charAt(0).toLowerCase()}${product.job.slice(1)}`,
   description:
-    'Agent instructions that make Claude Code, Cursor, or another coding assistant invoke the savedyouatoken CLI. It is a separate package from the runtime SDK.',
+    'Agent instructions that make Claude Code, Cursor, Codex, or another coding assistant invoke the savedyouatoken CLI. It is a separate package from the runtime SDK.',
   alternates: { canonical: product.href },
 };
 
 const INSIDE = [
-  ['SKILL.md', 'A Claude Code skill that audits your prompt files, applies the safe fixes, and re-checks.'],
-  ['cursor-rules.md', 'A paste-in rule for Cursor, or a CLAUDE.md block, that keeps your assistant cost-aware.'],
+  ['SKILL.md', 'An Agent Skill for Claude Code, Cursor and Codex that audits your prompt files, applies the safe fixes, and re-checks.'],
+  ['cursor-rules.md', 'A short always-on rule for AGENTS.md, CLAUDE.md or Cursor, for assistants that don’t load skills.'],
   ['USAGE.md', 'How to run it and read the results.'],
   ['CHEAT-SHEET.md', 'Every waste pattern, one line each.'],
 ] as const;
@@ -33,7 +33,7 @@ export default function KitPage() {
             Make your agent audit its own <span className="serif-accent">token bill.</span>
           </h1>
           <p className="mt-7 max-w-2xl text-[17px] leading-relaxed text-muted sm:text-[19px]">
-            A small set of instructions that teaches Claude Code, Cursor, or another coding assistant
+            A small set of instructions that teaches Claude Code, Cursor, Codex, or another coding assistant
             to invoke the <code className="font-mono text-ink">savedyouatoken</code> CLI against your files.
             It finds what your prompts and tools cost, and cuts the waste.
           </p>

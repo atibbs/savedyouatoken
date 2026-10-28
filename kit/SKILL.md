@@ -1,46 +1,86 @@
 ---
 name: prompt-cost-audit
-description: Audit LLM prompt and agent-config files for token waste and cost, then cut it. Use when the user mentions prompt cost, token usage, an expensive LLM bill, trimming a system prompt, or auditing tool/MCP definitions.
+description: Audit LLM prompt and agent-config files for token waste and cost, then cut it. Use when the user mentions prompt cost, token usage, an expensive LLM bill, trimming a system prompt, or auditing tool/MCP definitions, CLAUDE.md, AGENTS.md or skill files.
+license: MIT
+allowed-tools: Bash(npx savedyouatoken@latest *)
 ---
 
 # Prompt cost audit
 
-Audit the project's prompts for token waste with the live, always-current tool, apply the safe
-mechanical fixes, and prove the saving by re-measuring. No prices are hard-coded in this skill — the
-CLI carries the current pricing catalogue, so always run it rather than quoting numbers from memory.
+Measure the project's prompts with the live CLI, apply the safe fixes, and prove the saving by
+re-measuring. This skill embeds no prices and no model list. The CLI carries the current catalogue,
+so always run it rather than quoting numbers from memory.
 
 ## When to use
 
 - The user mentions prompt cost, token count, an LLM bill, or wants a prompt trimmed.
-- Before shipping a change to a system prompt, few-shot examples, or tool / MCP definitions.
+- Before shipping a change to a system prompt, few-shot examples, tool definitions, or agent
+  instructions.
 
 ## Steps
 
-1. **Find the prompt-bearing files.** System prompts, few-shot example files, tool / function
-   definition JSON, and the agent's own configuration — `CLAUDE.md`, `.cursor/rules`, MCP tool
-   definitions, and skill descriptions. All of these are re-sent on every request and grow by
-   accretion, and almost nobody has priced them.
-2. **Audit each with the live CLI:**
+1. **Find the prompt-bearing files.**
 
-       npx savedyouatoken@latest <file> [<file> ...] --model <your-model> --requests <per-day>
+       npx savedyouatoken@latest discover
 
-   Attach tool definitions with `--tools tools.json`. Run `npx savedyouatoken@latest --help` for the
-   full options.
-3. **Read the findings.** Each is ranked and priced per month. Note the single biggest opportunity,
-   and whether *output* (not the prompt) is most of the bill — if so, trimming the prompt will not
-   help much and you should say so.
-4. **Apply the safe fixes.** Use `--fix` for the lossless rewrite, or make the structural changes the
-   tool identifies (move static content above per-request values so it can be cached; minify tool
-   schemas; cut duplicate examples). Keep changes small and reviewable.
-5. **Re-measure and enforce.** Re-run to prove the saving, then stop it regrowing with a budget:
+   It lists agent-instruction files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `SYSTEM.md`),
+   `*.tools.json` tool schemas, and prompt-named `.txt` and `.prompt` files, and says why it
+   skipped anything else. It does not pick up `SKILL.md` files, `.cursor/rules/*.mdc` or
+   `.github/copilot-instructions.md`, so pass those explicitly. Price each file at how often it is
+   actually sent: instruction files go out on every request, but a skill sends only its
+   description every time and its body only when the skill runs, so audit a skill body with
+   `--requests` set to how often the skill is used. If the project builds its prompts
+   in code at runtime, a file audit only sees fragments: suggest the SDK
+   (`@savedyouatoken/sdk`), which audits the real outgoing request.
 
-       npx savedyouatoken@latest <file> --max-tokens <N>
+2. **Pick the model id.** Run `npx savedyouatoken@latest models` and use the id that matches what
+   the project actually calls. Never guess an id; an unknown one is an error.
 
-   exits non-zero over budget, which drops straight into CI.
+3. **Audit each file.**
+
+       npx savedyouatoken@latest <file> [<file> ...] --model <model-id> --requests <per-day>
+
+   - `--tools <name>.tools.json` adds the tool definitions sent with the request.
+   - `--output-tokens <n>` sets the average response length.
+   - `--cache-hit-rate <0-100>` gives the project's real hit rate if it already caches. It sharpens
+     the caching estimates and stops the tool recommending caching that is already in place. The
+     headline monthly cost and the budget gates always assume no caching.
+
+   If volume or model is not in the code, ask the user, and say which values you assumed. Reuse
+   the same model, volume and tool options in every later command, so each one measures the
+   same thing.
+
+4. **Read the findings.** Each is ranked and priced per month. Lead with the single biggest
+   opportunity, and say plainly when output, not the prompt, is most of the bill.
+
+   Tool overhead depends on who sends the tools. In the project's own API calls, every schema is
+   re-sent on every request. A coding agent's own MCP tools are different: many agents, Claude
+   Code among them, can send only tool names until a tool is needed. There, treat the tool figure
+   as an upper bound and suggest deferring rarely-used tools before trimming schemas.
+
+5. **Apply the safe fixes.** `--fix` writes the lossless rewrite back to the file; show the user
+   the diff. Make the structural changes the findings name (move per-request values below the
+   static content so it can be cached, minify tool schemas, cut duplicate examples) in small,
+   reviewable edits.
+
+6. **Re-measure, then stop it regrowing.** Re-run the audit to show the saving. For a quick CI
+   gate, `--max-tokens <n>` or `--max-monthly <usd>` exits non-zero over budget. To catch gradual
+   growth against a committed baseline, where `<audit options>` is the same `--model`,
+   `--requests`, `--output-tokens` and `--tools` used in step 3:
+
+       npx savedyouatoken@latest baseline create <file> <audit options> --workflow <id> --out savedyouatoken.baseline.json
+       npx savedyouatoken@latest policy generate --baseline savedyouatoken.baseline.json --out savedyouatoken.policy.json
+       npx savedyouatoken@latest policy check <file> <audit options> --policy savedyouatoken.policy.json --baseline savedyouatoken.baseline.json
+
+   `policy check` re-audits the file with its own options and does not read them from the
+   baseline, so leaving them off checks a different model and no tools. Policies only warn by
+   default; add `--enforcement fail` to `policy generate` to block a merge.
+   Have the user review the generated policy before committing it.
 
 ## Rules
 
-- Never hard-code token counts or prices; always run the CLI so the numbers are current.
-- Fewer tokens is cheaper, not automatically better — preserve meaning, and flag anything
-  load-bearing for human review rather than deleting it.
-- Audit the agent's own configuration too: it is prompt text that ships on every request.
+- Never quote token counts, prices or model ids from memory. Run the CLI.
+- Fewer tokens is cheaper, not automatically better. Preserve meaning, and flag load-bearing
+  instructions for human review rather than deleting them.
+- Audit the agent's own configuration too. Instruction files like `AGENTS.md` ship on every
+  request; skill bodies ship only when used.

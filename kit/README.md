@@ -1,7 +1,7 @@
 # Cost-Aware Agent Kit
 
-A tiny kit that makes your coding agent — Claude Code, Cursor, or any CLI-driven assistant — audit
-what its LLM prompts actually cost, and cut the waste.
+A tiny kit that makes your coding agent — Claude Code, Cursor, Codex, or any CLI-driven assistant —
+audit what its LLM prompts actually cost, and cut the waste.
 
 It is a **launcher, not a snapshot**: everything here runs the live tool
 
@@ -12,19 +12,35 @@ it never goes stale.
 
 ## What's inside
 
-- **`SKILL.md`** — a Claude Code skill: audit prompt files (including the agent's own `CLAUDE.md`, MCP
-  tool definitions, and skill descriptions), apply the safe fixes, and re-measure to prove the saving.
-- **`cursor-rules.md`** — a paste-in rule for Cursor, or a `CLAUDE.md` block, that keeps an assistant
-  cost-aware.
+- **`SKILL.md`** — an Agent Skill: audit prompt files (including the agent's own `AGENTS.md` /
+  `CLAUDE.md`, MCP tool definitions, and skill files), apply the safe fixes, and re-measure to prove
+  the saving. Claude Code, Cursor and Codex all load it.
+- **`cursor-rules.md`** — a short always-on rule to paste into `AGENTS.md`, `CLAUDE.md` or a Cursor
+  rule, for assistants that don't load skills or when you want the guidance in every session.
 - **`USAGE.md`** — how to run it and read the output.
 - **`CHEAT-SHEET.md`** — the waste patterns to recognise, one line each.
 - **`LICENSE`** — MIT.
 
+## Install the skill
+
+Put `SKILL.md` in a folder named `prompt-cost-audit`, inside your agent's skills directory:
+
+- **Claude Code:** `.claude/skills/prompt-cost-audit/SKILL.md` in the project, or
+  `~/.claude/skills/prompt-cost-audit/SKILL.md` for every project.
+- **Cursor:** `.cursor/skills/prompt-cost-audit/SKILL.md`. Cursor also reads `.claude/skills/`.
+- **Codex:** `.agents/skills/prompt-cost-audit/SKILL.md` in the repository, or
+  `~/.agents/skills/prompt-cost-audit/SKILL.md` for every project.
+
+The agent picks the skill up when you mention prompt cost, or you can invoke it by name. In Claude
+Code the skill pre-approves only the `npx savedyouatoken@latest` command, for the turn it runs in;
+every other tool still follows your normal permission settings.
+
 ## Quick start
 
-    npx savedyouatoken@latest path/to/your-prompt.txt --model <your-model> --requests <per-day>
+    npx savedyouatoken@latest discover
+    npx savedyouatoken@latest path/to/your-prompt.txt --model <model-id> --requests <per-day>
 
-Point it at your system prompts, your tool-definition JSON, and your agent config. See `USAGE.md`.
+`discover` finds your prompt and agent-config files; `models` lists valid model ids. See `USAGE.md`.
 
 ---
 

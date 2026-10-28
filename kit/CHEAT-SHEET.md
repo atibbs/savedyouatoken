@@ -15,17 +15,19 @@ prompt and what each costs you — this list is the *what to recognise*, the CLI
 
 - **This model counts your prompt differently** — the same text is not the same number of tokens on
   every model; an upgrade can raise your bill silently.
-- **A pricing cliff** — some models jump their input price above a prompt-size threshold.
+- **A pricing cliff** — some models raise their price for the whole request above a prompt-size
+  threshold.
 - **Running out of room** — a prompt filling most of the context window leaves nothing for the
   conversation.
-- **A newer model at a lower price** — some upgrades are strictly cheaper. Free money.
-- **Your prompt is not the problem** — when output is most of the bill, trimming the prompt is
-  rearranging deck chairs.
+- **A newer model at a lower price** — some upgrades cost less on both input and output than the
+  model you are using now.
+- **Output is most of this bill** — when it is, shortening the prompt barely moves the total.
 
 ## Tools & schemas
 
-- **What your tools cost before anyone calls one** — tool schemas are re-sent on every request, plus a
-  provider system prompt you never see.
+- **What your tools cost before anyone calls one** — in your own API calls, tool schemas are re-sent
+  on every request, plus a provider system prompt you never see. (Coding agents that defer MCP tools
+  send only names until one is used.)
 - **Tool schemas carrying dead weight** — long descriptions, JSON Schema boilerplate, and enums with a
   hundred values.
 
@@ -46,7 +48,8 @@ prompt and what each costs you — this list is the *what to recognise*, the CLI
   every request, forever.
 - **A role that describes nothing** — "you are a helpful AI assistant" tells the model nothing.
 - **Long ways of saying short things** — "due to the fact that" is four tokens; "because" is one.
-- **Prompt folklore** — tips, deep breaths, dying grandmothers. Rent on a 2023 blog post.
+- **Prompt folklore** — tips, deep breaths and other emotional-appeal phrasing, copied from
+  2023-era prompting advice and never removed.
 - **Shouting is billed by the letter** — ALL-CAPS splits into more tokens than title case.
 - **Smart quotes from a word processor** — curly quotes and em dashes cost several tokens each.
 - **ASCII art in a paid channel** — rows of equals signs are for humans, not the model.
