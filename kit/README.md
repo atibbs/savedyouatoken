@@ -28,7 +28,8 @@ Put `SKILL.md` in a folder named `prompt-cost-audit`, inside your agent's skills
 - **Claude Code:** `.claude/skills/prompt-cost-audit/SKILL.md` in the project, or
   `~/.claude/skills/prompt-cost-audit/SKILL.md` for every project.
 - **Cursor:** `.cursor/skills/prompt-cost-audit/SKILL.md`. Cursor also reads `.claude/skills/`.
-- **Codex:** `.codex/skills/prompt-cost-audit/SKILL.md`.
+- **Codex:** `.agents/skills/prompt-cost-audit/SKILL.md` in the repository, or
+  `~/.agents/skills/prompt-cost-audit/SKILL.md` for every project.
 
 The agent picks the skill up when you mention prompt cost, or you can invoke it by name. In Claude
 Code the skill pre-approves only the `npx savedyouatoken@latest` command, for the turn it runs in;

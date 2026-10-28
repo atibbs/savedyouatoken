@@ -26,7 +26,10 @@ so always run it rather than quoting numbers from memory.
    It lists agent-instruction files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `SYSTEM.md`),
    `*.tools.json` tool schemas, and prompt-named `.txt` and `.prompt` files, and says why it
    skipped anything else. It does not pick up `SKILL.md` files, `.cursor/rules/*.mdc` or
-   `.github/copilot-instructions.md`, so pass those explicitly. If the project builds its prompts
+   `.github/copilot-instructions.md`, so pass those explicitly. Price each file at how often it is
+   actually sent: instruction files go out on every request, but a skill sends only its
+   description every time and its body only when the skill runs, so audit a skill body with
+   `--requests` set to how often the skill is used. If the project builds its prompts
    in code at runtime, a file audit only sees fragments: suggest the SDK
    (`@savedyouatoken/sdk`), which audits the real outgoing request.
 
@@ -39,10 +42,13 @@ so always run it rather than quoting numbers from memory.
 
    - `--tools <name>.tools.json` adds the tool definitions sent with the request.
    - `--output-tokens <n>` sets the average response length.
-   - `--cache-hit-rate <0-100>` matters if the project already caches. The default of 0 overstates
-     the cost for anyone who does.
+   - `--cache-hit-rate <0-100>` gives the project's real hit rate if it already caches. It sharpens
+     the caching estimates and stops the tool recommending caching that is already in place. The
+     headline monthly cost and the budget gates always assume no caching.
 
-   If volume or model is not in the code, ask the user, and say which values you assumed.
+   If volume or model is not in the code, ask the user, and say which values you assumed. Reuse
+   the same model, volume and tool options in every later command, so each one measures the
+   same thing.
 
 4. **Read the findings.** Each is ranked and priced per month. Lead with the single biggest
    opportunity, and say plainly when output, not the prompt, is most of the bill.
@@ -59,13 +65,16 @@ so always run it rather than quoting numbers from memory.
 
 6. **Re-measure, then stop it regrowing.** Re-run the audit to show the saving. For a quick CI
    gate, `--max-tokens <n>` or `--max-monthly <usd>` exits non-zero over budget. To catch gradual
-   growth against a committed baseline:
+   growth against a committed baseline, where `<audit options>` is the same `--model`,
+   `--requests`, `--output-tokens` and `--tools` used in step 3:
 
-       npx savedyouatoken@latest baseline create <file> --workflow <id> --out savedyouatoken.baseline.json
+       npx savedyouatoken@latest baseline create <file> <audit options> --workflow <id> --out savedyouatoken.baseline.json
        npx savedyouatoken@latest policy generate --baseline savedyouatoken.baseline.json --out savedyouatoken.policy.json
-       npx savedyouatoken@latest policy check <file> --policy savedyouatoken.policy.json --baseline savedyouatoken.baseline.json
+       npx savedyouatoken@latest policy check <file> <audit options> --policy savedyouatoken.policy.json --baseline savedyouatoken.baseline.json
 
-   Policies only warn by default; add `--enforcement fail` to `policy generate` to block a merge.
+   `policy check` re-audits the file with its own options and does not read them from the
+   baseline, so leaving them off checks a different model and no tools. Policies only warn by
+   default; add `--enforcement fail` to `policy generate` to block a merge.
    Have the user review the generated policy before committing it.
 
 ## Rules
@@ -73,4 +82,5 @@ so always run it rather than quoting numbers from memory.
 - Never quote token counts, prices or model ids from memory. Run the CLI.
 - Fewer tokens is cheaper, not automatically better. Preserve meaning, and flag load-bearing
   instructions for human review rather than deleting them.
-- Audit the agent's own configuration too. It is prompt text that ships on every request.
+- Audit the agent's own configuration too. Instruction files like `AGENTS.md` ship on every
+  request; skill bodies ship only when used.

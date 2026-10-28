@@ -1,9 +1,20 @@
 # Cost-aware assistant rule
 
 An always-on version of the skill, for assistants that don't load `SKILL.md` or when you want the
-guidance in every session. Paste the block below into `AGENTS.md`, `CLAUDE.md`, a Cursor rule
-(`.cursor/rules/*.mdc`), or any assistant's instructions file. It is kept short on purpose: an
-always-on rule is itself prompt text you pay for on every request.
+guidance in every session. Paste the block below into `AGENTS.md`, `CLAUDE.md`, or any assistant's
+instructions file. Cursor reads `AGENTS.md` automatically, so that is the simplest home for Cursor
+too.
+
+To use a Cursor rule file instead, save it as `.cursor/rules/cost-aware.mdc` and start the file with
+this frontmatter. Cursor ignores rule files without it, and `alwaysApply: true` is what makes it
+apply to every chat:
+
+    ---
+    alwaysApply: true
+    ---
+
+The block is kept short on purpose: an always-on rule is itself prompt text you pay for on every
+request.
 
 ---
 

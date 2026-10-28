@@ -34,11 +34,15 @@ Prints every model the tool can price, with its current rates. Use the id exactl
   these are re-sent on every request and are often the biggest single cost.
 - `--output-tokens <N>`: your average completion length, so the report can tell you when *output*,
   not the prompt, is the real problem.
-- `--cache-hit-rate <0-100>`: how often your requests hit the prompt cache. It defaults to 0, which
-  overstates the bill if you already cache.
+- `--cache-hit-rate <0-100>`: your real prompt-cache hit rate, if you already cache. It sharpens the
+  caching estimates and stops the tool recommending caching you already do. The headline monthly
+  cost and the `--max-monthly` gate always assume no caching.
 
 Point it at more than one file at once, and include your agent's own config (`AGENTS.md`,
-`CLAUDE.md`, MCP tool definitions, skill files): that is prompt text too.
+`CLAUDE.md`, MCP tool definitions, skill files): that is prompt text too. Set `--requests` to how
+often each file is actually sent. Instruction files go out on every request. A skill sends only its
+description every time and its body when it runs, so audit a skill body at the rate the skill is
+used, not at your total request volume.
 
 A note on agent tools: many coding agents now defer MCP tool definitions, sending only names until a
 tool is used. For tools your *agent* loads, treat the audited tool cost as an upper bound. For tools
@@ -61,13 +65,17 @@ The quick gate is a fixed budget:
 It exits non-zero when a file breaches the budget, so a pull request that bloats a prompt fails the
 check.
 
-To catch gradual growth instead, commit a baseline and a policy, then check against them:
+To catch gradual growth instead, commit a baseline and a policy, then check against them. Here
+`<audit options>` means the same `--model`, `--requests`, `--output-tokens` and `--tools` you audit
+with:
 
-    npx savedyouatoken@latest baseline create <file> --workflow <id> --out savedyouatoken.baseline.json
+    npx savedyouatoken@latest baseline create <file> <audit options> --workflow <id> --out savedyouatoken.baseline.json
     npx savedyouatoken@latest policy generate --baseline savedyouatoken.baseline.json --out savedyouatoken.policy.json
-    npx savedyouatoken@latest policy check <file> --policy savedyouatoken.policy.json --baseline savedyouatoken.baseline.json
+    npx savedyouatoken@latest policy check <file> <audit options> --policy savedyouatoken.policy.json --baseline savedyouatoken.baseline.json
 
-Policies warn by default; generate with `--enforcement fail` to block the merge. Read the generated
+Pass the audit options to both `baseline create` and `policy check`: each re-audits the file with its
+own options rather than reading them from the baseline, so leaving them off measures a different
+model and no tools. Policies warn by default; generate with `--enforcement fail` to block the merge. Read the generated
 policy before committing it, since its budgets are starting suggestions.
 
 Run `npx savedyouatoken@latest --help` for the complete list of commands and options.
