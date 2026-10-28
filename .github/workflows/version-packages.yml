@@ -74,8 +74,11 @@ jobs:
 
           node scripts/describe-version-bump.mjs > /tmp/pr-body.md
 
-          if gh pr view "$BRANCH" --json number >/dev/null 2>&1; then
-            gh pr edit "$BRANCH" --body-file /tmp/pr-body.md
+          # Only an open PR counts: `gh pr view <branch>` also matches merged ones, so once the
+          # first release PR merged it kept editing that instead of opening a new one.
+          OPEN_PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
+          if [ -n "$OPEN_PR" ]; then
+            gh pr edit "$OPEN_PR" --body-file /tmp/pr-body.md
           else
             gh pr create --base main --head "$BRANCH" --title "chore: version packages" --body-file /tmp/pr-body.md
           fi
