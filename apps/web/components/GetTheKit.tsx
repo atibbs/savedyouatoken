@@ -46,7 +46,7 @@ export function GetTheKit({
       onClick={() => track('kit_click')}
       className={`${base} ${live} ${className}`}
     >
-      Get the kit — name your price <span aria-hidden>↗</span>
+      Get the kit <span aria-hidden>↗</span>
     </a>
   );
 }
