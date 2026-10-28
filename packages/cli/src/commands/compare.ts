@@ -11,6 +11,7 @@ import {
 import { readFileSync } from 'node:fs';
 import { formatContractErrors, readBaselineBundle } from '../contracts-io';
 import {
+  AUDIT_OPTION_HELP,
   analyzeFile,
   buildProvisionalReport,
   c,
@@ -31,11 +32,15 @@ Prices the change between the current result and a committed baseline: token, ca
 monthly-cost deltas plus which findings are new, resolved, or changed. Does not enforce a
 policy — see \`savedyouatoken policy check\` for pass/warn/fail exit behavior.
 
+A file is re-audited with the audit options given here, not the baseline's, so pass the same
+model, volume and tools the baseline was created with.
+
 OPTIONS
       --baseline <path>     Baseline bundle from \`baseline create\` (required)
       --from-report <path>  Compare an existing report instead of auditing a file
       --json                Emit a schema-versioned JSON document instead of a report
   -q, --quiet                Only print the summary line
+${AUDIT_OPTION_HELP}
   -h, --help                  Show this help
 `;
 

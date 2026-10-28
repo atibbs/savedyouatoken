@@ -61,6 +61,14 @@ export function defaultAuditOptions(): AuditOptions {
   };
 }
 
+/** Help lines for the flags `consumeAuditFlag` accepts, shared by every command that audits a file. */
+export const AUDIT_OPTION_HELP = `  -m, --model <id>          Model to price against, when auditing a file
+  -r, --requests <n>        Requests per day
+  -o, --output-tokens <n>   Average response length
+  -c, --cache-hit-rate <n>  Cache hit rate 0-100
+  -t, --tools <file>        JSON file of tool/function definitions
+      --aggressive          Also remove instructions duplicated elsewhere`;
+
 /**
  * Consumes the audit flags (-m/-r/-o/-c/-t/--aggressive) that discovery, baseline, compare,
  * and policy commands all accept identically to the default `audit` command. Any argument the
