@@ -4,11 +4,15 @@ import Link from 'next/link';
 import {
   formatTokens,
   formatUsd,
+  ratesFor,
   simulateCache,
   type AnalysisResult,
   type CacheTtl,
 } from '@savedyouatoken/core';
 import { useMemo, useState } from 'react';
+
+const multiple = (x: number) => `${Number(x.toFixed(2))}x`;
+const share = (x: number) => `${Number((x * 100).toFixed(1))}%`;
 
 export function CachePanel({ result }: { result: AnalysisResult }) {
   const [hitRate, setHitRate] = useState(Math.round((result.cache.hitRate || 0.8) * 100));
@@ -23,6 +27,17 @@ export function CachePanel({ result }: { result: AnalysisResult }) {
       }),
     [result, hitRate, ttl],
   );
+
+  const multiples = useMemo(() => {
+    const tokens = result.cache.staticTokens + result.cache.dynamicTokens;
+    const at = (cacheTtl: CacheTtl) => {
+      const rates = ratesFor(result.model, tokens, { ...result.workload, cacheTtl });
+      return { write: rates.cacheWrite / rates.input, read: (rates.cacheRead ?? rates.input) / rates.input };
+    };
+    return { '5m': at('5m'), '1h': at('1h') } satisfies Record<CacheTtl, { write: number; read: number }>;
+  }, [result]);
+  const writeMultiple = multiples[ttl].write;
+  const readShare = multiples[ttl].read;
 
   if (!result.cache.supported) {
     return (
@@ -85,7 +100,7 @@ export function CachePanel({ result }: { result: AnalysisResult }) {
                     ttl === t ? 'bg-raised text-ink' : 'text-muted hover:text-ink'
                   }`}
                 >
-                  {t === '5m' ? '5 minutes (1.25x write)' : '1 hour (2x write)'}
+                  {t === '5m' ? '5 minutes' : '1 hour'} ({multiple(multiples[t].write)} write)
                 </button>
               ))}
             </div>
@@ -132,14 +147,15 @@ export function CachePanel({ result }: { result: AnalysisResult }) {
           <p className="border-t border-line px-3 py-2.5 text-[12px] leading-relaxed text-muted">
             {savingPositive ? (
               <>
-                A cache write costs {ttl === '1h' ? '2x' : '1.25x'} the base input rate and each
-                read costs a tenth of it, so caching pays for itself after {sim.breakevenReads} read
-                {sim.breakevenReads === 1 ? '' : 's'} of the same prefix.
+                On {result.model.name} a cache write costs{' '}
+                {writeMultiple === 1 ? 'the base input rate' : `${multiple(writeMultiple)} the base input rate`}{' '}
+                and each read costs {share(readShare)} of it, so caching pays for itself after{' '}
+                {sim.breakevenReads} read{sim.breakevenReads === 1 ? '' : 's'} of the same prefix.
               </>
             ) : (
               <>
-                At this hit rate you would pay the {ttl === '1h' ? '2x' : '1.25x'} write surcharge
-                more often than you collect the discount. Caching starts paying once a prefix is
+                At this hit rate you would pay for cache writes more often than you collect the
+                read discount. Caching starts paying once a prefix is
                 read {sim.breakevenReads} time{sim.breakevenReads === 1 ? '' : 's'} before it
                 expires.
               </>

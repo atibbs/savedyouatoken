@@ -129,7 +129,8 @@ export default function MethodologyPage() {
             wins when <code>k &gt; (W − B) / (B − R)</code>.
           </p>
           <p>
-            With a short-lived write at 1.25x the base rate and reads at a tenth, that gives{' '}
+            With a short-lived write at 1.25x the base rate and reads at a tenth (the most common
+            rates; some newer models read for less, which only lowers the breakeven), that gives{' '}
             <code>k &gt; 0.28</code> — one read. With an extended write at 2x it gives{' '}
             <code>k &gt; 1.11</code> — two reads. Those match the numbers Anthropic publishes, which
             is the check that the derivation is right; it is asserted in the test suite.

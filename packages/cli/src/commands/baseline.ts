@@ -15,6 +15,7 @@ import {
   analyzeFile,
   buildProvisionalReport,
   c,
+  AUDIT_OPTION_HELP,
   consumeAuditFlag,
   defaultAuditOptions,
   fail,
@@ -36,18 +37,9 @@ OPTIONS
       --workflow <id>       Workflow id (default: derived from the file name)
       --release <id>        Release or commit id (default: current git HEAD, else "unversioned")
       --out <path>          Where to write the bundle (default: ./savedyouatoken.baseline.json)
-${AUDIT_OPTION_HELP()}
+${AUDIT_OPTION_HELP}
   -h, --help                 Show this help
 `;
-
-function AUDIT_OPTION_HELP(): string {
-  return `  -m, --model <id>          Model to price against, when auditing a file
-  -r, --requests <n>        Requests per day
-  -o, --output-tokens <n>   Average response length
-  -c, --cache-hit-rate <n>  Cache hit rate 0-100
-  -t, --tools <file>        JSON file of tool/function definitions
-      --aggressive          Also remove instructions duplicated elsewhere`;
-}
 
 export async function runBaseline(argv: string[]): Promise<void> {
   const [sub, ...rest] = argv;
