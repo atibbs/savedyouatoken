@@ -69,16 +69,16 @@ export const cacheOpportunity: Rule = {
   severity: 'high',
   category: 'caching',
   autofix: false,
-  summary: 'Reading a cached prefix costs a tenth of sending it again. This prompt qualifies.',
+  summary: 'Reading a cached prefix costs a fraction of sending it again. This prompt qualifies.',
   why: [
-    'Prompt caching is the largest single lever in LLM cost control, and it is a configuration change rather than a rewrite. A cache read is billed at roughly a tenth of the base input rate on the major providers.',
-    'The arithmetic is worth internalising. A write costs 1.25x the base rate for a short time-to-live, and each read costs 0.1x. So one write plus one read costs 1.35x against 2x for sending it twice — caching pays for itself on the second request. With a longer time-to-live the write costs 2x and you need two reads to break even.',
+    'Prompt caching is the largest single lever in LLM cost control, and it is a configuration change rather than a rewrite. On most current models a cache read is billed at a tenth of the base input rate or less; a few older models charge a quarter or a half.',
+    'The arithmetic is worth internalising. With a typical write at 1.25x the base rate for a short time-to-live and reads at 0.1x, one write plus one read costs 1.35x against 2x for sending it twice — caching pays for itself on the second request. Cheaper reads only bring that forward. With a longer time-to-live the write costs 2x and you need two reads to break even.',
     'That means the only workloads caching hurts are ones where the prefix is genuinely used once and thrown away. Everything else — any repeated system prompt, any multi-turn conversation, any agent loop — should be caching.',
     'The prerequisites are a prefix above the provider minimum (about a thousand tokens) that is byte-identical between requests. If yours is not identical, that is usually the ordering problem rather than a caching problem.',
   ],
   example: {
     before: '6,000-token system prompt sent at full price on all 40,000 daily requests.',
-    after: 'Same prompt behind a cache breakpoint: writes on misses, reads at a tenth of the price on hits.',
+    after: 'Same prompt behind a cache breakpoint: writes on misses, reads at a fraction of the price on hits.',
   },
   detect(ctx) {
     if (ctx.model.pricing.cacheRead == null) return null;

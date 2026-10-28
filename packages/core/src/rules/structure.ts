@@ -81,7 +81,7 @@ export const fewShotBloat: Rule = {
     'Examples work. They are also, per token, the most expensive thing in a prompt: a single realistic input/output pair for a document-extraction task can run several hundred tokens, and they are re-sent on every request forever.',
     'The returns fall off a cliff. For most classification and formatting tasks on a current model, the jump from zero to two examples is large, two to four is small, and beyond about five is usually noise. Prompts routinely carry twelve because each new edge case was fixed by adding another example rather than by fixing the instruction.',
     'The right test is empirical and cheap: drop the last half of your examples and run your eval. If accuracy holds, you just cut your input bill substantially. If it drops, you learned which examples were load-bearing.',
-    'If examples must stay, they are ideal cache content — they never change between requests, so putting them in a cached prefix moves them from full price to a tenth of it.',
+    'If examples must stay, they are ideal cache content — they never change between requests, so putting them in a cached prefix moves them from full price to a fraction of it.',
   ],
   example: {
     before: '9 worked examples, 2,400 tokens, sent on every request.',
