@@ -27,7 +27,7 @@ export default function KitPage() {
         <div className="grid-backdrop pointer-events-none absolute inset-0 opacity-40" aria-hidden />
         <div className="relative mx-auto max-w-4xl px-4 pb-10 pt-14 sm:px-6 sm:pt-20">
           <span className="eyebrow inline-flex items-center gap-2 rounded-full border-[1.5px] border-[#171713] bg-acid px-3 py-2 text-[#171713]">
-            Pay what you want
+            $2 download
           </span>
           <h1 className="display mt-7 max-w-3xl text-[clamp(36px,6.5vw,72px)] text-ink">
             Make your agent audit its own <span className="serif-accent">token bill.</span>
@@ -39,7 +39,7 @@ export default function KitPage() {
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <GetTheKit />
-            <span className="font-mono text-[12px] text-faint">$0 floor · tip if it helped</span>
+            <span className="font-mono text-[12px] text-faint">One-time purchase · MIT licensed</span>
           </div>
         </div>
       </section>

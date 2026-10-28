@@ -3,7 +3,7 @@ export const SITE_NAME = 'savedyouatoken';
 export const TAGLINE = 'Find the waste in your LLM prompts before your invoice does.';
 
 /**
- * The pay-what-you-want product page for the downloadable agent kit (Gumroad). Public,
+ * The Gumroad product page for the downloadable agent kit. Public,
  * so it lives in config rather than a secret. NEXT_PUBLIC_KIT_URL can still override this
  * per environment; if it and the default were both empty, the /kit page and its CTAs would
  * show a "coming soon" state instead of a link.

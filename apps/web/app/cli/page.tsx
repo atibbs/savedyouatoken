@@ -134,7 +134,7 @@ jobs:
         <h2 className="text-[15px] font-bold text-ink">Run this from inside your agent</h2>
         <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-muted">
           The <Link href="/kit" className="text-info underline underline-offset-2">cost-aware agent kit</Link>{' '}
-          is a small, pay-what-you-want download that wires this CLI into Claude Code, Cursor, or any
+          is a small $2 download that wires this CLI into Claude Code, Cursor, or any
           assistant — so your agent audits its own prompts and cuts the waste. It runs the live tool,
           so it never goes stale.
         </p>

@@ -44,5 +44,5 @@ every other tool still follows your normal permission settings.
 
 ---
 
-Made by [savedyouatoken.com](https://savedyouatoken.com). Thanks for paying what you could — it keeps
-this free and independent.
+Made by [savedyouatoken.com](https://savedyouatoken.com). Thanks for supporting the project — it keeps
+savedyouatoken independent.
