@@ -29,7 +29,8 @@ export default function MethodologyPage() {
             o200k_base byte-pair encoder in your browser.
           </p>
           <p>
-            Anthropic and Google do not ship a public offline tokenizer. Counts for their models
+            Anthropic and Google do not ship a public offline tokenizer, and GPT-6 is not yet
+            supported by the offline tokenizer this tool runs. Counts for those models
             are <strong className="text-ink">estimates</strong>, derived from the o200k count and a
             family factor. Every place a number appears, the interface says which kind it is.
           </p>
@@ -62,6 +63,13 @@ export default function MethodologyPage() {
                 <td className="px-4 py-2 text-ink">o200k_base</td>
                 <td className="num px-3 py-2 text-right text-ink">{FAMILY_FACTOR.o200k}</td>
                 <td className="px-4 py-2 text-muted">Exact — the encoder is run directly.</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-2 text-ink">OpenAI GPT-6</td>
+                <td className="num px-3 py-2 text-right text-ink">{FAMILY_FACTOR['openai-next']}</td>
+                <td className="px-4 py-2 text-muted">
+                  Assumed comparable to o200k until the offline tokenizer supports it.
+                </td>
               </tr>
               <tr>
                 <td className="px-4 py-2 text-ink">Claude, Sonnet 4.6 and earlier</td>
