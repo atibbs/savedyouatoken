@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DAYS_PER_MONTH, costOf, ratesFor, simulateCache } from '../src/cost';
 import { DEFAULT_WORKLOAD } from '../src/cost';
 import { requireModel } from '../src/models';
+import { createCounterFromO200k } from '../src/tokens';
 
 const workload = { ...DEFAULT_WORKLOAD, requestsPerDay: 1000, outputTokens: 500 };
 
@@ -32,6 +33,26 @@ describe('rates', () => {
     expect(under.input).toBe(2);
     expect(over.input).toBe(4);
     expect(over.longContextTier).toBe(true);
+  });
+
+  it("reproduces Anthropic's published Haiku 5.5 rates above the 100k tier", () => {
+    const haiku = requireModel('claude-haiku-5-5');
+    const under = ratesFor(haiku, 100_000, workload);
+    const over = ratesFor(haiku, 100_001, workload);
+    expect(under.input).toBe(0.1);
+    expect(over.input).toBe(0.5);
+    expect(over.output).toBe(2.5);
+    expect(over.cacheWrite).toBeCloseTo(0.625, 6);
+    expect(ratesFor(haiku, 100_001, { ...workload, cacheTtl: '1h' }).cacheWrite).toBeCloseTo(1, 6);
+    const batched = ratesFor(haiku, 100_001, { ...workload, batch: true });
+    expect(batched.input).toBeCloseTo(0.25, 6);
+    expect(batched.output).toBeCloseTo(1.25, 6);
+  });
+
+  it('labels GPT-6 counts as estimates, not exact', () => {
+    const counter = createCounterFromO200k((text) => new Array(text.length).fill(0));
+    expect(counter.accuracy('o200k')).toBe('exact');
+    expect(counter.accuracy(requireModel('gpt-6-1-sol').family)).toBe('estimated');
   });
 
   it('falls back to the base input price when a model has no cache-write surcharge', () => {
