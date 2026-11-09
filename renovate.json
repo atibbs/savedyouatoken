@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>atibbs/factory"],
+  "extends": ["github>atibbs/renovate-config"],
   "packageRules": [
     {
       "description": "Runtime deps of the published npm packages reach SDK/CLI users on the next release — review them by hand.",
